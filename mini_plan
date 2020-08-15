@@ -1,0 +1,24 @@
+Mini plan na najbliższy czas:
+
+Moduły:
+1. obliczający score dla harmonogramu
+    reqs:
+     - najpierw walidacja harmonogramu, czyli sprawdzenie czy nie jest corrupted (żeby nie developować na błędnych danych wejściowych)
+     - generacja dodatkowych informacji (ile dana osoba powinna wyrobić godzin itd.)
+
+2. generujący wszystkie możliwe sąsiedztwa
+    reqs:
+     - moduł od przeprowadzania "mutacji"
+
+    implementacja ograniczeń, podzielić na podgrupy, w zależność od typu sprawdzania (dzień, tydzień, wertykalnie, horyzontalnie)
+
+W teorii wtedy będzie można zrobić basic local search.
+
+Można oklasować harmonogram, żeby był wygodniejszy dostęp do poszczególnych danych.
+
+Co mieć na uwadze później:
+    1. prawdopodobnie będzie trzeba ogarnąć lepszy zapis harmonogramu
+    2. lepszy algorytm (tabu search itd.)
+    3. zbadać wydajność programu (na czym w ogóle stoimy)
+    4. wygenerować (manualnie xD) więcej danych testowych
+
