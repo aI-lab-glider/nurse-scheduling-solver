@@ -3,3 +3,4 @@ out
 nurse_scheduling_problem.iml
 .gradle
 .idea
+.ipynb_checkpoints/

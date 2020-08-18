@@ -1,9 +1,10 @@
+# Nurse Scheduling Problem Algorithm
 Mini plan na najbliższy czas:
 
 Moduły:
 1. obliczający score dla harmonogramu
     reqs:
-     - najpierw walidacja harmonogramu, czyli sprawdzenie czy nie jest corrupted (żeby nie developować na błędnych danych wejściowych)
+     - walidacja harmonogramu, czyli sprawdzenie czy nie jest corrupted (żeby nie developować na błędnych danych wejściowych)
      - generacja dodatkowych informacji (ile dana osoba powinna wyrobić godzin itd.)
 
 2. generujący wszystkie możliwe sąsiedztwa
