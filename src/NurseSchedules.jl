@@ -3,7 +3,8 @@ module NurseSchedules
 export Schedule,
        score,
        get_shifts,
-       get_neighborhood
+       get_nbhd,
+       get_max_nbhd_size
 
 using Printf, JSON
 
@@ -15,6 +16,6 @@ include("schedule/neighborhood.jl")
 
 using .ScheduleValidation
 using .ScheduleScore
-using .NeighborsGeneration
+using .Neighborhood
 
 end # NurseSchedules
