@@ -8,11 +8,11 @@ export Schedule,
 
 using Printf, JSON
 
-include("schedule/constants.jl")
-include("schedule/Schedule.jl")
-include("schedule/validation.jl")
-include("schedule/schedule_score.jl")
-include("schedule/neighborhood.jl")
+include("constants.jl")
+include("Schedule.jl")
+include("validation.jl")
+include("score.jl")
+include("neighborhood.jl")
 
 using .ScheduleValidation
 using .ScheduleScore

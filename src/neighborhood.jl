@@ -8,9 +8,9 @@ function get_max_nbhd_size(schedule::Schedule)::Int
     shifts = get_shifts(schedule)
 
     from_addtition = count(s -> (s == W), shifts) * length(CHANGEABLE_SHIFTS)
-    @debug "Neigbors from addition: $from_addtition"
+    @debug "Neighbors number from addition: $from_addtition"
     from_deletion = count(s -> (s in CHANGEABLE_SHIFTS), shifts)
-    @debug "Neigbors from deletion: $from_deletion"
+    @debug "Neighbors number from deletion: $from_deletion"
 
     from_swap = sum([
         1
@@ -23,7 +23,7 @@ function get_max_nbhd_size(schedule::Schedule)::Int
         shifts[person] in CHANGEABLE_SHIFTS &&
         shifts[o_person] in CHANGEABLE_SHIFTS
     ])
-    @debug "Neigbors from swap: $from_swap"
+    @debug "Neighbors number from swap: $from_swap"
 
     return from_addtition + from_deletion + from_swap
 end

@@ -3,7 +3,7 @@ struct Schedule
 
     function Schedule(filename::AbstractString)
         data = JSON.parsefile(filename)
-        @printf "%s\n" "Schedule loaded!"
+        @info "Schedule loaded!"
 
         validate(data)
 
@@ -12,9 +12,9 @@ struct Schedule
 
 end
 
-function get_shifts(schedule::Schedule)::Array{String, 2}
+function get_shifts(schedule::Schedule)::Array{String,2}
     shifts = collect(values(schedule.data["shifts"]))
-    return [shifts[person][shift]
-            for person in 1:length(shifts),
-            shift in 1:length(shifts[1])]
+    return [
+        shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])
+    ]
 end
