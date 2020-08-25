@@ -1,3 +1,5 @@
+export get_month_info
+
 struct Schedule
     data::Dict
 
@@ -12,9 +14,18 @@ struct Schedule
 
 end
 
-function get_shifts(schedule::Schedule)::Array{String,2}
+function get_shifts(schedule::Schedule)::Tuple{Array{String,1}, Array{String,2}}
     shifts = collect(values(schedule.data["shifts"]))
-    return [
+    workers = collect(keys(schedule.data["shifts"]))
+    return workers, [
         shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])
     ]
+end
+
+function get_month_info(schedule::Schedule)::Dict{String, Any}
+    return schedule.data["month_info"]
+end
+
+function get_workers_info(schedule::Schedule)::Dict{String, Any}
+    return schedule.data["employee_info"]
 end

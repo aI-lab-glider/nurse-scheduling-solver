@@ -16,7 +16,7 @@ constraints:
  - always at least one nurse (not applicable yet)
 
  - from 6 to 22 at least one nurse for each 3 children
- - from 22 to 6 at least one nurse for each 5 children 
+ - from 22 to 6 at least one nurse for each 5 children
  - after DN shift 24h off, after the rest 11h off
  - each worker has 35h off once a week
  - U and L4 untouchable (implicit constraint)

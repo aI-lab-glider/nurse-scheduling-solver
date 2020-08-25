@@ -5,7 +5,7 @@ export get_nbhd, get_max_nbhd_size
 using ..NurseSchedules: Schedule, get_shifts, CHANGEABLE_SHIFTS, W
 
 function get_max_nbhd_size(schedule::Schedule)::Int
-    shifts = get_shifts(schedule)
+    _, shifts = get_shifts(schedule)
 
     from_addtition = count(s -> (s == W), shifts) * length(CHANGEABLE_SHIFTS)
     @debug "Neighbors number from addition: $from_addtition"
@@ -30,7 +30,7 @@ end
 
 function get_nbhd(schedule::Schedule)
     neighborhood = Array{String,2}[]
-    shifts = get_shifts(schedule)
+    _, shifts = get_shifts(schedule)
 
     for person_shift in CartesianIndices(shifts)
         mutated_schedules = if shifts[person_shift] == W
