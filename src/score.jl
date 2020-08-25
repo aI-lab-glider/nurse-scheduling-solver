@@ -143,7 +143,7 @@ function check_workers_overtime(workers, shifts, workers_info)
     end
 
     if worktime_std > MAX_STD || (s -> (s > MAX_OVER_TIME)) in collect(values(worker_worktime))
-        # in case soft constraints are kind of strong :)
+        # in this case soft constraints are kind of strong :)
         return length(workers) * MAX_OVER_TIME + MAX_STD
     end
 
