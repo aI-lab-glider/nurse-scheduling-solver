@@ -1,0 +1,40 @@
+{
+    "schedule_info":{
+        "UUID": "",
+        "month_number": 8,
+        "year": 2016
+    },
+    "month_info": {
+        "days_of_week": [
+            "MO", "TU", "WE", "TH", "FR", "SA", "SU"
+        ],
+        "day_numbers": [
+            1, 2, 3, 4, 5, 6, 7
+        ],
+        "children_number": [
+            3, 3, 3, 3, 3, 3, 3
+        ]
+    },
+    "employee_info": {
+        "time": {
+            "nurse_1":  "FULL",
+            "nurse_2":  "FULL",
+            "nurse_3":  "FULL",
+            "nurse_4":  "FULL"
+        }
+    },
+    "shifts": {
+        "nurse_1": [
+            "R", "R", "W", "W", "D", "DN", "W"
+        ],
+        "nurse_2": [
+            "W", "DN", "W", "W", "W", "W", "W"
+        ],
+        "nurse_3": [
+            "D", "N", "W", "L4", "U", "N", "U"
+        ],
+        "nurse_4": [
+            "DN", "N", "W", "W", "W", "N", "U"
+        ]
+    }
+}

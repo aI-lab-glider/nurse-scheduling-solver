@@ -1,25 +1,24 @@
 {
     "schedule_info":{
+        "UUID": "da900-a2dqa-a21io-nkqs9-nmos0da",
         "month_number": 8,
         "year": 2016
     },
     "month_info": {
         "days_of_week": [
-            "MO", "TU", "WE", "TH", "FR", "SA", "SU",
-            "MO", "TU", "WE", "TH", "FR", "SA", "SU"
+            "MO", "TU"
         ],
         "day_numbers": [
-            1, 2, 3, 4, 5, 6, 7,
-            8, 9, 10, 11, 12, 13, 14
+            1, 2
         ],
         "children_number": [
-            12, 12, 12, 12, 12, 12, 12,
-            12, 12, 12, 12, 12, 12, 12
+            12, 12
         ]
     },
     "employee_info": {
         "time": {
-            "nurse_1":  "FULL"
+            "nurse_1":  "FULL",
+            "nurse_2":  "FULL"
         }
     },
     "shifts": {

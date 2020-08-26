@@ -1,25 +1,23 @@
 # Nurse Scheduling Problem Algorithm
-Mini plan na najbliższy czas:
 
-Moduły:
-1. obliczający score dla harmonogramu
-    reqs:
-     - walidacja harmonogramu, czyli sprawdzenie czy nie jest corrupted (żeby nie developować na błędnych danych wejściowych)
-     - generacja dodatkowych informacji (ile dana osoba powinna wyrobić godzin itd.)
+### Mini plan
 
-2. generujący wszystkie możliwe sąsiedztwa
-    reqs:
-     - moduł od przeprowadzania "mutacji"
 
-    implementacja ograniczeń, podzielić na podgrupy, w zależność od typu sprawdzania (dzień, tydzień, wertykalnie, horyzontalnie)
+Done in the latest sprint:
+ - the size of the max neighborhood can be evaluated for a schedule
+ - fitness function evaluates constraints and outputs score
 
-W teorii wtedy będzie można zrobić basic local search.
+TODO:
+ - neighborhood can be generated partially utilizing generator
+ - debug mode can be used to inform which and where in a schedule constraints are broken
+ - the app is a CLI program and can be run with different arguments
 
-Można oklasować harmonogram, żeby był wygodniejszy dostęp do poszczególnych danych.
+constraints:
+ - always at least one nurse (not applicable yet)
 
-Co mieć na uwadze później:
-    1. prawdopodobnie będzie trzeba ogarnąć lepszy zapis harmonogramu
-    2. lepszy algorytm (tabu search itd.)
-    3. zbadać wydajność programu (na czym w ogóle stoimy)
-    4. wygenerować (manualnie xD) więcej danych testowych
-
+ - from 6 to 22 at least one nurse for each 3 children
+ - from 22 to 6 at least one nurse for each 5 children
+ - after DN shift 24h off, after the rest 11h off
+ - each worker has 35h off once a week
+ - U and L4 untouchable (implicit constraint)
+ - overtime (soft constraint)
