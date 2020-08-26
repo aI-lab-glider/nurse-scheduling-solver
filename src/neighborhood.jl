@@ -28,9 +28,8 @@ function get_max_nbhd_size(schedule::Schedule)::Int
     return from_addtition + from_deletion + from_swap
 end
 
-function get_nbhd(schedule::Schedule)
+function get_nbhd(shifts::Array{String,2})
     neighborhood = Array{String,2}[]
-    _, shifts = get_shifts(schedule)
 
     for person_shift in CartesianIndices(shifts)
         mutated_schedules = if shifts[person_shift] == W
