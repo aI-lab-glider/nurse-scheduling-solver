@@ -17,10 +17,10 @@ function score(workers, shifts, month_info, workers_info)::Int
         addtional_penalty = MAX_STD + length(workers) * MAX_OVER_TIME + 1
         @debug "Hard constraints are not met, charging additional penalty: '$(addtional_penalty)'"
         penalty += addtional_penalty
+    else
+        # Soft constraints, check only if strong are satisfied
+        penalty += check_workers_overtime(workers, shifts, workers_info)
     end
-
-    # Soft constraints
-    penalty += check_workers_overtime(workers, shifts, workers_info)
 
     return penalty
 end
@@ -61,7 +61,9 @@ function check_workers_presence(shifts, month_info)::Int
             @debug "Lacking nurses on day '$day'." * error_details
         end
     end
-    @debug "Total lack of nurses penalty: $(penalty)"
+    if penalty > 0
+        @debug "Total lack of nurses penalty: $(penalty)"
+    end
     return penalty
 end
 
@@ -127,8 +129,8 @@ function check_workers_overtime(workers, shifts, workers_info)
             @debug "Worker '$(worker)' has overtime hours: '$(overtime)'"
             overtime
         elseif overtime < 0
-            @debug "Worker '$(worker)' has undertime hours: '$(abs(overtime))' - no penalty for now."
-            0
+            @debug "Worker '$(worker)' has undertime hours: '$(abs(overtime))' - half penalty for now."
+            ceil(Int, overtime / 2)
         else
             0
         end

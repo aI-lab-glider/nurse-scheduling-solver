@@ -19,7 +19,8 @@
         "time": {
             "nurse_1":  "FULL",
             "nurse_2":  "FULL",
-            "nurse_3":  "FULL"
+            "nurse_3":  "FULL",
+            "nurse_4":  "FULL"
         }
     },
     "shifts": {
@@ -31,6 +32,9 @@
         ],
         "nurse_3": [
             "D", "N", "W", "L4", "U", "N", "U"
+        ],
+        "nurse_4": [
+            "DN", "N", "W", "W", "W", "N", "U"
         ]
     }
 }
