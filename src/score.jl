@@ -2,13 +2,12 @@ module ScheduleScore
 
 export score
 
-include("constants.jl")
-
 using Statistics
-using ..NurseSchedules: Schedule, get_shifts, get_month_info, get_workers_info
+using ..NurseSchedules
 
 
-function score(workers, shifts, month_info, workers_info)::Int
+function score(schedule_shifts::ScheduleShifts, month_info::Dict{String,Any}, workers_info::Dict{String,Any})::Int
+    workers, shifts = schedule_shifts
     penalty = 0
     # Strong constraints
     penalty += check_workers_presence(shifts, month_info)

@@ -1,3 +1,22 @@
+export R, P, D, N, DN, PN, W, U, L4,
+    CHANGEABLE_SHIFTS,
+    SHIFTS_FULL_DAY,
+    SHIFTS_NIGHT,
+    SHIFTS_EXEMPT,
+    SHIFTS_TIME,
+    REQ_CHLDN_PER_NRS_DAY,
+    REQ_CHLDN_PER_NRS_NIGHT,
+    DISALLOWED_SHIFTS_SEQS,
+    LONG_BREAK_SEQ,
+    MAX_OVER_TIME,
+    MAX_STD,
+    PEN_LACKING_NURSE,
+    PEN_SHIFT_BREAK,
+    PEN_DISALLOWED_SHIFT_SEQ,
+    PEN_NO_LONG_BREAK,
+    WORK_TIME,
+    DAYS_OF_WEEK
+
 # shift types
 R = "R"    # rano (7-15)
 P = "P"    # popołudnie (15-19)

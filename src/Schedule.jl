@@ -1,6 +1,9 @@
+export get_month_info, get_shifts, get_workers_info, update_shifts!,
+Workers, Shifts, ScheduleShifts
 
-export get_month_info, get_shifts, get_workers_info, update_shifts!
-
+Workers = Array{String,1}
+Shifts = Array{String,2}
+ScheduleShifts = Tuple{Workers, Shifts}
 
 mutable struct Schedule
     data::Dict
@@ -16,7 +19,7 @@ mutable struct Schedule
 
 end
 
-function get_shifts(schedule::Schedule)::Tuple{Array{String,1},Array{String,2}}
+function get_shifts(schedule::Schedule)::ScheduleShifts
     shifts = collect(values(schedule.data["shifts"]))
     workers = collect(keys(schedule.data["shifts"]))
     return workers,
@@ -31,7 +34,8 @@ function get_workers_info(schedule::Schedule)::Dict{String,Any}
     return schedule.data["employee_info"]
 end
 
-function update_shifts!(workers, shifts, schedule::Schedule)
+function update_shifts!(schedule_shifts, schedule::Schedule)
+    workers, shifts = schedule_shifts
     for worker_no in axes(shifts, 1)
         schedule.data["shifts"][workers[worker_no]] = shifts[worker_no]
     end

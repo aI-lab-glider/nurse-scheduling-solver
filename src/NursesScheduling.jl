@@ -9,7 +9,7 @@ export Schedule,
        get_workers_info,
        update_shifts!
 
-using Printf, JSON
+using JSON
 
 include("constants.jl")
 include("Schedule.jl")
