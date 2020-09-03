@@ -1,9 +1,9 @@
 module NurseSchedules
 
 export Schedule,
+       Neighborhood,
        score,
        get_shifts,
-       get_nbhd,
        get_max_nbhd_size,
        get_month_info,
        get_workers_info,
@@ -19,6 +19,6 @@ include("neighborhood.jl")
 
 using .ScheduleValidation
 using .ScheduleScore
-using .Neighborhood
+using .Neighborhood_gen
 
 end # NurseSchedules

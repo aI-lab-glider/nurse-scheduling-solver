@@ -1,8 +1,11 @@
-module Neighborhood
+module Neighborhood_gen
 
-export get_nbhd, get_max_nbhd_size
+export Neighborhood, get_max_nbhd_size
 
 using ..NurseSchedules
+using Random
+
+import Base: length, iterate
 
 function get_max_nbhd_size(schedule::Schedule)::Int
     _, shifts = get_shifts(schedule)
@@ -28,7 +31,29 @@ function get_max_nbhd_size(schedule::Schedule)::Int
     return from_addtition + from_deletion + from_swap
 end
 
-function get_nbhd(shifts::Array{String,2})
+struct Neighborhood
+    neighboring_shifts::Array{Shifts,1}
+
+    function Neighborhood(shifts::Shifts)
+        neighboring_shifts = get_nbhd(shifts)
+        shuffle!(neighboring_shifts)
+        new(neighboring_shifts)
+    end
+end
+
+length(nbhd::Neighborhood) = length(nbhd.neighboring_shifts)
+
+iterate(nbhd::Neighborhood) = nbhd.neighboring_shifts[1], nbhd.neighboring_shifts[2:end]
+
+function iterate(nbhd::Neighborhood, neighboring_shifts::Array{Shifts,1})
+    if isempty(neighboring_shifts)
+        nothing
+    else
+        neighboring_shifts[1], neighboring_shifts[2:end]
+    end
+end
+
+function get_nbhd(shifts::Shifts)::Array{Shifts,1}
     neighborhood = Array{String,2}[]
 
     for person_shift in CartesianIndices(shifts)
