@@ -1,9 +1,9 @@
-export get_month_info, get_shifts, get_workers_info, update_shifts!,
-Workers, Shifts, ScheduleShifts
+export get_month_info,
+    get_shifts, get_workers_info, update_shifts!, Workers, Shifts, ScheduleShifts
 
 Workers = Array{String,1}
 Shifts = Array{String,2}
-ScheduleShifts = Tuple{Workers, Shifts}
+ScheduleShifts = Tuple{Workers,Shifts}
 
 mutable struct Schedule
     data::Dict

@@ -17,7 +17,7 @@ function score(schedule_shifts::ScheduleShifts, month_info::Dict{String,Any}, wo
         @debug "Hard constraints are not met, charging additional penalty: '$(addtional_penalty)'"
         penalty += addtional_penalty
     else
-        # Soft constraints, check only if strong are satisfied
+        # Soft constraints, check only if hard are satisfied
         penalty += check_workers_overtime(workers, shifts, workers_info)
     end
 
@@ -87,7 +87,7 @@ function check_workers_rights(workers, shifts)::Int
                        "$(shifts[worker_no, shift_no]) -> $(shifts[worker_no, shift_no + 1])"
             end
 
-            # long break does not count between weeks
+            # long break between weeks does not count
             if shift_no != length(DAYS_OF_WEEK) &&
                shifts[worker_no, shift_no] in LONG_BREAK_SEQ[1] &&
                shifts[worker_no, shift_no+1] in LONG_BREAK_SEQ[2]
@@ -144,7 +144,7 @@ function check_workers_overtime(workers, shifts, workers_info)
 
     if worktime_std > MAX_STD ||
        (s -> (s > MAX_OVER_TIME)) in collect(values(worker_worktime))
-        # in this case soft constraints are kind of strong :)
+        # in this case soft constraints are kind of hard ones :)
         return length(workers) * MAX_OVER_TIME + MAX_STD
     end
 

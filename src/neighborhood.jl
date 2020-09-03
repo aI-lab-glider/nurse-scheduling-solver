@@ -5,7 +5,7 @@ export Neighborhood, get_max_nbhd_size
 using ..NurseSchedules
 using Random
 
-import Base: length, iterate
+import Base: length, iterate, getindex
 
 function get_max_nbhd_size(schedule::Schedule)::Int
     _, shifts = get_shifts(schedule)
@@ -42,6 +42,8 @@ struct Neighborhood
 end
 
 length(nbhd::Neighborhood) = length(nbhd.neighboring_shifts)
+
+getindex(nbhd::Neighborhood, idx::Int) = nbhd.neighboring_shifts[idx]
 
 iterate(nbhd::Neighborhood) = nbhd.neighboring_shifts[1], nbhd.neighboring_shifts[2:end]
 
