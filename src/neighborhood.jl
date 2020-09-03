@@ -2,7 +2,7 @@ module Neighborhood
 
 export get_nbhd, get_max_nbhd_size
 
-using ..NurseSchedules: Schedule, get_shifts, CHANGEABLE_SHIFTS, W
+using ..NurseSchedules
 
 function get_max_nbhd_size(schedule::Schedule)::Int
     _, shifts = get_shifts(schedule)
@@ -14,14 +14,14 @@ function get_max_nbhd_size(schedule::Schedule)::Int
 
     from_swap = sum([
         1
-        for
-        person in CartesianIndices(shifts),
-        o_person in CartesianIndices(shifts) if
-        person[1] != o_person[1] &&
-        person < o_person &&
-        shifts[person] != shifts[o_person] &&
-        shifts[person] in CHANGEABLE_SHIFTS &&
-        shifts[o_person] in CHANGEABLE_SHIFTS
+        for # shift = (person_no, day_no)
+        shift in CartesianIndices(shifts),
+        o_shift in CartesianIndices(shifts) if
+        shifts[shift] != shifts[o_shift] &&
+        shift[2] == o_shift[2] &&
+        shift < o_shift &&
+        shifts[shift] in CHANGEABLE_SHIFTS &&
+        shifts[o_shift] in CHANGEABLE_SHIFTS
     ])
     @debug "Neighbors number from swap: $from_swap"
 
@@ -65,19 +65,19 @@ function with_shift_deletion(shifts::Array{String,2}, person_shift)::Array{Array
     return [mutated_schedule]
 end
 
-function with_shift_swap(shifts::Array{String,2}, person)::Array{Array{String,2}}
+function with_shift_swap(shifts::Array{String,2}, shift)::Array{Array{String,2}}
     mutated_schedules = Array{String,2}[]
 
-    for o_person in CartesianIndices(shifts)
-        if person[1] != o_person[1] &&
-           person < o_person &&
-           shifts[person] != shifts[o_person] &&
-           shifts[person] in CHANGEABLE_SHIFTS &&
-           shifts[o_person] in CHANGEABLE_SHIFTS
+    for o_shift in CartesianIndices(shifts)
+        if shifts[shift] != shifts[o_shift] &&
+           shift[2] == o_shift[2] &&
+           shift < o_shift &&
+           shifts[shift] in CHANGEABLE_SHIFTS &&
+           shifts[o_shift] in CHANGEABLE_SHIFTS
 
             mutated_schedule = copy(shifts)
-            mutated_schedule[person], mutated_schedule[o_person] =
-                mutated_schedule[o_person], mutated_schedule[person]
+            mutated_schedule[shift], mutated_schedule[o_shift] =
+                mutated_schedule[o_shift], mutated_schedule[shift]
 
             push!(mutated_schedules, mutated_schedule)
         end
