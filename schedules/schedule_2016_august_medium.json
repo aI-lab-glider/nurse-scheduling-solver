@@ -1,40 +1,100 @@
 {
-    "schedule_info":{
-        "UUID": "",
-        "month_number": 8,
-        "year": 2016
-    },
-    "month_info": {
-        "days_of_week": [
-            "MO", "TU", "WE", "TH", "FR", "SA", "SU"
-        ],
-        "day_numbers": [
-            1, 2, 3, 4, 5, 6, 7
-        ],
-        "children_number": [
-            3, 3, 3, 3, 3, 3, 3
-        ]
-    },
-    "employee_info": {
-        "time": {
-            "nurse_1":  "FULL",
-            "nurse_2":  "FULL",
-            "nurse_3":  "FULL",
-            "nurse_4":  "FULL"
-        }
-    },
-    "shifts": {
-        "nurse_1": [
-            "R", "R", "W", "W", "D", "DN", "W"
-        ],
-        "nurse_2": [
-            "W", "DN", "W", "W", "W", "W", "W"
-        ],
-        "nurse_3": [
-            "D", "N", "W", "L4", "U", "N", "U"
-        ],
-        "nurse_4": [
-            "DN", "N", "W", "W", "W", "N", "U"
-        ]
+  "schedule_info":{
+    "UUID": "",
+    "month_number": 8,
+    "year": 2016
+  },
+  "month_info": {
+    "days_of_week": [
+      "MO", "TU", "WE", "TH", "FR", "SA", "SU"
+    ],
+    "day_numbers": [
+      8, 9, 10, 11, 12, 13, 14
+    ],
+    "children_number": [
+      20, 21, 22, 22, 23, 22, 22
+    ]
+  },
+  "employee_info": {
+    "time": {
+      "nurse_1":  136,
+      "nurse_2":  176,
+      "nurse_3":  144,
+      "nurse_4":  144,
+      "nurse_5":  88,
+      "nurse_6":  64,
+      "nurse_7":  60,
+      "nurse_8":  176,
+      "nurse_9":  136,
+      "babysitter_1": 112,
+      "babysitter_2": 36,
+      "babysitter_3": 88,
+      "babysitter_4": 176,
+      "babysitter_5": 176,
+      "babysitter_6": 176,
+      "babysitter_7": 96,
+      "babysitter_8": 0,
+      "babysitter_9": 144,
+      "babysitter_10": 52
     }
+  },
+  "shifts": {
+    "nurse_1": [
+      "R", "R", "W", "W", "D", "DN", "W"
+    ],
+    "nurse_2": [
+      "N", "W", "N", "W", "W", "W", "DN"
+    ],
+    "nurse_3": [
+      "DN", "W", "DN", "N", "W", "DN", "N"
+    ],
+    "nurse_4": [
+      "N", "W", "D", "D", "N", "W", "D"
+    ],
+    "nurse_5": [
+      "W", "W", "W", "W", "W", "W", "W"
+    ],
+    "nurse_6": [
+      "U", "U", "U", "U", "U", "U", "U"
+    ],
+    "nurse_7": [
+      "U", "U", "U", "U", "U", "U", "U"
+    ],
+    "nurse_8": [
+      "D", "N", "W", "D", "R", "W", "D"
+    ],
+    "nurse_9": [
+      "W", "DN", "W", "W", "DN", "W", "W"
+    ],
+    "babysitter_1": [
+      "U", "U", "U", "U", "U", "U", "U"
+    ],
+    "babysitter_2": [
+      "L4", "L4", "L4", "L4", "L4", "L4", "L4"
+    ],
+    "babysitter_3": [
+      "U", "U", "U", "U", "U", "U", "U"
+    ],
+    "babysitter_4": [
+      "D", "N", "W", "D", "N", "W", "DN"
+    ],
+    "babysitter_5": [
+      "D", "P", "N", "N", "W", "W", "W"
+    ],
+    "babysitter_6": [
+      "W", "N", "N", "N", "N", "N", "W"
+    ],
+    "babysitter_7": [
+      "W", "D", "D", "W", "D", "DN", "N"
+    ],
+    "babysitter_8": [
+      "L4", "L4", "L4", "L4", "L4", "L4", "L4"
+    ],
+    "babysitter_9": [
+      "N", "W", "D", "N", "P", "W", "W"
+    ],
+    "babysitter_10": [
+      "W", "D", "W", "RP", "W", "D", "W"
+    ]
+  }
 }
