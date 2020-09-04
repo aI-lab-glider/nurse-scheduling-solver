@@ -36,7 +36,6 @@ struct Neighborhood
 
     function Neighborhood(shifts::Shifts)
         neighboring_shifts = get_nbhd(shifts)
-        shuffle!(neighboring_shifts)
         new(neighboring_shifts)
     end
 end

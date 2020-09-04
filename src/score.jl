@@ -83,7 +83,7 @@ function check_workers_rights(workers, shifts)::Int
 
                 penalty += PEN_DISALLOWED_SHIFT_SEQ
                 @debug "Worker '$(workers[worker_no])' has a disallowed shift sequence " *
-                       "in day '$(shift_no)': " *
+                       "on day '$(shift_no)': " *
                        "$(shifts[worker_no, shift_no]) -> $(shifts[worker_no, shift_no + 1])"
             end
 

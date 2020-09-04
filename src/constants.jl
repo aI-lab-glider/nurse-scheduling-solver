@@ -44,10 +44,10 @@ REQ_CHLDN_PER_NRS_NIGHT = 5
 DISALLOWED_SHIFTS_SEQS =
     Dict(N => [R, P, D, PN, DN], PN => CHANGEABLE_SHIFTS, DN => CHANGEABLE_SHIFTS)
 # there has to be such a seq in each week
-LONG_BREAK_SEQ = ([U, L4, W], [P, PN, N])
+LONG_BREAK_SEQ = ([U, L4, W], [P, PN, N, U, L4, W])
 
 # overtime stuff <- to be changed
-MAX_OVER_TIME = 40
+MAX_OVER_TIME = 10
 MAX_STD = 10
 
 # penalties
