@@ -24,7 +24,6 @@ D = "D"    # dzień == R + P (7-19)
 N = "N"    # noc (19-7)
 DN = "DN"  # doba == D + N (7-7)
 PN = "PN"  # popołudnie-noc == P + N (15-7)
-RPN = "RPN"# unused?
 W = "W"    # wolne
 U = "U"    # urlop
 L4 = "L4"  # chorobowe
@@ -48,13 +47,12 @@ LONG_BREAK_SEQ = ([U, L4, W], [P, PN, N, U, L4, W])
 
 # overtime stuff <- to be changed
 MAX_OVER_TIME = 10
-MAX_STD = 10
 
 # penalties
-PEN_LACKING_NURSE = 20
-PEN_SHIFT_BREAK = 10
-PEN_DISALLOWED_SHIFT_SEQ = 1
-PEN_NO_LONG_BREAK = 10
+PEN_LACKING_NURSE = 30
+PEN_DISALLOWED_SHIFT_SEQ = 10
+PEN_NO_LONG_BREAK = 20
+# overtime pen is equal to hours from <0, MAX_OVER_TIME>
 
 # work time
 WORK_TIME = Dict("FULL" => 40, "HALF" => 20)

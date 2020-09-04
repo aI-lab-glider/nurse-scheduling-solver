@@ -9,17 +9,12 @@ using ..NurseSchedules
 function score(schedule_shifts::ScheduleShifts, month_info::Dict{String,Any}, workers_info::Dict{String,Any})::Int
     workers, shifts = schedule_shifts
     penalty = 0
-    # Strong constraints
+
     penalty += check_workers_presence(shifts, month_info)
+
     penalty += check_workers_rights(workers, shifts)
-    if penalty > 0
-        addtional_penalty = MAX_STD + length(workers) * MAX_OVER_TIME + 1
-        @debug "Hard constraints are not met, charging additional penalty: '$(addtional_penalty)'"
-        penalty += addtional_penalty
-    else
-        # Soft constraints, check only if hard are satisfied
-        penalty += check_workers_overtime(workers, shifts, workers_info)
-    end
+
+    penalty += check_workers_worktime(workers, shifts, workers_info)
 
     return penalty
 end
@@ -46,7 +41,8 @@ function check_workers_presence(shifts, month_info)::Int
         missing_nrs_night = req_nrs_night - act_nrs_night
         missing_nrs_night = (missing_nrs_night < 0) ? 0 : missing_nrs_night
 
-        day_pen = (missing_nrs_day + missing_nrs_night) * PEN_LACKING_NURSE
+        # penalty is charged only for nurses lacking during the day
+        day_pen = missing_nrs_day * PEN_LACKING_NURSE
         penalty += day_pen
 
         if day_pen > 0
@@ -61,7 +57,7 @@ function check_workers_presence(shifts, month_info)::Int
         end
     end
     if penalty > 0
-        @debug "Total lack of nurses penalty: $(penalty)"
+        @debug "Lacking nurses total penalty: $(penalty)"
     end
     return penalty
 end
@@ -72,14 +68,13 @@ function check_workers_rights(workers, shifts)::Int
         long_breaks = fill(false, ceil(Int, size(shifts, 2) / length(DAYS_OF_WEEK)))
 
         for shift_no in axes(shifts, 2)
-            # do not check right on the month last day
+            # do not check rights on the last day
             if shift_no == size(shifts, 2)
                 continue
             end
 
             if shifts[worker_no, shift_no] in keys(DISALLOWED_SHIFTS_SEQS) &&
-               shifts[worker_no, shift_no+1] in
-               DISALLOWED_SHIFTS_SEQS[shifts[worker_no, shift_no]]
+               shifts[worker_no, shift_no + 1] in DISALLOWED_SHIFTS_SEQS[shifts[worker_no, shift_no]]
 
                 penalty += PEN_DISALLOWED_SHIFT_SEQ
                 @debug "Worker '$(workers[worker_no])' has a disallowed shift sequence " *
@@ -87,10 +82,9 @@ function check_workers_rights(workers, shifts)::Int
                        "$(shifts[worker_no, shift_no]) -> $(shifts[worker_no, shift_no + 1])"
             end
 
-            # long break between weeks does not count
-            if shift_no != length(DAYS_OF_WEEK) &&
+            if shift_no % length(DAYS_OF_WEEK) != 0 && # long break between weeks does not count
                shifts[worker_no, shift_no] in LONG_BREAK_SEQ[1] &&
-               shifts[worker_no, shift_no+1] in LONG_BREAK_SEQ[2]
+               shifts[worker_no, shift_no + 1] in LONG_BREAK_SEQ[2]
 
                 long_breaks[Int(ceil(shift_no / length(DAYS_OF_WEEK)))] = true
             end
@@ -108,9 +102,9 @@ function check_workers_rights(workers, shifts)::Int
     return penalty
 end
 
-function check_workers_overtime(workers, shifts, workers_info)
+function check_workers_worktime(workers, shifts, workers_info)::Int
     penalty = 0
-    worker_worktime = Dict()
+    workers_worktime = Dict()
     weeks_num = ceil(Int, size(shifts, 2) / length(DAYS_OF_WEEK))
 
     for worker_no in axes(shifts, 1)
@@ -120,35 +114,22 @@ function check_workers_overtime(workers, shifts, workers_info)
 
         act_worktime = sum(map(s -> SHIFTS_TIME[s], shifts[worker_no, :]))
 
-        worker_worktime[workers[worker_no]] = act_worktime - req_worktime
+        workers_worktime[workers[worker_no]] = act_worktime - req_worktime
     end
 
-    for (worker, overtime) in worker_worktime
-        penalty += if overtime > 0
+    for (worker, overtime) in workers_worktime
+        penalty += if overtime > MAX_OVER_TIME
             @debug "Worker '$(worker)' has overtime hours: '$(overtime)'"
-            overtime
+            overtime - MAX_OVER_TIME
         elseif overtime < 0
-            @debug "Worker '$(worker)' has undertime hours: '$(abs(overtime))' - half penalty for now."
-            ceil(Int, overtime / 2)
+            @debug "Worker '$(worker)' has undertime hours: '$(abs(overtime))'"
+            abs(overtime)
         else
             0
         end
     end
 
-    overtimes = filter(s -> (s > 0), collect(values(worker_worktime)))
-    worktime_std = if length(overtimes) > 1
-        round(Int, std(overtimes))
-    else
-        0
-    end
-
-    if worktime_std > MAX_STD ||
-       (s -> (s > MAX_OVER_TIME)) in collect(values(worker_worktime))
-        # in this case soft constraints are kind of hard ones :)
-        return length(workers) * MAX_OVER_TIME + MAX_STD
-    end
-
-    @debug "Overtime total: $((isempty(overtimes)) ? 0 : sum(overtimes)), std: $(worktime_std)"
+    @debug "Total penalty from undertime and overtime: $(penalty)"
     return penalty
 end
 
