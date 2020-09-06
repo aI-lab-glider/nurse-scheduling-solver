@@ -1,4 +1,4 @@
-module ScheduleScore
+module ScheduleScoring
 
 export score
 

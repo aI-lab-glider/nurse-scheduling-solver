@@ -1,4 +1,4 @@
-module Neighborhood_gen
+module NeighborhoodGen
 
 export Neighborhood, get_max_nbhd_size
 

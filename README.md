@@ -1,18 +1,23 @@
 # Nurse Scheduling Problem Algorithm
 
 Done in the latest sprint:
- - scoring improvement (3h):
+ - new constraint (2h):
+    - check nurse presence during the day
+    - differentiation between nurses and other workers
+    - a lacking nurse 40 points penalty
+ - scoring module improvement (3h):
+    - renamed module and file
     - there are no soft constraints anymore
     - new penalties:
-        - lacking nurses 30 points each
-        - lacking a long break 20 points each week
+        - a lacking worker 30 points each
+        - a lacking long break 20 points each week
         - a disallowed shift seq 10 points each
         - MAX_OVER_TIME == 40, MAX_STD removed
         - over and undertime penalty is equal to the distance from <0, MAX_OVER_TIME>
     - fixed bug in long breaks checking
+    - general refactor
 
 TODO:
- - differentiation between types of employees (new constraint)
  - TabuSearch
  - JSON logging, but no by logs
  - preparing server for backend

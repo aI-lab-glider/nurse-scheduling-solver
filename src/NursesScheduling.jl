@@ -14,11 +14,11 @@ using JSON
 include("constants.jl")
 include("Schedule.jl")
 include("validation.jl")
-include("score.jl")
+include("scoring.jl")
 include("neighborhood.jl")
 
 using .ScheduleValidation
-using .ScheduleScore
-using .Neighborhood_gen
+using .ScheduleScoring
+using .NeighborhoodGen
 
 end # NurseSchedules
