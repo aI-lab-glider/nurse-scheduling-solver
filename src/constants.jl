@@ -9,7 +9,6 @@ export R, P, D, N, DN, PN, W, U, L4,
     DISALLOWED_SHIFTS_SEQS,
     LONG_BREAK_SEQ,
     MAX_OVER_TIME,
-    MAX_STD,
     PEN_LACKING_NURSE,
     PEN_SHIFT_BREAK,
     PEN_DISALLOWED_SHIFT_SEQ,
@@ -46,13 +45,13 @@ DISALLOWED_SHIFTS_SEQS =
 LONG_BREAK_SEQ = ([U, L4, W], [P, PN, N, U, L4, W])
 
 # overtime stuff <- to be changed
-MAX_OVER_TIME = 10
+MAX_OVER_TIME = 40
 
 # penalties
 PEN_LACKING_NURSE = 30
 PEN_DISALLOWED_SHIFT_SEQ = 10
 PEN_NO_LONG_BREAK = 20
-# overtime pen is equal to hours from <0, MAX_OVER_TIME>
+# under and overtime pen is equal to hours from <0, MAX_OVER_TIME>
 
 # work time
 WORK_TIME = Dict("FULL" => 40, "HALF" => 20)
