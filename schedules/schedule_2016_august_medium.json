@@ -36,6 +36,27 @@
       "babysitter_8": "FULL",
       "babysitter_9": "FULL",
       "babysitter_10": "HALF"
+    },
+    "type": {
+      "nurse_1":  "NURSE",
+      "nurse_2":  "NURSE",
+      "nurse_3":  "NURSE",
+      "nurse_4":  "NURSE",
+      "nurse_5":  "NURSE",
+      "nurse_6":  "NURSE",
+      "nurse_7":  "NURSE",
+      "nurse_8":  "NURSE",
+      "nurse_9":  "NURSE",
+      "babysitter_1": "OTHER",
+      "babysitter_2": "OTHER",
+      "babysitter_3": "OTHER",
+      "babysitter_4": "OTHER",
+      "babysitter_5": "OTHER",
+      "babysitter_6": "OTHER",
+      "babysitter_7": "OTHER",
+      "babysitter_8": "OTHER",
+      "babysitter_9": "OTHER",
+      "babysitter_10": "OTHER"
     }
   },
   "shifts": {
