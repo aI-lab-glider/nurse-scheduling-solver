@@ -1,4 +1,4 @@
-module Neighborhood_gen
+module NeighborhoodGen
 
 export Neighborhood, get_max_nbhd_size
 
@@ -36,7 +36,6 @@ struct Neighborhood
 
     function Neighborhood(shifts::Shifts)
         neighboring_shifts = get_nbhd(shifts)
-        shuffle!(neighboring_shifts)
         new(neighboring_shifts)
     end
 end

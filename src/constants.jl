@@ -2,6 +2,8 @@ export R, P, D, N, DN, PN, W, U, L4,
     CHANGEABLE_SHIFTS,
     SHIFTS_FULL_DAY,
     SHIFTS_NIGHT,
+    SHIFTS_MORNING,
+    SHIFTS_AFTERNOON,
     SHIFTS_EXEMPT,
     SHIFTS_TIME,
     REQ_CHLDN_PER_NRS_DAY,
@@ -9,8 +11,8 @@ export R, P, D, N, DN, PN, W, U, L4,
     DISALLOWED_SHIFTS_SEQS,
     LONG_BREAK_SEQ,
     MAX_OVER_TIME,
-    MAX_STD,
     PEN_LACKING_NURSE,
+    PEN_LACKING_WORKER,
     PEN_SHIFT_BREAK,
     PEN_DISALLOWED_SHIFT_SEQ,
     PEN_NO_LONG_BREAK,
@@ -24,7 +26,6 @@ D = "D"    # dzień == R + P (7-19)
 N = "N"    # noc (19-7)
 DN = "DN"  # doba == D + N (7-7)
 PN = "PN"  # popołudnie-noc == P + N (15-7)
-RPN = "RPN"# unused?
 W = "W"    # wolne
 U = "U"    # urlop
 L4 = "L4"  # chorobowe
@@ -33,6 +34,8 @@ CHANGEABLE_SHIFTS = [R, P, D, PN, N, DN]
 
 SHIFTS_FULL_DAY = [D, DN]
 SHIFTS_NIGHT = [PN, N, DN]
+SHIFTS_MORNING = [R, D, DN]
+SHIFTS_AFTERNOON = [P, D, PN, DN]
 
 SHIFTS_EXEMPT = [U, L4]
 SHIFTS_TIME =
@@ -44,17 +47,17 @@ REQ_CHLDN_PER_NRS_NIGHT = 5
 DISALLOWED_SHIFTS_SEQS =
     Dict(N => [R, P, D, PN, DN], PN => CHANGEABLE_SHIFTS, DN => CHANGEABLE_SHIFTS)
 # there has to be such a seq in each week
-LONG_BREAK_SEQ = ([U, L4, W], [P, PN, N])
+LONG_BREAK_SEQ = ([U, L4, W], [P, PN, N, U, L4, W])
 
 # overtime stuff <- to be changed
 MAX_OVER_TIME = 40
-MAX_STD = 10
 
 # penalties
-PEN_LACKING_NURSE = 20
-PEN_SHIFT_BREAK = 10
-PEN_DISALLOWED_SHIFT_SEQ = 1
-PEN_NO_LONG_BREAK = 10
+PEN_LACKING_NURSE = 40
+PEN_LACKING_WORKER = 30
+PEN_DISALLOWED_SHIFT_SEQ = 10
+PEN_NO_LONG_BREAK = 20
+# under and overtime pen is equal to hours from <0, MAX_OVER_TIME>
 
 # work time
 WORK_TIME = Dict("FULL" => 40, "HALF" => 20)
