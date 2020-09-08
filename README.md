@@ -7,7 +7,7 @@ Done in the latest sprint:
  - a user for backend on the server (0.5h)
  - new constraint (2h):
     - check nurse presence during the day
-    - differentiation between nurses and other workers (addtition in schedule data)
+    - differentiation between nurses and other workers (addition in schedule data)
     - a lacking nurse 40 points each
  - scoring module improvement (3h):
     - renamed module and file (score -> scoring)
@@ -34,7 +34,7 @@ Done in the latest sprint:
     |Worker undertime hours         |WUH |hours::Int, worker::String                                     |
     |Worker overtime hours          |WOH |hours::Int, worker::String                                     |
 
-    - the examplar broken constraints json:
+    - the sample broken constraints json:
 
     ```json
     [
@@ -51,7 +51,7 @@ Done in the latest sprint:
         }
     ]
     ```
- - reworked neighborhood iterator(4h):
+ - reworked neighborhood iterator (4h):
     - only MutationRecipes are stored in Neighborhood
 
     ```julia
@@ -63,8 +63,8 @@ Done in the latest sprint:
     }
     ```
     - full shifts are generated on demand
+    - Neighborhood is iterated randomly and changes its state
     - MutationRecipes can be used to follow mutation trace in TabuSearch
-    - Neigborhood is iterated randomly
 
 ## Constraints
  - always at least one nurse
