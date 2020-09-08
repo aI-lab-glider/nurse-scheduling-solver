@@ -7,6 +7,7 @@ import Base.+
 using ..NurseSchedules:
     Schedule,
     ScoringResult,
+    ScoringResultOrPenalty,
     ScheduleShifts,
     Shifts,
     Workers,
@@ -39,7 +40,8 @@ function score(
     schedule_shifts::ScheduleShifts,
     month_info::Dict{String,Any},
     workers_info::Dict{String,Any},
-)::ScoringResult
+    constraint_info::Bool=false
+)::ScoringResultOrPenalty
     workers, shifts = schedule_shifts
     score_res = ScoringResult((0, []))
 
@@ -49,7 +51,11 @@ function score(
 
     score_res += ck_workers_worktime(workers, shifts, workers_info)
 
-    return score_res
+    if constraint_info
+        score_res
+    else
+        score_res.penalty
+    end
 end
 
 function ck_workers_presence(

@@ -2,6 +2,7 @@
 
 TODO:
  - TabuSearch
+ - update test schedules
 
 Done in the latest sprint:
  - a user for backend on the server (0.5h)
@@ -63,8 +64,7 @@ Done in the latest sprint:
     }
     ```
     - full shifts are generated on demand
-    - Neighborhood is iterated randomly and changes its state
-    - MutationRecipes can be used to follow mutation trace in TabuSearch
+    - Neighborhood is randomized before starting iterate and does not change its state
 
 ## Constraints
  - always at least one nurse
