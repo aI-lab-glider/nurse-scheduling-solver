@@ -2,10 +2,24 @@
 #
 # Scoring
 ScoringResult = @NamedTuple{penalty::Int, errors::Vector{Dict{String,Any}}}
-# All modules
+# Schedule related
 Workers = Vector{String}
 Shifts = Array{String,2}
 ScheduleShifts = Tuple{Workers,Shifts}
+# Neighborhood
+@se Mutation begin
+    ADD => "ADDITION"
+    DEL => "DELETION"
+    SWP => "SWAP"
+end
+IntOrTuple = Union{Int,Tuple{Int,Int}}
+StringOrNothing = Union{String,Nothing}
+MutationRecipe = @NamedTuple{
+    type::Mutation.MutationEnum,
+    day::Int,
+    wrk_no::IntOrTuple,
+    op::StringOrNothing,
+}
 
 # shift types
 R = "R"    # morning (7-15)
