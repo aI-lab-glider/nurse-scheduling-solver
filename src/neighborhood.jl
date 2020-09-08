@@ -2,8 +2,12 @@ module NeighborhoodGen
 
 export Neighborhood, get_max_nbhd_size
 
-using ..NurseSchedules
-using Random
+using ..NurseSchedules:
+        Schedule,
+        Shifts,
+        get_shifts,
+        W,
+        CHANGEABLE_SHIFTS
 
 import Base: length, iterate, getindex
 

@@ -10,6 +10,7 @@ export Schedule,
        update_shifts!
 
 using JSON
+using SuperEnum
 
 include("constants.jl")
 include("Schedule.jl")
