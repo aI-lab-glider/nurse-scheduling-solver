@@ -1,7 +1,6 @@
 ctags
 out
 nurse_scheduling_problem.iml
-test.jl
 .gradle
 .idea
 .ipynb_checkpoints/
