@@ -51,6 +51,20 @@ Done in the latest sprint:
         }
     ]
     ```
+ - reworked neighborhood iterator(4h):
+    - only MutationRecipes are stored in Neighborhood
+
+    ```julia
+    MutationRecipe = @NamedTuple{
+        type::Mutation.MutationEnum,
+        day::Int,
+        wrk_no::IntOrTuple,
+        op::StringOrNothing,
+    }
+    ```
+    - full shifts are generated on demand
+    - MutationRecipes can be used to follow mutation trace in TabuSearch
+    - Neigborhood is iterated randomly
 
 ## Constraints
  - always at least one nurse

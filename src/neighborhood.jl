@@ -2,6 +2,7 @@ module NeighborhoodGen
 
 export Neighborhood, get_max_nbhd_size
 
+using Random
 using ..NurseSchedules:
     Schedule, Shifts, get_shifts, W, CHANGEABLE_SHIFTS, Mutation, MutationRecipe
 
@@ -31,26 +32,52 @@ function get_max_nbhd_size(schedule::Schedule)::Int
 end
 
 struct Neighborhood
-    neighboring_shifts::Vector{MutationRecipe}
+    mutation_recipes::Vector{MutationRecipe}
+    shifts::Shifts
 
     function Neighborhood(shifts::Shifts)
-        neighboring_shifts = get_nbhd(shifts)
-        new(neighboring_shifts)
+        mutation_recipes = get_nbhd(shifts)
+        new(mutation_recipes, shifts)
     end
 end
 
-length(nbhd::Neighborhood) = length(nbhd.neighboring_shifts)
+length(nbhd::Neighborhood) = length(nbhd.mutation_recipes)
 
-getindex(nbhd::Neighborhood, idx::Int) = nbhd.neighboring_shifts[idx]
+getindex(nbhd::Neighborhood, idx::Int) = recipe_consumer(nbhd, idx)
 
-iterate(nbhd::Neighborhood) = nbhd.neighboring_shifts[1], nbhd.neighboring_shifts[2:end]
+function iterate(nbhd::Neighborhood)
+    rand_idx = rand((1, length(nbhd.mutation_recipes)))
+    shift = nbhd[rand_idx]
+    splice!(nbhd.mutation_recipes, rand_idx)
+    return shift, nbhd.mutation_recipes
+end
 
-function iterate(nbhd::Neighborhood, neighboring_shifts::Vector{MutationRecipe})
-    if isempty(neighboring_shifts)
+function iterate(nbhd::Neighborhood, mutation_recipes::Vector{MutationRecipe})
+    if isempty(mutation_recipes)
         nothing
     else
-        neighboring_shifts[1], neighboring_shifts[2:end]
+        rand_idx = rand((1, length(mutation_recipes)))
+        shift = nbhd[rand_idx]
+        splice!(mutation_recipes, rand_idx)
+        shift, mutation_recipes
     end
+end
+
+function recipe_consumer(nbhd::Neighborhood, idx::Int)::Shifts
+    recipe = nbhd.mutation_recipes[idx]
+    shifts = copy(nbhd.shifts)
+
+    if recipe.type == Mutation.ADD
+        shifts[recipe.wrk_no, recipe.day] = recipe.op
+    elseif recipe.type == Mutation.DEL
+        shifts[recipe.wrk_no, recipe.day] = W
+    elseif recipe.type == Mutation.SWP
+        shifts[recipe.wrk_no[1], recipe.day], shifts[recipe.wrk_no[2], recipe.day] =
+            shifts[recipe.wrk_no[2], recipe.day], shifts[recipe.wrk_no[1], recipe.day]
+    else
+        @error "Mutation coruppted" recipe.type
+    end
+    return shifts
 end
 
 function get_nbhd(shifts::Shifts)::Vector{MutationRecipe}

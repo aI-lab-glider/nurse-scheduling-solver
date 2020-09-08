@@ -13,7 +13,7 @@ end
 logger = ConsoleLogger(stderr, Logging.Debug)
 global_logger(logger)
 
-schedule = Schedule("schedules/schedule_2016_august_medium.json")
+schedule = Schedule("schedules/schedule_2016_example_mini.json")
 
 schedule_shifts = get_shifts(schedule)
 month_info = get_month_info(schedule)
@@ -27,6 +27,10 @@ nbhd = Neighborhood(schedule_shifts[2])
 
 show(length(nbhd))
 
+x = 0
 for i in nbhd
-    show(i)
+    #show(i)
+    global x += 1
+    println(i)
 end
+show(x)

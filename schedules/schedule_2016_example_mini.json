@@ -19,6 +19,10 @@
         "time": {
             "nurse_1":  "FULL",
             "nurse_2":  "FULL"
+        },
+        "type": {
+            "nurse_1":  "NURSE",
+            "nurse_2":  "NURSE"
         }
     },
     "shifts": {
