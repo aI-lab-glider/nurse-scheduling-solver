@@ -1,5 +1,4 @@
-include("src/NursesScheduling.jl")
-
+include("../src/NursesScheduling.jl")
 using .NurseSchedules
 using Logging
 

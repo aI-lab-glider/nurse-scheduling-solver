@@ -1,4 +1,4 @@
-include("src/NursesScheduling.jl")
+include("../src/NursesScheduling.jl")
 using .NurseSchedules
 using Logging
 
@@ -22,7 +22,6 @@ for i in 1:ITERATION_NUM
     nbhd = Neighborhood(iter_best[1])
     nghd_scores = map(shifts -> score((workers, shifts), month_info, workers_info), nbhd)
     iter_best_idx = findfirst(nghd_scores .== minimum(nghd_scores))
-    show(iter_best_idx)
     global iter_best = (nbhd[iter_best_idx], nghd_scores[iter_best_idx])
 
     no_improvement_iters += 1

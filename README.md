@@ -3,6 +3,7 @@
 TODO:
  - TabuSearch
  - update test schedules
+ - tests?
 
 Done in the latest sprint:
  - a user for backend on the server (0.5h)
@@ -52,7 +53,7 @@ Done in the latest sprint:
         }
     ]
     ```
- - reworked neighborhood iterator (4h):
+ - neighborhood iterator/generator rework (6h):
     - only MutationRecipes are stored in Neighborhood
 
     ```julia

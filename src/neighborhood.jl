@@ -58,9 +58,11 @@ function iterate(nbhd::Neighborhood, mutation_recipes::Vector{MutationRecipe})
     end
 end
 
-recipe_consumer(nbhd::Neighborhood, idx::Int)::Shifts = perform_mutation(copy(nbhd.shifts), nbhd.mutation_recipes[idx])
+recipe_consumer(nbhd::Neighborhood, idx::Int)::Shifts =
+    perform_mutation(copy(nbhd.shifts), nbhd.mutation_recipes[idx])
 
-recipe_consumer(nbhd::Neighborhood, recipe::MutationRecipe)::Shifts = perform_mutation(copy(nbhd.shifts), recipe)
+recipe_consumer(nbhd::Neighborhood, recipe::MutationRecipe)::Shifts =
+    perform_mutation(copy(nbhd.shifts), recipe)
 
 function perform_mutation(shifts::Shifts, recipe::MutationRecipe)::Shifts
     if recipe.type == Mutation.ADD
