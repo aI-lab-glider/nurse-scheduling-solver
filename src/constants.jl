@@ -2,6 +2,7 @@
 #
 # Scoring
 ScoringResult = @NamedTuple{penalty::Int, errors::Vector{Dict{String,Any}}}
+ScoringResultOrPenalty = Union{ScoringResult,Int}
 # Schedule related
 Workers = Vector{String}
 Shifts = Array{String,2}

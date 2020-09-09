@@ -1,5 +1,4 @@
-include("src/NursesScheduling.jl")
-
+include("../src/NursesScheduling.jl")
 using .NurseSchedules
 using Logging
 
@@ -21,7 +20,7 @@ workers_info = get_workers_info(schedule)
 
 println(get_max_nbhd_size(schedule))
 
-penalty, _ = score(schedule_shifts, month_info, workers_info)
+penalty = score(schedule_shifts, month_info, workers_info)
 
 nbhd = Neighborhood(schedule_shifts[2])
 

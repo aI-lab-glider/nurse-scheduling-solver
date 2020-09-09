@@ -37,6 +37,7 @@ struct Neighborhood
 
     function Neighborhood(shifts::Shifts)
         mutation_recipes = get_nbhd(shifts)
+        shuffle!(mutation_recipes)
         new(mutation_recipes, shifts)
     end
 end
@@ -46,27 +47,24 @@ length(nbhd::Neighborhood) = length(nbhd.mutation_recipes)
 getindex(nbhd::Neighborhood, idx::Int) = recipe_consumer(nbhd, idx)
 
 function iterate(nbhd::Neighborhood)
-    rand_idx = rand((1, length(nbhd.mutation_recipes)))
-    shift = nbhd[rand_idx]
-    splice!(nbhd.mutation_recipes, rand_idx)
-    return shift, nbhd.mutation_recipes
+    return recipe_consumer(nbhd, nbhd.mutation_recipes[1]), nbhd.mutation_recipes[2:end]
 end
 
 function iterate(nbhd::Neighborhood, mutation_recipes::Vector{MutationRecipe})
     if isempty(mutation_recipes)
         nothing
     else
-        rand_idx = rand((1, length(mutation_recipes)))
-        shift = nbhd[rand_idx]
-        splice!(mutation_recipes, rand_idx)
-        shift, mutation_recipes
+        recipe_consumer(nbhd, mutation_recipes[1]), mutation_recipes[2:end]
     end
 end
 
-function recipe_consumer(nbhd::Neighborhood, idx::Int)::Shifts
-    recipe = nbhd.mutation_recipes[idx]
-    shifts = copy(nbhd.shifts)
+recipe_consumer(nbhd::Neighborhood, idx::Int)::Shifts =
+    perform_mutation(copy(nbhd.shifts), nbhd.mutation_recipes[idx])
 
+recipe_consumer(nbhd::Neighborhood, recipe::MutationRecipe)::Shifts =
+    perform_mutation(copy(nbhd.shifts), recipe)
+
+function perform_mutation(shifts::Shifts, recipe::MutationRecipe)::Shifts
     if recipe.type == Mutation.ADD
         shifts[recipe.wrk_no, recipe.day] = recipe.op
     elseif recipe.type == Mutation.DEL
