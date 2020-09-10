@@ -3,15 +3,16 @@
 TODO:
  - TabuSearch
  - update test schedules
+ - scale MAX_OVERTIME base on weeks number
  - tests?
 
 Done in the latest sprint:
  - a user for backend on the server (0.5h)
- - new constraint (2h):
+ - a new constraint (2h):
     - check nurse presence during the day
-    - differentiation between nurses and other workers (addition in schedule data)
+    - differentiate between nurses and other workers (a change in schedule data)
     - a lacking nurse 40 points each
- - scoring module improvement (3h):
+ - a scoring module improvement (3h):
     - renamed module and file (score -> scoring)
     - there are no soft constraints anymore
     - removed a std evaluation
@@ -22,7 +23,6 @@ Done in the latest sprint:
         - MAX_OVER_TIME == 40, MAX_STD removed
         - over and undertime penalty is equal to the distance from <0, MAX_OVER_TIME>
     - fixed bug in long breaks evaluation
-    - general code refactor
  - broken constrains info in Julia Dicts (3+2h):
     - table of error codes and msg descs:
 

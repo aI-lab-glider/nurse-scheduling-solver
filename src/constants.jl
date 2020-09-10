@@ -75,9 +75,13 @@ SUNDAY = "SU"
 
 DAYS_OF_WEEK = [MONDAY, THUSDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
 
-# time of day
 @se TimeOfDay begin
     MORNING => "MORNING"
     AFTERNOON => "AFTERNOON"
     NIGHT => "NIGHT"
+end
+
+@se WorkerType begin
+    NURSE => "NURSE"
+    OTHER => "OTHER"
 end
