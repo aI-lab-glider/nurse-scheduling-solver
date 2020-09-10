@@ -1,7 +1,6 @@
 # Nurse Scheduling Problem Algorithm
 
 TODO:
- - TabuSearch
  - update test schedules
  - scale MAX_OVERTIME base on weeks number
  - tests?
@@ -66,6 +65,7 @@ Done in the latest sprint:
     ```
     - full shifts are generated on demand
     - Neighborhood is randomized before starting iterate and does not change its state
+ - a basic Tabu Search (2h)
 
 ## Constraints
  - always at least one nurse
