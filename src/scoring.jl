@@ -31,7 +31,8 @@ using ..NurseSchedules:
     PEN_NO_LONG_BREAK,
     WORKTIME,
     DAYS_OF_WEEK,
-    TimeOfDay
+    TimeOfDay,
+    WorkerType
 
 (+)(l::ScoringResult, r::ScoringResult) =
     ScoringResult((l.penalty + r.penalty, vcat(l.errors, r.errors)))
@@ -40,7 +41,7 @@ function score(
     schedule_shifts::ScheduleShifts,
     month_info::Dict{String,Any},
     workers_info::Dict{String,Any},
-    constraint_info::Bool=false
+    constraint_info::Bool = false,
 )::ScoringResultOrPenalty
     workers, shifts = schedule_shifts
     score_res = ScoringResult((0, []))
@@ -141,7 +142,7 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, workers_info)::ScoringRes
     nrs_shifts = [
         shift
         for
-        (wrk, shift) in zip(wrks, day_shifts) if workers_info["type"][wrk] == "NURSE"
+        (wrk, shift) in zip(wrks, day_shifts) if workers_info["type"][wrk] == string(WorkerType.NURSE)
     ]
     if isempty(SHIFTS_MORNING ∩ nrs_shifts)
         @debug "Lacking a nurse in the morning on day '$day'"
@@ -271,7 +272,9 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
             0
         end
     end
-    @debug "Total penalty from undertime and overtime: $(penalty)"
+    if penalty > 0
+        @debug "Total penalty from undertime and overtime: $(penalty)"
+    end
     return ScoringResult((penalty, errors))
 end
 
