@@ -7,10 +7,9 @@ mutable struct Schedule
 
     function Schedule(filename::AbstractString)
         data = JSON.parsefile(filename)
-        @info "Schedule loaded!"
-
         validate(data)
 
+        @debug "Schedule loaded correctly."
         new(data)
     end
 
