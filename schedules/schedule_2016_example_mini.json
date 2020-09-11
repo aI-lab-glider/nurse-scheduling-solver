@@ -5,9 +5,6 @@
         "year": 2016
     },
     "month_info": {
-        "days_of_week": [
-            "MO", "TU"
-        ],
         "day_numbers": [
             1, 2
         ],

@@ -5,13 +5,6 @@
         "year": 2016
     },
     "month_info": {
-        "days_of_week": [
-            "MO", "TU", "WE", "TH", "FR", "SA", "SU",
-            "MO", "TU", "WE", "TH", "FR", "SA", "SU",
-            "MO", "TU", "WE", "TH", "FR", "SA", "SU",
-            "MO", "TU", "WE", "TH", "FR", "SA", "SU",
-            "MO", "TU", "WE", "TH", "FR", "SA", "SU"
-        ],
         "day_numbers": [
             1, 2, 3, 4, 5, 6, 7,
             8, 9, 10, 11, 12, 13, 14,
@@ -38,6 +31,17 @@
             "nurse_7":  "FULL",
             "nurse_8":  "FULL",
             "nurse_9":  "FULL"
+        },
+        "type": {
+            "nurse_1":  "NURSE",
+            "nurse_2":  "NURSE",
+            "nurse_3":  "NURSE",
+            "nurse_4":  "NURSE",
+            "nurse_5":  "NURSE",
+            "nurse_6":  "NURSE",
+            "nurse_7":  "NURSE",
+            "nurse_8":  "NURSE",
+            "nurse_9":  "NURSE"
         }
     },
     "shifts": {
