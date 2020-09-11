@@ -21,6 +21,12 @@
             "nurse_2":  "FULL",
             "nurse_3":  "FULL",
             "nurse_4":  "FULL"
+        },
+        "type": {
+            "nurse_1":  "NURSE",
+            "nurse_2":  "NURSE",
+            "nurse_3":  "NURSE",
+            "nurse_4":  "NURSE"
         }
     },
     "shifts": {
