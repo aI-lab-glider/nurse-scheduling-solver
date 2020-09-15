@@ -241,6 +241,11 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
     workers_worktime = Dict{String,Int}()
     weeks_num = ceil(Int, size(shifts, 2) / length(DAYS_OF_WEEK))
 
+    max_overtime = weeks_num * MAX_OVERTIME
+    @debug "Max overtime hours: '$(max_overtime)'"
+    max_undertime = weeks_num * MAX_UNDERTIME
+    @debug "Max undertime hours: '$(max_undertime)'"
+
     for worker_no in axes(shifts, 1)
         exempted_days = count(s -> (s in SHIFTS_EXEMPT), shifts[worker_no, :])
         hours_per_week = WORKTIME[workers_info["time"][workers[worker_no]]]
@@ -252,20 +257,20 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
     end
 
     for (worker, overtime) in workers_worktime
-        penalty += if overtime > MAX_OVERTIME
+        penalty += if overtime > max_overtime
             @debug "The worker '$(worker)' has too much overtime: '$(overtime)'"
             push!(
                 errors,
                 Dict(
                     "code" => "WOH",
-                    "hours" => overtime - MAX_OVERTIME,
+                    "hours" => overtime - max_overtime,
                     "worker" => worker,
                 ),
             )
-            overtime - MAX_OVERTIME
-        elseif overtime < -MAX_UNDERTIME
-            undertime = abs(overtime) - MAX_UNDERTIME
-            @debug "The worker '$(worker)' has too much undertime: '$(undertime)'"
+            overtime - max_overtime
+        elseif overtime < -max_undertime
+            @debug "The worker '$(worker)' has too much undertime: '$(abs(overtime))'"
+            undertime = abs(overtime) - max_undertime
             push!(errors, Dict("code" => "WUH", "hours" => undertime, "worker" => worker))
             undertime
         else

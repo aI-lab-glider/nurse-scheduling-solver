@@ -23,7 +23,7 @@
             "nurse_7":  "HALF",
             "nurse_8":  "FULL",
             "nurse_9":  "FULL",
-			"nurse_10": "FULL",
+            "nurse_10": "FULL",
             "babysitter_1": "FULL",
             "babysitter_2": "HALF",
             "babysitter_3": "HALF",
@@ -46,7 +46,7 @@
             "nurse_7":  "NURSE",
             "nurse_8":  "NURSE",
             "nurse_9":  "NURSE",
-			"nurse_10": "NURSE",
+            "nurse_10": "NURSE",
             "babysitter_1": "OTHER",
             "babysitter_2": "OTHER",
             "babysitter_3": "OTHER",
@@ -57,7 +57,7 @@
             "babysitter_8": "OTHER",
             "babysitter_9": "OTHER",
             "babysitter_10": "OTHER",
-			"babysitter_11": "OTHER"
+            "babysitter_11": "OTHER"
         }
     },
     "shifts": {
@@ -88,7 +88,7 @@
         "nurse_9": [
             "W", "DN", "W", "W", "DN", "W", "W", "W", "DN", "W", "W", "DN", "W", "W", "W", "DN", "W", "W", "DN", "W", "W"
         ],
-		"nurse_10": [
+        "nurse_10": [
             "W", "DN", "W", "U", "U", "U", "W", "W", "DN", "W", "W", "DN", "W", "N", "W", "DN", "W", "W", "DN", "W", "W"
         ],
         "babysitter_1": [
@@ -121,8 +121,8 @@
         "babysitter_10": [
             "W", "D", "W", "D", "W", "D", "W", "W", "D", "W", "D", "W", "D", "W", "W", "D", "W", "D", "W", "D", "W"
         ],
-		"babysitter_11": [
-			"N", "W", "N", "W", "W", "DN", "W", "N", "W", "N", "W", "W", "W", "DN", "W", "W", "N", "W", "W", "W", "DN"
-		]
+        "babysitter_11": [
+            "N", "W", "N", "W", "W", "DN", "W", "N", "W", "N", "W", "W", "W", "DN", "W", "W", "N", "W", "W", "W", "DN"
+        ]
     }
 }

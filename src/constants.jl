@@ -29,7 +29,7 @@ D = "D"    # daytime == R + P (7-19)
 N = "N"    # night (19-7)
 DN = "DN"  # day == D + N (7-7)
 PN = "PN"  # afternoon-night == P + N (15-7)
-W = "W"    # day off
+W = "W"    # day free
 U = "U"    # vacation
 L4 = "L4"  # sick leave
 
@@ -57,9 +57,9 @@ PEN_LACKING_NURSE = 40
 PEN_LACKING_WORKER = 30
 PEN_DISALLOWED_SHIFT_SEQ = 10
 PEN_NO_LONG_BREAK = 20
-# under and overtime pen is equal to hours from <0, MAX_OVER_TIME>
-MAX_OVERTIME = 40
-MAX_UNDERTIME = 0
+# under and overtime pen is equal to hours from <0, MAX_OVERTIME>
+MAX_OVERTIME = 10 # scaled by the number of weeks
+MAX_UNDERTIME = 0 # scaled by the number of weeks
 
 # worktime
 WORKTIME = Dict("FULL" => 40, "HALF" => 20)
