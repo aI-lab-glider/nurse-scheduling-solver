@@ -1,5 +1,17 @@
 # Nurse Scheduling Problem Algorithm
 
+The algorithm implementation is a part of solution created for the adoption foundation in Warsaw (Poland) during Project Summer AILab&Glider 2020 event. The aim of the system is to improve the operation of the foundation by easily and quickly creating work schedules for its employees and volunteers. So far, this has been done manually in spreadsheets, which is a cumbersome and tedious job.
+
+The solution presented here is problem-specific. It assumes a specific form of input and output schedules, which was adopted in the adoption center for which the system is created. The schedules themselves are adjusted based on the rules of the Polish Labour Code.
+
+The system consists of three components which are located in two GitHub repositories:
+
+ - web application which lets load a schedule and set its basic requirements (more info [here](https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem))
+ - a solver written in Julia which adjusts schedules
+ - a back-end also in Julia (Genie framework) which allows for communication of both previous components
+
+This repository contains the solver and the back-end.
+
 ## Supported shifts
 
 |Shift code|Shift          |Work-time|Equivalent|
@@ -25,7 +37,7 @@
 
 ## Front-end communucation
 
-Broken constraints are tracked and the infromation is passed to front-end in a JSON list.
+Broken constraints are tracked and the information is passed to front-end in a JSON list.
 
 Table of error codes and their description:
 
@@ -39,7 +51,7 @@ Table of error codes and their description:
 |Worker undertime hours         |WUH |hours::Int, worker::String                                     |
 |Worker overtime hours          |WOH |hours::Int, worker::String                                     |
 
-A sample broken constraints JSON list:
+Sample JSON list of broken constraints:
 
 ```json
 [
@@ -53,6 +65,13 @@ A sample broken constraints JSON list:
       "code": "LLB",
       "worker": "babysitter_7",
       "week": 1
+    },
+    {
+      "code": "DSS",
+      "day": 4,
+      "worker": "nurse_4",
+      "preceding": "DN",
+      "succeeding": "P"
     }
 ]
 ```
@@ -70,6 +89,6 @@ MutationRecipe = @NamedTuple{
 }
 ```
 - full shifts (2d array) are generated on demand
-- Neighborhood is randomized on its initialization
+- Neighborhood is randomized on initialization
 - Neighborhood is immutable
 
