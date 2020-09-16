@@ -64,16 +64,8 @@ MAX_UNDERTIME = 0 # scaled by the number of weeks
 # worktime
 WORKTIME = Dict("FULL" => 40, "HALF" => 20)
 
-# days of the week
-MONDAY = "MO"
-THUSDAY = "TU"
-WEDNESDAY = "WE"
-THURSDAY = "TH"
-FRIDAY = "FR"
-SATURDAY = "SA"
-SUNDAY = "SU"
-
-DAYS_OF_WEEK = [MONDAY, THUSDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+WEEK_DAYS_NO = 7
+WOKRING_DAYS_NO = 5
 
 @se TimeOfDay begin
     MORNING => "MORNING"
