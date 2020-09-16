@@ -10,9 +10,10 @@ logger = ConsoleLogger(stderr, Logging.Debug)
 
 BestResult = @NamedTuple{shifts::Shifts, score::Number}
 
-ITERATION_NUMBER = 200
-INITIAL_MAX_TABU_SIZE = 100
-SCHEDULE_PATH = "schedules/schedule_2016_september.json"
+ITERATION_NUMBER = 2000
+INITIAL_MAX_TABU_SIZE = 20
+INC_TABU_SIZE_ITER = 5
+SCHEDULE_PATH = "schedules/schedule_2016_august_unsolvable.json"
 
 function in(shifts::Shifts, tabu_list::Vector{BestResult})
     findfirst(record -> record.shifts == shifts, tabu_list) != nothing
@@ -32,10 +33,9 @@ best_iter_res = BestResult((shifts = best_res.shifts, score = Inf))
 tabu_list = Vector{BestResult}()
 push!(tabu_list, best_res)
 max_tabu_size = INITIAL_MAX_TABU_SIZE
+no_improved_iters = 0
 
 for i = 1:ITERATION_NUMBER
-    result_improved = false
-
     global best_iter_res = BestResult((shifts = best_iter_res.shifts, score = Inf))
 
     nbhd = Neighborhood(best_iter_res.shifts)
@@ -50,7 +50,9 @@ for i = 1:ITERATION_NUMBER
     if best_res.score > best_iter_res.score
         println("Penalty: '$(best_res.score)' -> '$(best_iter_res.score)' ($(best_iter_res.score - best_res.score))")
         global best_res = best_iter_res
-        result_improved = true
+        global no_improved_iters = 0
+    else
+        global no_improved_iters += 1
     end
 
     push!(tabu_list, best_iter_res)
@@ -59,10 +61,9 @@ for i = 1:ITERATION_NUMBER
         popfirst!(tabu_list)
     end
 
-    println("Tabu unique length = ", length(unique([z.shifts for z in tabu_list])))
-
-    if result_improved
+    if no_improved_iters < INC_TABU_SIZE_ITER
         global max_tabu_size = INITIAL_MAX_TABU_SIZE
+        length(tabu_list) > INITIAL_MAX_TABU_SIZE && println("Reseting max tabu size to: $(max_tabu_size)")
     elseif length(tabu_list) == max_tabu_size
         global max_tabu_size += 1
         println("Incrementing max tabu size to: $(max_tabu_size)")
@@ -72,7 +73,7 @@ for i = 1:ITERATION_NUMBER
         println("We will not be better, finishing.")
         break
     end
-    println("Best iter score: $(best_iter_res.score)")
+    println("Iteration best score: $(best_iter_res.score)")
 end
 
 with_logger(logger) do
