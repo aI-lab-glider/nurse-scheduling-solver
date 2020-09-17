@@ -1,5 +1,8 @@
 using Genie, Genie.Router, Genie.Renderer.Json, Genie.Requests
 using HTTP
+include("../src/NursesScheduling.jl")
+using .NurseSchedules
+using .NurseSchedules: Shifts
 
 
 include("../src/repair_schedule.jl")
