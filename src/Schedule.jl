@@ -9,6 +9,7 @@ mutable struct Schedule
         new(data)
     end
 
+    Schedule(data::Dict{String, Any}) = new(data)
 end
 
 function get_shifts(schedule::Schedule)::ScheduleShifts
