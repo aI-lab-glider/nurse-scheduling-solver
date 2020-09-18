@@ -6,7 +6,7 @@ using Random
 using ..NurseSchedules:
     Schedule, Shifts, get_shifts, W, CHANGEABLE_SHIFTS, Mutation, MutationRecipe
 
-import Base: length, iterate, getindex
+import Base: length, iterate, getindex, in
 
 function get_max_nbhd_size(schedule::Schedule)::Int
     _, shifts = get_shifts(schedule)
@@ -40,6 +40,30 @@ struct Neighborhood
         shuffle!(mutation_recipes)
         new(mutation_recipes, shifts)
     end
+
+    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int})
+        mutation_recipes = get_nbhd(shifts)
+        allowed_recipies = filter(recipe -> !(recipe.day in frozen_days), mutation_recipes)
+        shuffle!(allowed_recipies)
+        new(allowed_recipies, shifts)
+    end
+
+    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int,Int}})
+        mutation_recipes = get_nbhd(shifts)
+        days = frozen_days
+        allowed_recipies = filter(recipe -> !(recipe in frozen_shifts), mutation_recipes)
+        shuffle!(mutation_recipes)
+        new(mutation_recipes, shifts)
+    end
+end
+
+function in(recipe::MutationRecipe, frozen_shifts::Vector{Tuple{Int,Int}})
+    for (worker_no, day) in frozen_shifts
+        if recipe.day == day && recipe.wrk_no in worker_no
+            return true
+        end
+    end
+    false
 end
 
 length(nbhd::Neighborhood) = length(nbhd.mutation_recipes)
