@@ -1,6 +1,6 @@
 # Nurse Scheduling Problem Solver
 
-The algorithm implementation is a part of solution created for [Fundacja Rodzin Adopcyjnych](https://adopcja.org.pl), the adoption foundation in Warsaw (Poland) during Project Summer [AILab](www.ailab.agh.edu.pl) & [Glider](www.glider.agh.edu.pl) 2020 event. The aim of the system is to improve the operation of the foundation by easily and quickly creating work schedules for its employees and volunteers. So far, this has been done manually in spreadsheets, which is a cumbersome and tedious job.
+The algorithm implementation is a part of solution created for [Fundacja Rodzin Adopcyjnych](https://adopcja.org.pl), the adoption foundation in Warsaw (Poland) during Project Summer [AILab](http://www.ailab.agh.edu.pl) & [Glider](http://www.glider.agh.edu.pl) 2020 event. The aim of the system is to improve the operation of the foundation by easily and quickly creating work schedules for its employees and volunteers. So far, this has been done manually in spreadsheets, which is a cumbersome and tedious job.
 
 The solution presented here is problem-specific. It assumes a specific form of input and output schedules, which was adopted in the adoption center for which the system is created. The schedules themselves are adjusted based on the rules of the Polish Labour Code.
 
