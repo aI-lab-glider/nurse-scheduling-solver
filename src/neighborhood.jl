@@ -50,10 +50,9 @@ struct Neighborhood
 
     function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int,Int}})
         mutation_recipes = get_nbhd(shifts)
-        days = frozen_days
         allowed_recipies = filter(recipe -> !(recipe in frozen_shifts), mutation_recipes)
-        shuffle!(mutation_recipes)
-        new(mutation_recipes, shifts)
+        shuffle!(allowed_recipies)
+        new(allowed_recipies, shifts)
     end
 end
 
