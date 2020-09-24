@@ -29,7 +29,7 @@ cd nurse-scheduling-problem-solver
 
 3. Run server.
 
-```
+```bash
 julia --project=. server/server.jl
 ```
 
