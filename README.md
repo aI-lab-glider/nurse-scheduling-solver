@@ -2,13 +2,13 @@
 
 The algorithm implementation is a part of solution created for [Fundacja Rodzin Adopcyjnych](https://adopcja.org.pl), the adoption foundation in Warsaw (Poland) during Project Summer [AILab](http://www.ailab.agh.edu.pl) & [Glider](http://www.glider.agh.edu.pl) 2020 event. The aim of the system is to improve the operation of the foundation by easily and quickly creating work schedules for its employees and volunteers. So far, this has been done manually in spreadsheets, which is a cumbersome and tedious job.
 
-The solution presented here is problem-specific. It assumes a specific form of input and output schedules, which was adopted in the adoption center for which the system is created. The schedules themselves are adjusted based on the rules of the Polish Labour Code.
+The solution presented here is problem-specific. It assumes a specific form of input and output schedules, which was adopted in the foundation for which the system is created. The schedules themselves are adjusted based on the rules of the Polish Labour Code.
 
-The system consists of three components which are located in two GitHub repositories:
+The system consists of three components which are on two GitHub repositories:
 
- - web application which lets load a schedule and set its basic requirements (more info [here](https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem-frontend))
+ - web application which lets load a schedule and set its basic requirements (detailed information [here](https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem-frontend))
  - a solver written in Julia which adjusts schedules
- - a back-end also in Julia ([Genie framework](https://genieframework.com/)) which allows for communication of both previous components
+ - a back-end also written in Julia ([Genie framework](https://genieframework.com/)) which allows for communication of both aforementioned components
 
 This repository contains the solver and the back-end.
 
@@ -27,6 +27,7 @@ This repository contains the solver and the back-end.
 |    L4    |sick leave     |   N/A   |    -     |
 
 ## Constraints
+
  - always at least one nurse
  - from 6 to 22 at least one worker for each 3 children
  - from 22 to 6 at least one worker for each 5 children
