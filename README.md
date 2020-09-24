@@ -32,6 +32,20 @@ cd nurse-scheduling-problem-solver
 julia --project=. server/server.jl
 ```
 
+## API communication
+
+* POST `/repaired_schedule`
+
+  body - JSON - schedule
+
+  response - JSON - repaired_schedule
+
+* POST `/schedule_errors`
+
+  body - JSON - schedule
+
+  response - JSON - errors
+
 ## Supported work shifts
 
 |Shift code|Shift          |Work-time|Equivalent|
@@ -56,7 +70,7 @@ julia --project=. server/server.jl
  - undertime and overtime hours
  - U and L4 untouchable (implicit constraint)
 
-## Front-end communication
+## Frontend communication
 
 Broken constraints are tracked and the information is passed to front-end in a JSON list.
 
