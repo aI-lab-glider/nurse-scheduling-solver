@@ -4,9 +4,9 @@ include("../src/NursesScheduling.jl")
 using .NurseSchedules
 using .NurseSchedules: Shifts
 
+include("repair_schedule.jl")
+include("get_errors.jl")
 
-include("../src/repair_schedule.jl")
-include("../src/get_errors.jl")
 
 route("/repaired_schedule", method = POST) do
     schedule = jsonpayload()
