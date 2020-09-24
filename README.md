@@ -13,6 +13,27 @@ The system consists of three components which are on two GitHub repositories:
 This repository contains the solver and the backend.
 
 ## Supported work shifts
+## Backend run
+
+1. Clone the project.
+
+```bash
+git clone https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem-solver.git
+```
+
+2. Enter the project directory:
+
+```bash
+cd nurse-scheduling-problem-solver
+```
+
+3. Run server.
+
+```
+julia --project=. server/server.jl
+```
+
+## Supported shifts
 
 |Shift code|Shift          |Work-time|Equivalent|
 |:--------:|---------------|:-------:|:--------:|
