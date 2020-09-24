@@ -2,7 +2,6 @@ module NeighborhoodGen
 
 export Neighborhood, get_max_nbhd_size
 
-using Random
 using ..NurseSchedules:
     Schedule, Shifts, get_shifts, W, CHANGEABLE_SHIFTS, Mutation, MutationRecipe
 
@@ -32,59 +31,65 @@ function get_max_nbhd_size(schedule::Schedule)::Int
 end
 
 struct Neighborhood
+    """
+    Frozen shifts logic:
+
+    frozen_shifts is a list of int pairs such that [(worker_number, day_number), ...]
+
+    If zero is provided, it works like a '*' wildcard, so (0, 1) will exclude all shifts on day 1.
+    """
     mutation_recipes::Vector{MutationRecipe}
     shifts::Shifts
 
     function Neighborhood(shifts::Shifts)
         mutation_recipes = get_nbhd(shifts)
-        shuffle!(mutation_recipes)
         new(mutation_recipes, shifts)
     end
 
     function Neighborhood(shifts::Shifts, frozen_days::Vector{Int})
-        mutation_recipes = get_nbhd(shifts)
-        allowed_recipies = filter(recipe -> !(recipe.day in frozen_days), mutation_recipes)
-        shuffle!(allowed_recipies)
-        new(allowed_recipies, shifts)
+        allowed_mutations = filter(recipe -> !(recipe.day in frozen_days), get_nbhd(shifts))
+        new(allowed_mutations, shifts)
     end
 
     function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int,Int}})
-        mutation_recipes = get_nbhd(shifts)
-        allowed_recipies = filter(recipe -> !(recipe in frozen_shifts), mutation_recipes)
-        shuffle!(allowed_recipies)
-        new(allowed_recipies, shifts)
+        allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts))
+        new(allowed_mutations, shifts)
     end
 end
 
 function in(recipe::MutationRecipe, frozen_shifts::Vector{Tuple{Int,Int}})
     for (worker_no, day) in frozen_shifts
-        if recipe.day == day && recipe.wrk_no in worker_no
-            return true
-        end
+        worker_no == 0 && day == 0 && @error "Frozen shift '(0, 0)' is forbidden."
+
+        worker_no == 0 && recipe.day == day && return true
+
+        day == 0 && worker_no in recipe.wrk_no && return true
+
+        recipe.day == day && worker_no in recipe.wrk_no && return true
     end
     false
 end
 
 length(nbhd::Neighborhood) = length(nbhd.mutation_recipes)
 
-getindex(nbhd::Neighborhood, idx::Int) = recipe_consumer(nbhd, idx)
+getindex(nbhd::Neighborhood, idx::Int) = consume_recipe(nbhd, idx)
 
 function iterate(nbhd::Neighborhood)
-    return recipe_consumer(nbhd, nbhd.mutation_recipes[1]), nbhd.mutation_recipes[2:end]
+    return consume_recipe(nbhd, nbhd.mutation_recipes[1]), nbhd.mutation_recipes[2:end]
 end
 
 function iterate(nbhd::Neighborhood, mutation_recipes::Vector{MutationRecipe})
     if isempty(mutation_recipes)
         nothing
     else
-        recipe_consumer(nbhd, mutation_recipes[1]), mutation_recipes[2:end]
+        consume_recipe(nbhd, mutation_recipes[1]), mutation_recipes[2:end]
     end
 end
 
-recipe_consumer(nbhd::Neighborhood, idx::Int)::Shifts =
+consume_recipe(nbhd::Neighborhood, idx::Int)::Shifts =
     perform_mutation(copy(nbhd.shifts), nbhd.mutation_recipes[idx])
 
-recipe_consumer(nbhd::Neighborhood, recipe::MutationRecipe)::Shifts =
+consume_recipe(nbhd::Neighborhood, recipe::MutationRecipe)::Shifts =
     perform_mutation(copy(nbhd.shifts), recipe)
 
 function perform_mutation(shifts::Shifts, recipe::MutationRecipe)::Shifts
@@ -96,7 +101,7 @@ function perform_mutation(shifts::Shifts, recipe::MutationRecipe)::Shifts
         shifts[recipe.wrk_no[1], recipe.day], shifts[recipe.wrk_no[2], recipe.day] =
             shifts[recipe.wrk_no[2], recipe.day], shifts[recipe.wrk_no[1], recipe.day]
     else
-        @error "Mutation coruppted" recipe.type
+        @error "Encountered a coruppted mutation" recipe.type
     end
     return shifts
 end
