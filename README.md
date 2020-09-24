@@ -33,6 +33,20 @@ cd nurse-scheduling-problem-solver
 julia --project=. server/server.jl
 ```
 
+## API communication
+
+* POST `/repaired_schedule`
+
+  body - JSON - schedule
+
+  response - JSON - repaired_schedule
+
+* POST `/schedule_errors`
+
+  body - JSON - schedule
+
+  response - JSON - errors
+
 ## Supported shifts
 
 |Shift code|Shift          |Work-time|Equivalent|
