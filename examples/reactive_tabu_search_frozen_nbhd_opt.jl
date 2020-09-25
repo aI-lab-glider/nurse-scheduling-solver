@@ -25,9 +25,9 @@ function eval_frozen_shifts(
     num_days = length(month_info["children_number"])
     num_wrks = length(workers)
 
-    exclusion_range = if no_improved_iters > 16
+    exclusion_range = if no_improved_iters > FULL_NBHD_ITERS
         return frozen_days
-    elseif no_improved_iters > 8
+    elseif no_improved_iters > EXTENDED_NBHD_ITERS
         1
     else
         0
@@ -43,7 +43,7 @@ function eval_frozen_shifts(
             end
         end
 
-        println("Days being improved: $(length(changeable_days))")
+        println("Days being improved: $(length(Set(changeable_days)))")
         [(0, day_no) for day_no in setdiff(Set(1:num_days), Set(changeable_days))]
     else
         worker_errors = filter(error -> !haskey(error, "day"), errors)
@@ -52,15 +52,14 @@ function eval_frozen_shifts(
             findfirst(wrk_id -> wrk_id == error["worker"], workers)
             for error in worker_errors
         ]
-        no_improved_iters == 1 && push!(
+        no_improved_iters == 1 && append!(
             changeable_wrks,
-            sample(collect(
-                1:num_wrks,
+            sample(1:num_wrks,
                 floor(Int, num_wrks * WRKS_RANDOM_FACTOR),
-                replace = false,
-            )),
+                replace=false,
+            ),
         )
-        println("Workers being improved: $(length(changeable_wrks))")
+        println("Workers being improved: $(length(Set(changeable_wrks)))")
         [(wrk_no, 0) for wrk_no in setdiff(Set(1:num_wrks), Set(changeable_wrks))]
     end
 
@@ -87,6 +86,7 @@ for i = 1:ITERATION_NUMBER
     global best_iter_res = BestResult((shifts = best_iter_res.shifts, score = Inf))
 
     _, errors = score((workers, best_iter_res.shifts), month_info, workers_info, true)
+    println("[Iteration '$(i)']")
     act_frozen_days = eval_frozen_shifts(month_info, errors, no_improved_iters, workers)
     nbhd = Neighborhood(best_iter_res.shifts, act_frozen_days)
     for candidate_shifts in nbhd
@@ -96,7 +96,6 @@ for i = 1:ITERATION_NUMBER
         end
     end
 
-    println("[Iteration '$(i)']")
     if best_res.score > best_iter_res.score
         println("Penalty: '$(best_res.score)' -> '$(best_iter_res.score)' ($(best_iter_res.score - best_res.score))")
         global best_res = best_iter_res
