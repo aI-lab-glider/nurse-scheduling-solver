@@ -5,9 +5,7 @@
         "year": 2016
     },
     "month_info": {
-        "day_numbers": [
-            8, 9, 10, 11, 12, 13, 14
-        ],
+        "frozen_days": [],
         "children_number": [
             12, 12, 12, 12, 12, 12, 11
         ]

@@ -2,38 +2,32 @@ include("../src/NursesScheduling.jl")
 using .NurseSchedules
 using Logging
 
-import Base.show
+import Base: show
 import .NurseSchedules: MutationRecipe, Mutation
 
-function show(io::IO, mr::MutationRecipe)
-    println("( mutation = $(mr.type), day = $(mr.day), wrk_no = $(mr.wrk_no), op = $(mr.op))")
-end
-
 logger = ConsoleLogger(stderr, Logging.Debug)
-global_logger(logger)
+# global_logger(logger)
 
 schedule = Schedule("schedules/schedule_2016_example_medium.json")
 
 schedule_shifts = get_shifts(schedule)
+workers, shifts = schedule_shifts
 month_info = get_month_info(schedule)
 workers_info = get_workers_info(schedule)
 
-println(get_max_nbhd_size(schedule))
+println("Max neighborhood size: ", get_max_nbhd_size(schedule), "\n")
+
+wrks, shifts = schedule_shifts
+println("Shifts:\n", shifts)
 
 penalty = score(schedule_shifts, month_info, workers_info)
 
-nbhd = Neighborhood(schedule_shifts[2])
+frozen_days = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 7)]
+nbhd = Neighborhood(shifts, frozen_days)
 
-show(length(nbhd))
+println("Original day: \n", shifts[:, 6], "\nAll mutations of the day 6:")
+for i in nbhd
+    println(i[:, 6])
+end
 
-wrks, shifts = schedule_shifts
-
-show(shifts)
-
-# x = 0
-# for i in nbhd
-#     #show(i)
-#     global x += 1
-#     println(i)
-# end
-# show(x)
+println("Actual neighborhood size: ", length(nbhd))
