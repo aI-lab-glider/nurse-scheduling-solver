@@ -11,8 +11,6 @@ logger = ConsoleLogger(stderr, Logging.Debug)
 
 BestResult = @NamedTuple{shifts::Shifts, score::Number}
 
-using BenchmarkTools
-
 function in(shifts::Shifts, tabu_list::Vector{BestResult})
     findfirst(record -> record.shifts == shifts, tabu_list) != nothing
 end

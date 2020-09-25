@@ -1,4 +1,5 @@
 include("../src/NursesScheduling.jl")
+include("parameters.jl")
 using .NurseSchedules
 using .NurseSchedules: Shifts
 
@@ -10,11 +11,6 @@ import Base: in, popfirst!
 logger = ConsoleLogger(stderr, Logging.Debug)
 
 BestResult = @NamedTuple{shifts::Shifts, score::Number}
-
-ITERATION_NUMBER = 2000
-INITIAL_MAX_TABU_SIZE = 20
-INC_TABU_SIZE_ITER = 5
-SCHEDULE_PATH = "schedules/schedule_2016_august.json"
 
 function in(shifts::Shifts, tabu_list::OrderedDict{UInt,BestResult})
     haskey(tabu_list, hash(shifts))
