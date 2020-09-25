@@ -1,8 +1,9 @@
 include("../src/NursesScheduling.jl")
+include("parameters.jl")
 using .NurseSchedules
 using .NurseSchedules: Shifts
 using Logging
-using JSON
+using StatsBase: sample
 
 import Base.in
 
@@ -10,46 +11,62 @@ logger = ConsoleLogger(stderr, Logging.Debug)
 
 BestResult = @NamedTuple{shifts::Shifts, score::Number}
 
-ITERATION_NUMBER = 2000
-INITIAL_MAX_TABU_SIZE = 20
-INC_TABU_SIZE_ITER = 5
-SCHEDULE_PATH = "schedules/schedule_2016_august.json"
+using BenchmarkTools
 
 function in(shifts::Shifts, tabu_list::Vector{BestResult})
     findfirst(record -> record.shifts == shifts, tabu_list) != nothing
 end
 
-function evaluate_frozen_days(
+function eval_frozen_shifts(
     month_info,
     errors::Vector,
     no_improved_iters::Int,
-)::Vector{Int}
-    frozen_days = month_info["frozen_days"]
-    days_number = length(month_info["children_number"])
-    if no_improved_iters > 16
+    workers,
+)::Vector{Tuple{Int,Int}}
+    frozen_days = [(0, day_no) for day_no in month_info["frozen_days"]]
+    num_days = length(month_info["children_number"])
+    num_wrks = length(workers)
+
+    exclusion_range = if no_improved_iters > 16
         return frozen_days
     elseif no_improved_iters > 8
-        exclusion_range = 1
+        1
     else
-        exclusion_range = 0
+        0
     end
 
-    excluded_days = Vector()
-    for error in errors
-        if haskey(error, "day")
-            println(error["day"])
+    day_errors = filter(error -> haskey(error, "day"), errors)
+    frozen_shifts = if !isempty(day_errors)
+        changeable_days = Vector{Int}()
+        for error in day_errors
             for i = 0:exclusion_range
-                push!(excluded_days, error["day"] + i)
-                i > 0 && push!(excluded_days, error["day"] - i)
+                push!(changeable_days, error["day"] + i)
+                i > 0 && push!(changeable_days, error["day"] - i)
             end
         end
+
+        println("Days being improved: $(length(changeable_days))")
+        [(0, day_no) for day_no in setdiff(Set(1:num_days), Set(changeable_days))]
+    else
+        worker_errors = filter(error -> !haskey(error, "day"), errors)
+
+        changeable_wrks = [
+            findfirst(wrk_id -> wrk_id == error["worker"], workers)
+            for error in worker_errors
+        ]
+        no_improved_iters == 1 && push!(
+            changeable_wrks,
+            sample(collect(
+                1:num_wrks,
+                floor(Int, num_wrks * WRKS_RANDOM_FACTOR),
+                replace = false,
+            )),
+        )
+        println("Workers being improved: $(length(changeable_wrks))")
+        [(wrk_no, 0) for wrk_no in setdiff(Set(1:num_wrks), Set(changeable_wrks))]
     end
 
-    changeable_days = setdiff(Set(1:days_number), Set(excluded_days))
-    println("Changable days: ", sort(collect(changeable_days)))
-    println("Changable days length: ", length(changeable_days))
-
-    vcat(frozen_days, collect(changeable_days))
+    vcat(frozen_days, frozen_shifts)
 end
 
 nurse_schedule = Schedule(SCHEDULE_PATH)
@@ -72,7 +89,7 @@ for i = 1:ITERATION_NUMBER
     global best_iter_res = BestResult((shifts = best_iter_res.shifts, score = Inf))
 
     _, errors = score((workers, best_iter_res.shifts), month_info, workers_info, true)
-    act_frozen_days = evaluate_frozen_days(month_info, errors, no_improved_iters)
+    act_frozen_days = eval_frozen_shifts(month_info, errors, no_improved_iters, workers)
     nbhd = Neighborhood(best_iter_res.shifts, act_frozen_days)
     for candidate_shifts in nbhd
         candidate_score = score((workers, candidate_shifts), month_info, workers_info)

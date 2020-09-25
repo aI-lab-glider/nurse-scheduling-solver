@@ -3,7 +3,6 @@ using .NurseSchedules
 using .NurseSchedules: Shifts
 
 using Logging
-using JSON
 using DataStructures
 
 import Base: in, popfirst!
