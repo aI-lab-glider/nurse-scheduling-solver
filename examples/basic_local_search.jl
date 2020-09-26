@@ -1,13 +1,14 @@
 include("../src/NursesScheduling.jl")
+include("parameters.jl")
 using .NurseSchedules
 using Logging
-using JSON
+using Base.Threads: @spawn, fetch
 
 BestResult = @NamedTuple{shifts::Array{String,2}, score::Int}
 
 logger = ConsoleLogger(stderr, Logging.Debug)
 
-nurse_schedule = Schedule("schedules/schedule_2016_august_medium.json")
+nurse_schedule = Schedule(SCHEDULE_PATH)
 
 schedule_shifts = get_shifts(nurse_schedule)
 workers, shifts = schedule_shifts
@@ -19,19 +20,18 @@ best_shifts = BestResult((shifts, penalty))
 
 iter_best = best_shifts
 no_improvement_iters = 0
-ITERATION_NUM = 1000
-MAX_NO_IMPROVS = 20
 
-for i in 1:ITERATION_NUM
+for i = 1:ITERATION_NUMBER
     nbhd = Neighborhood(iter_best.shifts)
-    nghd_scores = map(shifts -> score((workers, shifts), month_info, workers_info), nbhd)
+    nghd_scores = map(fetch, map(shifts -> @spawn(score((workers, shifts), month_info, workers_info)), nbhd))
     iter_best_idx = findfirst(nghd_scores .== minimum(nghd_scores))
     global iter_best = BestResult((nbhd[iter_best_idx], nghd_scores[iter_best_idx]))
 
     no_improvement_iters += 1
 
+    println("[Iteration '$(i)']")
     if best_shifts.score > iter_best.score
-        println("Penalty changed in iter '$(i)': '$(best_shifts.score)' -> '$(iter_best.score)'")
+        println("Penalty: '$(best_shifts.score)' -> '$(iter_best.score)' ($(iter_best.score - best_shifts.score))")
         global no_improvement_iters = 0
         global best_shifts = iter_best
     end
@@ -42,7 +42,7 @@ for i in 1:ITERATION_NUM
 end
 
 with_logger(logger) do
-    penalty, logg = score((workers, best_shifts.shifts), month_info, workers_info, true)
-    JSON.print(logg, 4)
+    improved_penalty, errors =
+        score((workers, best_res.shifts), month_info, workers_info, true)
+    println("Penaly improved: '$(penalty)' -> '$(improved_penalty)'")
 end
-
