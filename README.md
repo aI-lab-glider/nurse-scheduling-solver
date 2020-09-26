@@ -36,7 +36,7 @@ This repository contains the solver and the backend.
  - undertime and overtime hours
  - U and L4 untouchable (implicit constraint)
 
-## Front-end communucation
+## Front-end communication
 
 Broken constraints are tracked and the information is passed to front-end in a JSON list.
 
