@@ -61,11 +61,11 @@ PEN_NO_LONG_BREAK = 20
 MAX_OVERTIME = 10 # scaled by the number of weeks
 MAX_UNDERTIME = 0 # scaled by the number of weeks
 
-# worktime
-WORKTIME = Dict("FULL" => 40, "HALF" => 20)
+# weekly worktime
+WORKTIME_BASE = 40
 
 WEEK_DAYS_NO = 7
-WOKRING_DAYS_NO = 5
+NUM_WORKING_DAYS = 5
 
 @se TimeOfDay begin
     MORNING => "MORNING"
