@@ -16,15 +16,15 @@
     },
     "employee_info": {
         "time": {
-            "nurse_1":  "FULL",
-            "nurse_2":  "FULL",
-            "nurse_3":  "FULL",
-            "nurse_4":  "FULL",
-            "nurse_5":  "FULL",
-            "nurse_6":  "FULL",
-            "nurse_7":  "FULL",
-            "nurse_8":  "FULL",
-            "nurse_9":  "FULL"
+            "nurse_1":  1.0,
+            "nurse_2":  1.0,
+            "nurse_3":  1.0,
+            "nurse_4":  1.0,
+            "nurse_5":  1.0,
+            "nurse_6":  1.0,
+            "nurse_7":  1.0,
+            "nurse_8":  1.0,
+            "nurse_9":  1.0
         },
         "type": {
             "nurse_1":  "NURSE",

@@ -11,7 +11,15 @@ using ..NurseSchedules:
     ScheduleShifts,
     Shifts,
     Workers,
-    R, P, D, N, DN, PN, W, U, L4,
+    R,
+    P,
+    D,
+    N,
+    DN,
+    PN,
+    W,
+    U,
+    L4,
     CHANGEABLE_SHIFTS,
     SHIFTS_FULL_DAY,
     SHIFTS_NIGHT,
@@ -29,9 +37,9 @@ using ..NurseSchedules:
     PEN_LACKING_WORKER,
     PEN_DISALLOWED_SHIFT_SEQ,
     PEN_NO_LONG_BREAK,
-    WORKTIME,
+    WORKTIME_BASE,
     WEEK_DAYS_NO,
-    WOKRING_DAYS_NO,
+    NUM_WORKING_DAYS,
     TimeOfDay,
     WorkerType
 
@@ -143,7 +151,8 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, workers_info)::ScoringRes
     nrs_shifts = [
         shift
         for
-        (wrk, shift) in zip(wrks, day_shifts) if workers_info["type"][wrk] == string(WorkerType.NURSE)
+        (wrk, shift) in zip(wrks, day_shifts) if
+        workers_info["type"][wrk] == string(WorkerType.NURSE)
     ]
     if isempty(SHIFTS_MORNING ∩ nrs_shifts)
         @debug "Lacking a nurse in the morning on day '$day'"
@@ -240,24 +249,31 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     workers_worktime = Dict{String,Int}()
-    weeks_num = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
+    num_weeks = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
 
-    max_overtime = weeks_num * MAX_OVERTIME
+    max_overtime = num_weeks * MAX_OVERTIME
     @debug "Max overtime hours: '$(max_overtime)'"
-    max_undertime = weeks_num * MAX_UNDERTIME
+    max_undertime = num_weeks * MAX_UNDERTIME
     @debug "Max undertime hours: '$(max_undertime)'"
 
     for worker_no in axes(shifts, 1)
         exempted_days_no = 0
 
-        for week in 1:weeks_num
+        for week = 1:num_weeks
             starting_day = week * WEEK_DAYS_NO - 6
-            week_exempted_d_no = count(s -> (s in SHIFTS_EXEMPT), shifts[worker_no, starting_day:starting_day + 6])
-            exempted_days_no += week_exempted_d_no > WOKRING_DAYS_NO ? WOKRING_DAYS_NO : week_exempted_d_no
+            week_exempted_d_no = count(
+                s -> (s in SHIFTS_EXEMPT),
+                shifts[worker_no, starting_day:starting_day+6],
+            )
+            exempted_days_no += week_exempted_d_no > NUM_WORKING_DAYS ? NUM_WORKING_DAYS :
+                week_exempted_d_no
         end
 
-        hours_per_week = WORKTIME[workers_info["time"][workers[worker_no]]]
-        req_worktime = Int(weeks_num * hours_per_week - hours_per_week / WOKRING_DAYS_NO * exempted_days_no)
+        hours_per_week::Float32 = workers_info["time"][workers[worker_no]] * WORKTIME_BASE
+
+        worktime = num_weeks * hours_per_week
+        exempted_worktime = hours_per_week / NUM_WORKING_DAYS * exempted_days_no
+        req_worktime = worktime - exempted_worktime
 
         act_worktime = sum(map(s -> SHIFTS_TIME[s], shifts[worker_no, :]))
 
