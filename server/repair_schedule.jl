@@ -1,7 +1,3 @@
-include("../src/NursesScheduling.jl")
-include("parameters.jl")
-using .NurseSchedules
-using .NurseSchedules: Shifts
 using Logging
 using StatsBase: sample
 using DataStructures: OrderedDict
@@ -92,7 +88,7 @@ function repair_schedule(schedule_data)
     no_improved_iters = 0
 
     for i = 1:ITERATION_NUMBER
-        global best_iter_res = BestResult((shifts = best_iter_res.shifts, score = Inf))
+        best_iter_res = BestResult((shifts = best_iter_res.shifts, score = Inf))
 
         _, errors = score((workers, best_iter_res.shifts), month_info, workers_info, true)
         println("[Iteration '$(i)']")
@@ -101,16 +97,16 @@ function repair_schedule(schedule_data)
         for candidate_shifts in nbhd
             candidate_score = score((workers, candidate_shifts), month_info, workers_info)
             if best_iter_res.score > candidate_score && !(candidate_shifts in tabu_list)
-                global best_iter_res = BestResult((candidate_shifts, candidate_score))
+                best_iter_res = BestResult((candidate_shifts, candidate_score))
             end
         end
 
         if best_res.score > best_iter_res.score
             println("Penalty: '$(best_res.score)' -> '$(best_iter_res.score)' ($(best_iter_res.score - best_res.score))")
-            global best_res = best_iter_res
-            global no_improved_iters = 0
+            best_res = best_iter_res
+            no_improved_iters = 0
         else
-            global no_improved_iters += 1
+            no_improved_iters += 1
         end
 
         tabu_list[hash(best_iter_res.shifts)] = best_iter_res
@@ -120,11 +116,11 @@ function repair_schedule(schedule_data)
         end
 
         if no_improved_iters < INC_TABU_SIZE_ITER
-            global max_tabu_size = INITIAL_MAX_TABU_SIZE
+            max_tabu_size = INITIAL_MAX_TABU_SIZE
             length(tabu_list) > INITIAL_MAX_TABU_SIZE &&
                 println("Reseting max tabu size to: $(max_tabu_size)")
         elseif length(tabu_list) == max_tabu_size
-            global max_tabu_size += 1
+            max_tabu_size += 1
             println("Incrementing max tabu size to: $(max_tabu_size)")
         end
 

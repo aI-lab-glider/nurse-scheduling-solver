@@ -1,6 +1,7 @@
 using Genie, Genie.Router, Genie.Renderer.Json, Genie.Requests
 using HTTP
 include("../src/NursesScheduling.jl")
+include("../examples/parameters.jl")
 using .NurseSchedules
 using .NurseSchedules: Shifts
 
@@ -9,11 +10,16 @@ include("get_errors.jl")
 
 
 route("/repaired_schedule", method = POST) do
-    schedule = jsonpayload()
 
-    repaired_schedule = repair_schedule(schedule)
+    schedule_data = jsonpayload()
 
-    repaired_schedule |> json
+    repaired_shifts = repair_schedule(schedule_data)
+
+    schedule = Schedule(schedule_data)
+
+    update_shifts!(schedule, repaired_shifts)
+
+    schedule.data |> json
 end
 
 route("/schedule_errors", method = POST) do

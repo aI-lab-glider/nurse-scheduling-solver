@@ -27,7 +27,7 @@ function get_workers_info(schedule::Schedule)::Dict{String,Any}
     return schedule.data["employee_info"]
 end
 
-function update_shifts!(schedule_shifts, schedule::Schedule)
+function update_shifts!(schedule::Schedule, schedule_shifts)
     workers, shifts = schedule_shifts
     for worker_no in axes(shifts, 1)
         schedule.data["shifts"][workers[worker_no]] = shifts[worker_no]
