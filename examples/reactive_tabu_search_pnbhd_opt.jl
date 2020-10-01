@@ -32,6 +32,8 @@ function eval_frozen_shifts(
     exclusion_range = if no_improved_iters > FULL_NBHD_ITERS
         return always_frozen_shifts
     elseif no_improved_iters > EXTENDED_NBHD_ITERS
+        2
+    elseif no_improved_iters > EXTENDED_NBHD_ITERS / 2
         1
     else
         0
@@ -41,8 +43,9 @@ function eval_frozen_shifts(
     iter_frozen_shifts = if !isempty(day_errors)
         changeable_days = Vector{Int}()
         for error in day_errors
-            push!(changeable_days, error["day"] + i)
-            i > 0 && push!(changeable_days, error["day"] - i)
+            push!(changeable_days, error["day"])
+            exclusion_range > 0 && push!(changeable_days, error["day"] + 1)
+            exclusion_range > 1 && push!(changeable_days, error["day"] - 1)
         end
 
         println("Days being improved: $(length(Set(changeable_days)))")
@@ -54,7 +57,7 @@ function eval_frozen_shifts(
             findfirst(wrk_id -> wrk_id == error["worker"], workers)
             for error in worker_errors
         ]
-        no_improved_iters == 1 && append!(
+        no_improved_iters > 0 && append!(
             changeable_wrks,
             sample(1:num_wrks, floor(Int, num_wrks * WRKS_RANDOM_FACTOR), replace = false),
         )
