@@ -12,7 +12,7 @@ The system consists of three components which are on two GitHub repositories:
 
 This repository contains the solver and the backend.
 
-## Supported shifts
+## Supported work shifts
 
 |Shift code|Shift          |Work-time|Equivalent|
 |:--------:|---------------|:-------:|:--------:|
