@@ -24,8 +24,13 @@ function eval_frozen_shifts(
     num_days = length(month_info["children_number"])
     num_wrks = length(workers)
 
+    always_frozen_shifts = [
+        wrk === 0 ? (wrk, day_no) : (findfirst(w -> w === wrk, workers), day_no)
+        for (wrk, day_no) in month_info["frozen_shifts"]
+    ]
+
     exclusion_range = if no_improved_iters > FULL_NBHD_ITERS
-        return frozen_days
+        return always_frozen_shifts
     elseif no_improved_iters > EXTENDED_NBHD_ITERS
         1
     else
@@ -59,10 +64,6 @@ function eval_frozen_shifts(
         [(wrk_no, 0) for wrk_no in setdiff(Set(1:num_wrks), Set(changeable_wrks))]
     end
 
-    always_frozen_shifts = [
-        wrk === 0 ? (wrk, day_no) : (findfirst(w -> w === wrk, workers), day_no)
-        for (wrk, day_no) in month_info["frozen_shifts"]
-    ]
     vcat(always_frozen_shifts, iter_frozen_shifts)
 end
 
