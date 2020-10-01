@@ -27,12 +27,16 @@ function eval_frozen_shifts(
     no_improved_iters::Int,
     workers,
 )::Vector{Tuple{Int,Int}}
-    frozen_days = [(0, day_no) for day_no in month_info["frozen_days"]]
     num_days = length(month_info["children_number"])
     num_wrks = length(workers)
 
+    always_frozen_shifts = [
+        wrk === 0 ? (wrk, day_no) : (findfirst(w -> w === wrk, workers), day_no)
+        for (wrk, day_no) in month_info["frozen_shifts"]
+    ]
+
     exclusion_range = if no_improved_iters > FULL_NBHD_ITERS
-        return frozen_days
+        return always_frozen_shifts
     elseif no_improved_iters > EXTENDED_NBHD_ITERS
         1
     else
@@ -40,7 +44,7 @@ function eval_frozen_shifts(
     end
 
     day_errors = filter(error -> haskey(error, "day"), errors)
-    frozen_shifts = if !isempty(day_errors)
+    iter_frozen_shifts = if !isempty(day_errors)
         changeable_days = Vector{Int}()
         for error in day_errors
             for i = 0:exclusion_range
@@ -60,16 +64,13 @@ function eval_frozen_shifts(
         ]
         no_improved_iters == 1 && append!(
             changeable_wrks,
-            sample(1:num_wrks,
-                floor(Int, num_wrks * WRKS_RANDOM_FACTOR),
-                replace=false,
-            ),
+            sample(1:num_wrks, floor(Int, num_wrks * WRKS_RANDOM_FACTOR), replace = false),
         )
         println("Workers being improved: $(length(Set(changeable_wrks)))")
         [(wrk_no, 0) for wrk_no in setdiff(Set(1:num_wrks), Set(changeable_wrks))]
     end
 
-    vcat(frozen_days, frozen_shifts)
+    vcat(always_frozen_shifts, iter_frozen_shifts)
 end
 
 nurse_schedule = Schedule(SCHEDULE_PATH)
