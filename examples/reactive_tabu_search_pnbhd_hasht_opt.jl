@@ -47,10 +47,8 @@ function eval_frozen_shifts(
     iter_frozen_shifts = if !isempty(day_errors)
         changeable_days = Vector{Int}()
         for error in day_errors
-            for i = 0:exclusion_range
-                push!(changeable_days, error["day"] + i)
-                i > 0 && push!(changeable_days, error["day"] - i)
-            end
+            push!(changeable_days, error["day"] + i)
+            i > 0 && push!(changeable_days, error["day"] - i)
         end
 
         println("Days being improved: $(length(Set(changeable_days)))")
