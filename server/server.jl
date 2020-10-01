@@ -8,8 +8,13 @@ using .NurseSchedules: Shifts
 include("repair_schedule.jl")
 include("get_errors.jl")
 
+Genie.config.run_as_server = true
+Genie.config.cors_headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+Genie.config.cors_headers["Access-Control-Allow-Headers"] = "Content-Type"
+Genie.config.cors_headers["Access-Control-Allow-Methods"] ="POST,OPTIONS" 
+Genie.config.cors_allowed_origins = ["*"]
 
-route("/repaired_schedule", method = POST) do
+route("/fix_schedule", method = POST) do
 
     schedule_data = jsonpayload()
 
