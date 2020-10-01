@@ -1,7 +1,7 @@
 ITERATION_NUMBER = 2000
 INITIAL_MAX_TABU_SIZE = 20
 INC_TABU_SIZE_ITER = 5
-SCHEDULE_PATH = "schedules/schedule_2016_september.json"
+SCHEDULE_PATH = "schedules/schedule_2016_august.json"
 
 # reactive tabu search
 FULL_NBHD_ITERS = 16
