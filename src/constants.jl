@@ -40,6 +40,7 @@ SHIFTS_NIGHT = [PN, N, DN]
 SHIFTS_MORNING = [R, D, DN]
 SHIFTS_AFTERNOON = [P, D, PN, DN]
 
+# decrease required worktime
 SHIFTS_EXEMPT = [U, L4]
 SHIFTS_TIME =
     Dict(R => 8, P => 4, D => 12, N => 12, DN => 24, PN => 16, W => 0, U => 0, L4 => 0)
@@ -50,7 +51,7 @@ REQ_CHLDN_PER_NRS_NIGHT = 5
 DISALLOWED_SHIFTS_SEQS =
     Dict(N => [R, P, D, PN, DN], PN => CHANGEABLE_SHIFTS, DN => CHANGEABLE_SHIFTS)
 # there has to be such a seq each week
-LONG_BREAK_SEQ = ([U, L4, W], [P, PN, N, U, L4, W])
+LONG_BREAK_SEQ = (([U, L4, W], [N, U, L4, W]), ([R, P, D], [U, L4, W]))
 
 # penalties
 PEN_LACKING_NURSE = 40
