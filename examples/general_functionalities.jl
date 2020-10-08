@@ -8,7 +8,7 @@ import .NurseSchedules: MutationRecipe, Mutation
 logger = ConsoleLogger(stderr, Logging.Debug)
 # global_logger(logger)
 
-schedule = Schedule("schedules/schedule_2016_example_medium.json")
+schedule = Schedule("schedules/schedule_2016_august.json")
 
 schedule_shifts = get_shifts(schedule)
 workers, shifts = schedule_shifts
@@ -31,3 +31,5 @@ for i in nbhd
 end
 
 println("Actual neighborhood size: ", length(nbhd))
+
+println("Summed size of nbhd when spilt: ", sum(map(length, n_split_nbhd(nbhd, 5))))
