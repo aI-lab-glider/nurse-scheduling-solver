@@ -147,7 +147,7 @@ for i = 1:ITERATION_NUMBER
         exit(1)
     end
 
-    if best_res.score == 0 || no_improved_iters > 1000
+    if best_res.score == 0 || no_improved_iters > NO_IMPROVE_QUIT_ITERS
         println("We will not be better, finishing.")
         break
     else
