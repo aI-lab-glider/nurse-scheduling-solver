@@ -80,7 +80,7 @@ function get_best_nbr(nbhd::Neighborhood)::BestResult
     for candidate_shifts in nbhd
         candidate_score = score((workers, candidate_shifts), month_info, workers_info)
         if best_iter_res.score > candidate_score && !(candidate_shifts in tabu_list)
-                best_iter_res = BestResult((candidate_shifts, candidate_score))
+            best_iter_res = BestResult((candidate_shifts, candidate_score))
         end
     end
     return best_iter_res
@@ -115,7 +115,8 @@ for i = 1:ITERATION_NUMBER
     p_best_results = map(fetch, map(nbhd -> @spawn(get_best_nbr(nbhd)), nbhds))
     best_score = min([res.score for res in p_best_results]...)
 
-    global best_iter_res = p_best_results[findfirst(res -> res.score == best_score, p_best_results)]
+    global best_iter_res =
+        p_best_results[findfirst(res -> res.score == best_score, p_best_results)]
 
     if best_res.score > best_iter_res.score
         best_diff = " ($(best_iter_res.score - best_res.score))"

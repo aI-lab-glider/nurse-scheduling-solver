@@ -82,6 +82,7 @@ function n_split_nbhd(nbhd::Neighborhood, n::Int)::Vector{Neighborhood}
     nbhds = Vector()
     p_len = floor(Int, length(nbhd) / n)
     mutation_recipies = nbhd.mutation_recipes
+    length(mutation_recipies) < n && return [nbhd]
     for i in 1:n
         p_mutation_recipies = if i != n
             splice!(mutation_recipies, 1:p_len)
