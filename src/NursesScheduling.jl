@@ -7,7 +7,8 @@ export Schedule,
        get_max_nbhd_size,
        get_month_info,
        get_workers_info,
-       update_shifts!
+       update_shifts!,
+       n_split_nbhd
 
 using JSON
 using SuperEnum

@@ -1,6 +1,6 @@
 module NeighborhoodGen
 
-export Neighborhood, get_max_nbhd_size
+export Neighborhood, get_max_nbhd_size, n_split_nbhd
 
 using ..NurseSchedules:
     Schedule, Shifts, get_shifts, W, CHANGEABLE_SHIFTS, Mutation, MutationRecipe
@@ -41,6 +41,10 @@ struct Neighborhood
     mutation_recipes::Vector{MutationRecipe}
     shifts::Shifts
 
+    function Neighborhood(mutation_recipes::Vector{MutationRecipe}, shifts::Shifts)
+        new(mutation_recipes, shifts)
+    end
+
     function Neighborhood(shifts::Shifts)
         mutation_recipes = get_nbhd(shifts)
         new(mutation_recipes, shifts)
@@ -73,6 +77,22 @@ end
 length(nbhd::Neighborhood) = length(nbhd.mutation_recipes)
 
 getindex(nbhd::Neighborhood, idx::Int) = consume_recipe(nbhd, idx)
+
+function n_split_nbhd(nbhd::Neighborhood, n::Int)::Vector{Neighborhood}
+    nbhds = Vector()
+    p_len = floor(Int, length(nbhd) / n)
+    mutation_recipies = nbhd.mutation_recipes
+    length(mutation_recipies) < n && return [nbhd]
+    for i in 1:n
+        p_mutation_recipies = if i != n
+            splice!(mutation_recipies, 1:p_len)
+        else
+            mutation_recipies
+        end
+        push!(nbhds, Neighborhood(p_mutation_recipies, nbhd.shifts))
+    end
+    return nbhds
+end
 
 function iterate(nbhd::Neighborhood)
     return consume_recipe(nbhd, nbhd.mutation_recipes[1]), nbhd.mutation_recipes[2:end]
