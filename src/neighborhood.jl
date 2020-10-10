@@ -7,29 +7,6 @@ using ..NurseSchedules:
 
 import Base: length, iterate, getindex, in
 
-function get_max_nbhd_size(schedule::Schedule)::Int
-    _, shifts = get_shifts(schedule)
-
-    from_addtition = count(s -> (s == W), shifts) * length(CHANGEABLE_SHIFTS)
-    @debug "Neighbors number from addition: $from_addtition"
-    from_deletion = count(s -> (s in CHANGEABLE_SHIFTS), shifts)
-    @debug "Neighbors number from deletion: $from_deletion"
-    from_swap = sum([
-        1
-        for # shift = (worker_no, day_no)
-        shift in CartesianIndices(shifts),
-        o_shift in CartesianIndices(shifts) if
-        shifts[shift] != shifts[o_shift] &&
-        shift[2] == o_shift[2] &&
-        shift < o_shift &&
-        shifts[shift] in CHANGEABLE_SHIFTS &&
-        shifts[o_shift] in CHANGEABLE_SHIFTS
-    ])
-    @debug "Neighbors number from swap: $from_swap"
-
-    return from_addtition + from_deletion + from_swap
-end
-
 struct Neighborhood
     """
     Frozen shifts logic:
@@ -79,11 +56,12 @@ length(nbhd::Neighborhood) = length(nbhd.mutation_recipes)
 getindex(nbhd::Neighborhood, idx::Int) = consume_recipe(nbhd, idx)
 
 function n_split_nbhd(nbhd::Neighborhood, n::Int)::Vector{Neighborhood}
+    mutation_recipies = nbhd.mutation_recipes
+    length(mutation_recipies) < n && return Vector(nbhd)
+
     nbhds = Vector()
     p_len = floor(Int, length(nbhd) / n)
-    mutation_recipies = nbhd.mutation_recipes
-    length(mutation_recipies) < n && return [nbhd]
-    for i in 1:n
+    for i = 1:n
         p_mutation_recipies = if i != n
             splice!(mutation_recipies, 1:p_len)
         else
@@ -94,34 +72,30 @@ function n_split_nbhd(nbhd::Neighborhood, n::Int)::Vector{Neighborhood}
     return nbhds
 end
 
-function iterate(nbhd::Neighborhood)
-    return consume_recipe(nbhd, nbhd.mutation_recipes[1]), nbhd.mutation_recipes[2:end]
-end
+iterate(nbhd::Neighborhood) =
+    consume_recipe(nbhd, nbhd.mutation_recipes[1]), nbhd.mutation_recipes[2:end]
 
 function iterate(nbhd::Neighborhood, mutation_recipes::Vector{MutationRecipe})
-    if isempty(mutation_recipes)
-        nothing
-    else
-        consume_recipe(nbhd, mutation_recipes[1]), mutation_recipes[2:end]
-    end
+    isempty(mutation_recipes) && return nothing
+    return consume_recipe(nbhd, mutation_recipes[1]), mutation_recipes[2:end]
 end
 
 consume_recipe(nbhd::Neighborhood, idx::Int)::Shifts =
-    perform_mutation(copy(nbhd.shifts), nbhd.mutation_recipes[idx])
+    perform_mutation!(copy(nbhd.shifts), nbhd.mutation_recipes[idx])
 
 consume_recipe(nbhd::Neighborhood, recipe::MutationRecipe)::Shifts =
-    perform_mutation(copy(nbhd.shifts), recipe)
+    perform_mutation!(copy(nbhd.shifts), recipe)
 
-function perform_mutation(shifts::Shifts, recipe::MutationRecipe)::Shifts
+function perform_mutation!(shifts::Shifts, recipe::MutationRecipe)::Shifts
     if recipe.type == Mutation.ADD
-        shifts[recipe.wrk_no, recipe.day] = recipe.op
+        shifts[recipe.wrk_no, recipe.day] = recipe.optional_info
     elseif recipe.type == Mutation.DEL
         shifts[recipe.wrk_no, recipe.day] = W
     elseif recipe.type == Mutation.SWP
         shifts[recipe.wrk_no[1], recipe.day], shifts[recipe.wrk_no[2], recipe.day] =
             shifts[recipe.wrk_no[2], recipe.day], shifts[recipe.wrk_no[1], recipe.day]
     else
-        @error "Encountered a coruppted mutation" recipe.type
+        @error "Encountered an unexpected mutation" recipe.type
     end
     return shifts
 end
@@ -151,7 +125,7 @@ function with_shift_addtion(shifts::Shifts, p_shift)::Vector{MutationRecipe}
             Mutation.ADD,
             day = p_shift[2],
             wrk_no = p_shift[1],
-            op = allowed_shift,
+            optional_info = allowed_shift,
         )) for allowed_shift in CHANGEABLE_SHIFTS
     ]
 end
@@ -161,7 +135,7 @@ function with_shift_deletion(shifts::Shifts, p_shift)::Vector{MutationRecipe}
         Mutation.DEL,
         day = p_shift[2],
         wrk_no = p_shift[1],
-        op = nothing,
+        optional_info = nothing,
     ))]
 end
 
@@ -171,7 +145,7 @@ function with_shift_swap(shifts::Shifts, p_shift)::Vector{MutationRecipe}
             Mutation.SWP,
             day = p_shift[2],
             wrk_no = (p_shift[1], o_person),
-            op = nothing,
+            optional_info = nothing,
         ))
         for
         o_person in axes(shifts, 1) if
@@ -179,6 +153,27 @@ function with_shift_swap(shifts::Shifts, p_shift)::Vector{MutationRecipe}
         shifts[o_person, p_shift[2]] in CHANGEABLE_SHIFTS &&
         shifts[o_person, p_shift[2]] != shifts[p_shift]
     ]
+end
+
+function get_max_nbhd_size(shifts::Shifts)::Int
+    from_addtition = count(s -> (s == W), shifts) * length(CHANGEABLE_SHIFTS)
+    @debug "Neighbors number from addition: $from_addtition"
+    from_deletion = count(s -> (s in CHANGEABLE_SHIFTS), shifts)
+    @debug "Neighbors number from deletion: $from_deletion"
+    from_swap = sum([
+        1
+        for # shift = (worker_no, day_no)
+        shift in CartesianIndices(shifts),
+        o_shift in CartesianIndices(shifts) if
+        shifts[shift] != shifts[o_shift] &&
+        shift[2] == o_shift[2] &&
+        shift < o_shift &&
+        shifts[shift] in CHANGEABLE_SHIFTS &&
+        shifts[o_shift] in CHANGEABLE_SHIFTS
+    ])
+    @debug "Neighbors number from swap: $from_swap"
+
+    return from_addtition + from_deletion + from_swap
 end
 
 end # NeighborhoodGen

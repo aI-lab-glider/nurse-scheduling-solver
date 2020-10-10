@@ -8,13 +8,14 @@ export Schedule,
        get_month_info,
        get_workers_info,
        update_shifts!,
-       n_split_nbhd
+       n_split_nbhd,
+       Shifts
 
 using JSON
 using SuperEnum
 
 include("constants.jl")
-include("Schedule.jl")
+include("schedule.jl")
 include("validation.jl")
 include("scoring.jl")
 include("neighborhood.jl")

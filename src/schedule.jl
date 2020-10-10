@@ -3,20 +3,22 @@ mutable struct Schedule
 
     function Schedule(filename::AbstractString)
         data = JSON.parsefile(filename)
-        validate(data)
+        Schedule(data)
+    end
 
+    function Schedule(data::Dict{String,Any})
+        validate(data)
         @debug "Schedule loaded correctly."
         new(data)
     end
-
-    Schedule(data::Dict{String,Any}) = new(data)
 end
 
 function get_shifts(schedule::Schedule)::ScheduleShifts
-    shifts = collect(values(schedule.data["shifts"]))
     workers = collect(keys(schedule.data["shifts"]))
+    shifts = collect(values(schedule.data["shifts"]))
+
     return workers,
-    [shifts[person][shift] for person in 1:length(shifts), shift in 1:length(shifts[1])]
+    [shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])]
 end
 
 function get_month_info(schedule::Schedule)::Dict{String,Any}

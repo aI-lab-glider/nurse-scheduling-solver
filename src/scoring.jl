@@ -41,7 +41,8 @@ using ..NurseSchedules:
     WEEK_DAYS_NO,
     NUM_WORKING_DAYS,
     TimeOfDay,
-    WorkerType
+    WorkerType,
+    ErrorCode
 
 (+)(l::ScoringResult, r::ScoringResult) =
     ScoringResult((l.penalty + r.penalty, vcat(l.errors, r.errors)))
@@ -49,8 +50,8 @@ using ..NurseSchedules:
 function score(
     schedule_shifts::ScheduleShifts,
     month_info::Dict{String,Any},
-    workers_info::Dict{String,Any},
-    constraint_info::Bool = false,
+    workers_info::Dict{String,Any};
+    return_errors::Bool = false,
 )::ScoringResultOrPenalty
     workers, shifts = schedule_shifts
     score_res = ScoringResult((0, []))
@@ -61,7 +62,7 @@ function score(
 
     score_res += ck_workers_worktime(workers, shifts, workers_info)
 
-    if constraint_info
+    if return_errors
         score_res
     else
         score_res.penalty
@@ -91,7 +92,6 @@ function ck_workers_to_children(
     day_shifts::Vector{String},
     month_info::Dict{String,Any},
 )::ScoringResult
-    penalty = 0
     errors = Vector{Dict{String,Any}}()
 
     req_wrk_day::Int =
@@ -113,17 +113,16 @@ function ck_workers_to_children(
     missing_wrk_night = (missing_wrk_night < 0) ? 0 : missing_wrk_night
 
     # penalty is charged only for workers lacking during daytime
-    day_pen = missing_wrk_day * PEN_LACKING_WORKER
-    penalty += day_pen
+    penalty = missing_wrk_day * PEN_LACKING_WORKER
 
-    if day_pen > 0
+    if penalty > 0
         error_details = ""
         if missing_wrk_day > 0
             error_details *= "\nExpected '$(req_wrk_day)', got '$(act_wrk_day)' in the day."
             push!(
                 errors,
                 Dict(
-                    "code" => "WND",
+                    "code" => string(ErrorCode.WORKERS_NO_DURING_DAY),
                     "day" => day,
                     "required" => req_wrk_day,
                     "actual" => act_wrk_day,
@@ -135,14 +134,14 @@ function ck_workers_to_children(
             push!(
                 errors,
                 Dict(
-                    "code" => "WNN",
+                    "code" => string(ErrorCode.WORKERS_NO_DURING_NIGHT),
                     "day" => day,
                     "required" => req_wrk_night,
                     "actual" => act_wrk_night,
                 ),
             )
         end
-        @debug "There is a lack of staff on day '$day'." * error_details
+        @debug "Insufficient staff on day '$day'." * error_details
     end
     return ScoringResult((penalty, errors))
 end
@@ -161,7 +160,11 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, workers_info)::ScoringRes
         penalty += PEN_LACKING_NURSE
         push!(
             errors,
-            Dict("code" => "AON", "day" => day, "time_of_day" => string(TimeOfDay.MORNING)),
+            Dict(
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
+                "day" => day,
+                "time_of_day" => string(TimeOfDay.MORNING),
+            ),
         )
     end
     if isempty(SHIFTS_AFTERNOON ∩ nrs_shifts)
@@ -170,7 +173,7 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, workers_info)::ScoringRes
         push!(
             errors,
             Dict(
-                "code" => "AON",
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
                 "day" => day,
                 "time_of_day" => string(TimeOfDay.AFTERNOON),
             ),
@@ -181,7 +184,11 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, workers_info)::ScoringRes
         penalty += PEN_LACKING_NURSE
         push!(
             errors,
-            Dict("code" => "AON", "day" => day, "time_of_day" => string(TimeOfDay.NIGHT)),
+            Dict(
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
+                "day" => day,
+                "time_of_day" => string(TimeOfDay.NIGHT),
+            ),
         )
     end
     return ScoringResult((penalty, errors))
@@ -210,7 +217,7 @@ function ck_workers_rights(workers, shifts)::ScoringResult
                 push!(
                     errors,
                     Dict(
-                        "code" => "DSS",
+                        "code" => string(ErrorCode.DISALLOWED_SHIFT_SEQ),
                         "day" => shift_no + 1,
                         "worker" => workers[worker_no],
                         "preceding" => shifts[worker_no, shift_no],
@@ -239,7 +246,7 @@ function ck_workers_rights(workers, shifts)::ScoringResult
                     push!(
                         errors,
                         Dict(
-                            "code" => "LLB",
+                            "code" => string(ErrorCode.LACKING_LONG_BREAK),
                             "week" => week_no,
                             "worker" => workers[worker_no],
                         ),
@@ -258,21 +265,22 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
     num_weeks = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
 
     max_overtime = num_weeks * MAX_OVERTIME
-    @debug "Max overtime hours: '$(max_overtime)'"
     max_undertime = num_weeks * MAX_UNDERTIME
-    @debug "Max undertime hours: '$(max_undertime)'"
 
     for worker_no in axes(shifts, 1)
         exempted_days_no = 0
+        worker_shifts = shifts[worker_no, :]
 
-        for week = 1:num_weeks
-            starting_day = week * WEEK_DAYS_NO - 6
-            week_exempted_d_no = count(
+        while !isempty(worker_shifts)
+            week_exempted_days_no = count(
                 s -> (s in SHIFTS_EXEMPT),
-                shifts[worker_no, starting_day:starting_day+6],
+                splice!(worker_shifts, 1:WEEK_DAYS_NO)
             )
-            exempted_days_no += week_exempted_d_no > NUM_WORKING_DAYS ? NUM_WORKING_DAYS :
-                week_exempted_d_no
+            exempted_days_no += if week_exempted_days_no > NUM_WORKING_DAYS
+                NUM_WORKING_DAYS
+            else
+                week_exempted_days_no
+            end
         end
 
         hours_per_week::Float32 = workers_info["time"][workers[worker_no]] * WORKTIME_BASE
@@ -292,7 +300,7 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
             push!(
                 errors,
                 Dict(
-                    "code" => "WOH",
+                    "code" => string(ErrorCode.WORKER_OVERTIME_HOURS),
                     "hours" => overtime - max_overtime,
                     "worker" => worker,
                 ),
@@ -301,7 +309,14 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
         elseif overtime < -max_undertime
             @debug "The worker '$(worker)' has too much undertime: '$(abs(overtime))'"
             undertime = abs(overtime) - max_undertime
-            push!(errors, Dict("code" => "WUH", "hours" => undertime, "worker" => worker))
+            push!(
+                errors,
+                Dict(
+                    "code" => string(ErrorCode.WORKER_UNDERTIME_HOURS),
+                    "hours" => undertime,
+                    "worker" => worker,
+                ),
+            )
             undertime
         else
             0
@@ -309,6 +324,8 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
     end
     if penalty > 0
         @debug "Total penalty from undertime and overtime: $(penalty)"
+        @debug "Max overtime hours: '$(max_overtime)'"
+        @debug "Max undertime hours: '$(max_undertime)'"
     end
     return ScoringResult((penalty, errors))
 end
