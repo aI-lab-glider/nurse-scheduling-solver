@@ -41,7 +41,8 @@ using ..NurseSchedules:
     WEEK_DAYS_NO,
     NUM_WORKING_DAYS,
     TimeOfDay,
-    WorkerType
+    WorkerType,
+    ErrorCode
 
 (+)(l::ScoringResult, r::ScoringResult) =
     ScoringResult((l.penalty + r.penalty, vcat(l.errors, r.errors)))
@@ -123,7 +124,7 @@ function ck_workers_to_children(
             push!(
                 errors,
                 Dict(
-                    "code" => "WND",
+                    "code" => string(ErrorCode.WORKERS_NO_DURING_DAY),
                     "day" => day,
                     "required" => req_wrk_day,
                     "actual" => act_wrk_day,
@@ -135,7 +136,7 @@ function ck_workers_to_children(
             push!(
                 errors,
                 Dict(
-                    "code" => "WNN",
+                    "code" => string(ErrorCode.WORKERS_NO_DURING_NIGHT),
                     "day" => day,
                     "required" => req_wrk_night,
                     "actual" => act_wrk_night,
@@ -161,7 +162,11 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, workers_info)::ScoringRes
         penalty += PEN_LACKING_NURSE
         push!(
             errors,
-            Dict("code" => "AON", "day" => day, "time_of_day" => string(TimeOfDay.MORNING)),
+            Dict(
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
+                "day" => day,
+                "time_of_day" => string(TimeOfDay.MORNING),
+            ),
         )
     end
     if isempty(SHIFTS_AFTERNOON ∩ nrs_shifts)
@@ -170,7 +175,7 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, workers_info)::ScoringRes
         push!(
             errors,
             Dict(
-                "code" => "AON",
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
                 "day" => day,
                 "time_of_day" => string(TimeOfDay.AFTERNOON),
             ),
@@ -181,7 +186,11 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, workers_info)::ScoringRes
         penalty += PEN_LACKING_NURSE
         push!(
             errors,
-            Dict("code" => "AON", "day" => day, "time_of_day" => string(TimeOfDay.NIGHT)),
+            Dict(
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
+                "day" => day,
+                "time_of_day" => string(TimeOfDay.NIGHT),
+            ),
         )
     end
     return ScoringResult((penalty, errors))
@@ -210,7 +219,7 @@ function ck_workers_rights(workers, shifts)::ScoringResult
                 push!(
                     errors,
                     Dict(
-                        "code" => "DSS",
+                        "code" => string(ErrorCode.DISALLOWED_SHIFT_SEQ),
                         "day" => shift_no + 1,
                         "worker" => workers[worker_no],
                         "preceding" => shifts[worker_no, shift_no],
@@ -239,7 +248,7 @@ function ck_workers_rights(workers, shifts)::ScoringResult
                     push!(
                         errors,
                         Dict(
-                            "code" => "LLB",
+                            "code" => string(ErrorCode.LACKING_LONG_BREAK),
                             "week" => week_no,
                             "worker" => workers[worker_no],
                         ),
@@ -292,7 +301,7 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
             push!(
                 errors,
                 Dict(
-                    "code" => "WOH",
+                    "code" => string(ErrorCode.WORKER_OVERTIME_HOURS),
                     "hours" => overtime - max_overtime,
                     "worker" => worker,
                 ),
@@ -301,7 +310,14 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
         elseif overtime < -max_undertime
             @debug "The worker '$(worker)' has too much undertime: '$(abs(overtime))'"
             undertime = abs(overtime) - max_undertime
-            push!(errors, Dict("code" => "WUH", "hours" => undertime, "worker" => worker))
+            push!(
+                errors,
+                Dict(
+                    "code" => string(ErrorCode.WORKER_UNDERTIME_HOURS),
+                    "hours" => undertime,
+                    "worker" => worker,
+                ),
+            )
             undertime
         else
             0
