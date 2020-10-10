@@ -23,50 +23,50 @@ MutationRecipe = @NamedTuple{
 }
 
 # shift types
-R = "R"    # morning (7-15)
-P = "P"    # afternoon (15-19)
-D = "D"    # daytime == R + P (7-19)
-N = "N"    # night (19-7)
-DN = "DN"  # day == D + N (7-7)
-PN = "PN"  # afternoon-night == P + N (15-7)
-W = "W"    # day free
-U = "U"    # vacation
-L4 = "L4"  # sick leave
+const R = "R"    # morning (7-15)
+const P = "P"    # afternoon (15-19)
+const D = "D"    # daytime == R + P (7-19)
+const N = "N"    # night (19-7)
+const DN = "DN"  # day == D + N (7-7)
+const PN = "PN"  # afternoon-night == P + N (15-7)
+const W = "W"    # day free
+const U = "U"    # vacation
+const L4 = "L4"  # sick leave
 
-CHANGEABLE_SHIFTS = [R, P, D, PN, N, DN]
+const CHANGEABLE_SHIFTS = [R, P, D, PN, N, DN]
 
-SHIFTS_FULL_DAY = [D, DN]
-SHIFTS_NIGHT = [PN, N, DN]
-SHIFTS_MORNING = [R, D, DN]
-SHIFTS_AFTERNOON = [P, D, PN, DN]
+const SHIFTS_FULL_DAY = [D, DN]
+const SHIFTS_NIGHT = [PN, N, DN]
+const SHIFTS_MORNING = [R, D, DN]
+const SHIFTS_AFTERNOON = [P, D, PN, DN]
 
 # decrease required worktime
-SHIFTS_EXEMPT = [U, L4]
-SHIFTS_TIME =
+const SHIFTS_EXEMPT = [U, L4]
+const SHIFTS_TIME =
     Dict(R => 8, P => 4, D => 12, N => 12, DN => 24, PN => 16, W => 0, U => 0, L4 => 0)
 
-REQ_CHLDN_PER_NRS_DAY = 3
-REQ_CHLDN_PER_NRS_NIGHT = 5
+const REQ_CHLDN_PER_NRS_DAY = 3
+const REQ_CHLDN_PER_NRS_NIGHT = 5
 
-DISALLOWED_SHIFTS_SEQS =
+const DISALLOWED_SHIFTS_SEQS =
     Dict(N => [R, P, D, PN, DN], PN => CHANGEABLE_SHIFTS, DN => CHANGEABLE_SHIFTS)
 # there has to be such a seq each week
-LONG_BREAK_SEQ = (([U, L4, W], [N, U, L4, W]), ([R, P, D], [U, L4, W]))
+const LONG_BREAK_SEQ = (([U, L4, W], [N, U, L4, W]), ([R, P, D], [U, L4, W]))
 
 # penalties
-PEN_LACKING_NURSE = 40
-PEN_LACKING_WORKER = 30
-PEN_DISALLOWED_SHIFT_SEQ = 10
-PEN_NO_LONG_BREAK = 20
+const PEN_LACKING_NURSE = 40
+const PEN_LACKING_WORKER = 30
+const PEN_NO_LONG_BREAK = 20
+const PEN_DISALLOWED_SHIFT_SEQ = 10
 # under and overtime pen is equal to hours from <0, MAX_OVERTIME>
-MAX_OVERTIME = 10 # scaled by the number of weeks
-MAX_UNDERTIME = 0 # scaled by the number of weeks
+const MAX_OVERTIME = 10 # scaled by the number of weeks
+const MAX_UNDERTIME = 0 # scaled by the number of weeks
 
 # weekly worktime
-WORKTIME_BASE = 40
+const WORKTIME_BASE = 40
 
-WEEK_DAYS_NO = 7
-NUM_WORKING_DAYS = 5
+const WEEK_DAYS_NO = 7
+const NUM_WORKING_DAYS = 5
 
 @se TimeOfDay begin
     MORNING => "MORNING"

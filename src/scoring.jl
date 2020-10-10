@@ -92,7 +92,6 @@ function ck_workers_to_children(
     day_shifts::Vector{String},
     month_info::Dict{String,Any},
 )::ScoringResult
-    penalty = 0
     errors = Vector{Dict{String,Any}}()
 
     req_wrk_day::Int =
@@ -114,10 +113,9 @@ function ck_workers_to_children(
     missing_wrk_night = (missing_wrk_night < 0) ? 0 : missing_wrk_night
 
     # penalty is charged only for workers lacking during daytime
-    day_pen = missing_wrk_day * PEN_LACKING_WORKER
-    penalty += day_pen
+    penalty = missing_wrk_day * PEN_LACKING_WORKER
 
-    if day_pen > 0
+    if penalty > 0
         error_details = ""
         if missing_wrk_day > 0
             error_details *= "\nExpected '$(req_wrk_day)', got '$(act_wrk_day)' in the day."
@@ -143,7 +141,7 @@ function ck_workers_to_children(
                 ),
             )
         end
-        @debug "There is a lack of staff on day '$day'." * error_details
+        @debug "Insufficient staff on day '$day'." * error_details
     end
     return ScoringResult((penalty, errors))
 end
@@ -267,21 +265,22 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
     num_weeks = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
 
     max_overtime = num_weeks * MAX_OVERTIME
-    @debug "Max overtime hours: '$(max_overtime)'"
     max_undertime = num_weeks * MAX_UNDERTIME
-    @debug "Max undertime hours: '$(max_undertime)'"
 
     for worker_no in axes(shifts, 1)
         exempted_days_no = 0
+        worker_shifts = shifts[worker_no, :]
 
-        for week = 1:num_weeks
-            starting_day = week * WEEK_DAYS_NO - 6
-            week_exempted_d_no = count(
+        while !isempty(worker_shifts)
+            week_exempted_days_no = count(
                 s -> (s in SHIFTS_EXEMPT),
-                shifts[worker_no, starting_day:starting_day+6],
+                splice!(worker_shifts, 1:WEEK_DAYS_NO)
             )
-            exempted_days_no += week_exempted_d_no > NUM_WORKING_DAYS ? NUM_WORKING_DAYS :
-                week_exempted_d_no
+            exempted_days_no += if week_exempted_days_no > NUM_WORKING_DAYS
+                NUM_WORKING_DAYS
+            else
+                week_exempted_days_no
+            end
         end
 
         hours_per_week::Float32 = workers_info["time"][workers[worker_no]] * WORKTIME_BASE
@@ -325,6 +324,8 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
     end
     if penalty > 0
         @debug "Total penalty from undertime and overtime: $(penalty)"
+        @debug "Max overtime hours: '$(max_overtime)'"
+        @debug "Max undertime hours: '$(max_undertime)'"
     end
     return ScoringResult((penalty, errors))
 end
