@@ -94,7 +94,9 @@ function ck_workers_to_children(
     penalty = 0
     errors = Vector{Dict{String,Any}}()
 
-    req_wrk_day::Int = ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_DAY)
+    req_wrk_day::Int =
+        ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_DAY) -
+        month_info["extra_workers"][day]
     req_wrk_night::Int = ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_NIGHT)
 
     act_wrk_night = count(s -> (s in SHIFTS_NIGHT), day_shifts)
