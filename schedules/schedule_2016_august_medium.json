@@ -6,8 +6,11 @@
     },
     "month_info": {
         "frozen_shifts": [],
+        "extra_workers": [
+            4, 4, 4, 4, 4, 4, 4
+        ],
         "children_number": [
-            12, 9, 9, 9, 9, 9, 9
+            24, 21, 21, 21, 21, 21, 21
         ]
     },
     "employee_info": {
