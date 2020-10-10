@@ -114,14 +114,14 @@ consume_recipe(nbhd::Neighborhood, recipe::MutationRecipe)::Shifts =
 
 function perform_mutation(shifts::Shifts, recipe::MutationRecipe)::Shifts
     if recipe.type == Mutation.ADD
-        shifts[recipe.wrk_no, recipe.day] = recipe.op
+        shifts[recipe.wrk_no, recipe.day] = recipe.optional_info
     elseif recipe.type == Mutation.DEL
         shifts[recipe.wrk_no, recipe.day] = W
     elseif recipe.type == Mutation.SWP
         shifts[recipe.wrk_no[1], recipe.day], shifts[recipe.wrk_no[2], recipe.day] =
             shifts[recipe.wrk_no[2], recipe.day], shifts[recipe.wrk_no[1], recipe.day]
     else
-        @error "Encountered a coruppted mutation" recipe.type
+        @error "Encountered an unexpected mutation" recipe.type
     end
     return shifts
 end
@@ -151,7 +151,7 @@ function with_shift_addtion(shifts::Shifts, p_shift)::Vector{MutationRecipe}
             Mutation.ADD,
             day = p_shift[2],
             wrk_no = p_shift[1],
-            op = allowed_shift,
+            optional_info = allowed_shift,
         )) for allowed_shift in CHANGEABLE_SHIFTS
     ]
 end
@@ -161,7 +161,7 @@ function with_shift_deletion(shifts::Shifts, p_shift)::Vector{MutationRecipe}
         Mutation.DEL,
         day = p_shift[2],
         wrk_no = p_shift[1],
-        op = nothing,
+        optional_info = nothing,
     ))]
 end
 
@@ -171,7 +171,7 @@ function with_shift_swap(shifts::Shifts, p_shift)::Vector{MutationRecipe}
             Mutation.SWP,
             day = p_shift[2],
             wrk_no = (p_shift[1], o_person),
-            op = nothing,
+            optional_info = nothing,
         ))
         for
         o_person in axes(shifts, 1) if

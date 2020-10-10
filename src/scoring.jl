@@ -50,8 +50,8 @@ using ..NurseSchedules:
 function score(
     schedule_shifts::ScheduleShifts,
     month_info::Dict{String,Any},
-    workers_info::Dict{String,Any},
-    constraint_info::Bool = false,
+    workers_info::Dict{String,Any};
+    return_errors::Bool = false,
 )::ScoringResultOrPenalty
     workers, shifts = schedule_shifts
     score_res = ScoringResult((0, []))
@@ -62,7 +62,7 @@ function score(
 
     score_res += ck_workers_worktime(workers, shifts, workers_info)
 
-    if constraint_info
+    if return_errors
         score_res
     else
         score_res.penalty

@@ -19,7 +19,7 @@ MutationRecipe = @NamedTuple{
     type::Mutation.MutationEnum,
     day::Int,
     wrk_no::IntOrTuple,
-    op::StringOrNothing,
+    optional_info::StringOrNothing,
 }
 
 # shift types

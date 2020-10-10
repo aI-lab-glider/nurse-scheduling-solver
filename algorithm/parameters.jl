@@ -1,7 +1,7 @@
 const ITERATION_NUMBER = 3000
 const INITIAL_MAX_TABU_SIZE = 150
 const INC_TABU_SIZE_ITER = 0
-const SCHEDULE_PATH = "schedules/schedule_2016_august_8.json"
+const SCHEDULE_PATH = "schedules/schedule_2016_august_frontend.json"
 
 const NO_IMPROVE_QUIT_ITERS = 1000
 

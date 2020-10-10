@@ -11,7 +11,7 @@ using Base.Threads: @spawn, fetch, nthreads
 
 logger = ConsoleLogger(stderr, Logging.Debug)
 
-BestResult = @NamedTuple{shifts::Shifts, score::Number}
+BestResult = @NamedTuple{shifts::Union{Shifts,Nothing}, score::Number}
 
 function in(shifts::Shifts, tabu_list::OrderedDict{UInt,Shifts})
     haskey(tabu_list, hash(shifts))
@@ -66,7 +66,7 @@ function eval_frozen_shifts(
         ]
         no_improved_iters > 0 && append!(
             changeable_wrks,
-            sample(1:num_wrks, floor(Int, num_wrks * WRKS_RANDOM_FACTOR), replace = false),
+            sample(1:num_wrks, floor(Int, num_wrks * WRKS_RANDOM_FACTOR), replace=false),
         )
         println("Workers being improved: $(length(Set(changeable_wrks)))")
         [(wrk_no, 0) for wrk_no in setdiff(Set(1:num_wrks), Set(changeable_wrks))]
@@ -76,7 +76,7 @@ function eval_frozen_shifts(
 end
 
 function get_best_nbr(nbhd::Neighborhood)::BestResult
-    best_iter_res = BestResult((shifts = nbhd[1], score = Inf))
+    best_iter_res = BestResult((shifts = nothing, score = Inf))
     for candidate_shifts in nbhd
         candidate_score = score((workers, candidate_shifts), month_info, workers_info)
         if best_iter_res.score > candidate_score && !(candidate_shifts in tabu_list)
@@ -106,7 +106,7 @@ for i = 1:ITERATION_NUMBER
     previous_best_iter_score = best_iter_res.score
     global best_iter_res = BestResult((shifts = best_iter_res.shifts, score = Inf))
 
-    _, errors = score((workers, best_iter_res.shifts), month_info, workers_info, true)
+    _, errors = score((workers, best_iter_res.shifts), month_info, workers_info, return_errors=true)
     println("[Iteration '$(i)']")
     act_frozen_shifts = eval_frozen_shifts(month_info, errors, no_improved_iters, workers)
     nbhd = Neighborhood(best_iter_res.shifts, act_frozen_shifts)
@@ -143,11 +143,6 @@ for i = 1:ITERATION_NUMBER
         popfirst!(tabu_list)
     end
 
-    if length(unique(keys(tabu_list))) != length(unique(values(tabu_list)))
-        println("Tabu list corrupted, holy crap!")
-        exit(1)
-    end
-
     if best_res.score == 0 || no_improved_iters > NO_IMPROVE_QUIT_ITERS
         println("We will not be better, finishing.")
         break
@@ -167,7 +162,7 @@ end
 
 with_logger(logger) do
     improved_penalty, errors =
-        score((workers, best_res.shifts), month_info, workers_info, true)
+        score((workers, best_res.shifts), month_info, workers_info, return_errors=true)
     println("Penaly improved: '$(penalty)' -> '$(improved_penalty)'")
     show(best_res.shifts)
 end
