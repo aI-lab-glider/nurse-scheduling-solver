@@ -9,6 +9,7 @@ export Schedule,
        get_workers_info,
        update_shifts!,
        n_split_nbhd,
+       get_shifts_distance,
        Shifts
 
 using JSON

@@ -35,3 +35,7 @@ function update_shifts!(schedule::Schedule, shifts)
         schedule.data["shifts"][workers[worker_no]] = shifts[worker_no, :]
     end
 end
+
+get_shifts_distance(shifts_1::Shifts, shifts_2::Shifts)::Int =
+    count(s -> s[1] != s[2], zip(shifts_1, shifts_2))
+

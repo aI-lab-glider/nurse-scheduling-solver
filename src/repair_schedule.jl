@@ -3,6 +3,7 @@ include("parameters.jl")
 
 using .NurseSchedules
 using Logging
+using Printf
 using StatsBase: sample
 using DataStructures: OrderedSet
 
@@ -71,7 +72,7 @@ function repair_schedule(schedule_data)
             map(
                 nbhd -> @spawn(get_best_nbr(
                     nbhd,
-                    (workers, month_info, workers_info),
+                    (workers, month_info, workers_info, shifts),
                     tabu_list,
                 )),
                 nbhds,
@@ -82,16 +83,16 @@ function repair_schedule(schedule_data)
         best_iter_res = p_best_results[best_score_pos]
 
         if best_res.score > best_iter_res.score
-            best_diff = "($(best_iter_res.score - best_res.score))"
+            best_diff = @sprintf "(%.2f)" best_iter_res.score - best_res.score
             best_res = best_iter_res
             no_improved_iters = 0
         else
             best_diff = ""
             no_improved_iters += 1
         end
-        println("The best score: '$(best_res.score)' $(best_diff)")
+        println(@sprintf "The best score: '%.3f' %s" best_res.score best_diff)
 
-        if no_improved_iters < INC_TABU_SIZE_ITER
+        if no_improved_iters <= INC_TABU_SIZE_ITER
             max_tabu_size = INITIAL_MAX_TABU_SIZE
             length(tabu_list) > INITIAL_MAX_TABU_SIZE &&
                 println("Reseting max tabu size to: $(max_tabu_size)")
@@ -106,18 +107,19 @@ function repair_schedule(schedule_data)
             popfirst!(tabu_list)
         end
 
-        if best_res.score == 0 || no_improved_iters > NO_IMPROVE_QUIT_ITERS
+        if best_res.score < 1 || no_improved_iters > NO_IMPROVE_QUIT_ITERS
             println("We will not be better, finishing.")
             break
         else
-            print("Iteration best score: $(best_iter_res.score)")
-            scores_diff = best_iter_res.score - previous_best_iter_score
+            print(@sprintf "Iteration best score: '%.3f'" best_iter_res.score)
+            scores_diff = previous_best_iter_score == Inf ? 0 :
+                best_iter_res.score - previous_best_iter_score
             if scores_diff == 0
-                println(" (=0)")
+                println(" (=)")
             elseif scores_diff < 0
-                println(" ($(scores_diff))")
+                println(@sprintf " (%.2f)" scores_diff)
             else
-                println(" (+$(scores_diff))")
+                println(@sprintf " (+%.2f)" scores_diff)
             end
         end
     end
@@ -130,6 +132,7 @@ function repair_schedule(schedule_data)
             return_errors = true,
         )
         println("Penalty changed: '$(initial_penalty)' -> '$(improved_penalty)'")
+        println("Number of changes with respect to initial shifts: '$(get_shifts_distance(shifts, best_res.shifts))'")
         show(best_res.shifts)
     end
 
@@ -138,7 +141,7 @@ end
 
 function popfirst!(set::OrderedSet)
     value, _ = iterate(set)
-    delete!(set, values)
+    delete!(set, value)
 end
 
 function eval_frozen_shifts(
@@ -194,12 +197,13 @@ end
 function get_best_nbr(nbhd::Neighborhood, schedule_info, tabu_list)::BestResult
     best_ngb = BestResult((shifts = nothing, score = Inf))
 
-    workers, month_info, workers_info = schedule_info
+    workers, month_info, workers_info, initial_shifts = schedule_info
 
     length(nbhd) == 0 && return best_ngb
 
     for candidate_shifts in nbhd
         candidate_score = score((workers, candidate_shifts), month_info, workers_info)
+        candidate_score += get_shifts_distance(initial_shifts, candidate_shifts) / length(initial_shifts)
         if best_ngb.score > candidate_score && !(candidate_shifts in tabu_list)
             best_ngb = BestResult((candidate_shifts, candidate_score))
         end
