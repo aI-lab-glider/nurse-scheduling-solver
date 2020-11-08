@@ -12,41 +12,33 @@ The system consists of three components which are on two GitHub repositories:
 
 This repository contains the solver and the backend.
 
-## Backend
+## Run the project
+
+Required Julia version: `>=1.5`
 
 1. Clone the project.
 
 ```bash
-$ git clone https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem-solver.git
+git clone https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem-solver.git
 ```
 
 2. Enter the project directory:
 
 ```bash
-$ cd nurse-scheduling-problem-solver
+cd nurse-scheduling-problem-solver
 ```
 3. Install dependecies
-```
-$ julia 
-julia> ]
-(@v1.5) pkg> activate .
-(nurse-scheduling-problem-solver) pkg> instantiate
-```
-If you will encouter errors like below:
-```
-ERROR: `PACKAGE` is a direct dependency, but does not appear in the manifest. If you intend `PACKAGE` to be a direct dependency, run `Pkg.resolve()` to populate the manifest. Otherwise, remove `PACKAGE` with `Pkg.rm("PACKAGE")`. Finally, run `Pkg.instantiate()` again.
-```
-while installing dependecies, try run:
-```
-(nurse-scheduling-problem-solver) pkg> resolve
-(nurse-scheduling-problem-solver) pkg> instantiate
-```
 
-
+```bash
+julia
+julia> using Pkg
+julia> Pkg.activate(".")
+julia> Pkg.instantiate()
+```
 4. Run server.
 
 ```bash
-$ julia --project=. src/server.jl
+julia --project=. src/server.jl
 ```
 
 ### Endpoints
