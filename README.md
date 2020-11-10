@@ -12,7 +12,9 @@ The system consists of three components which are on two GitHub repositories:
 
 This repository contains the solver and the backend.
 
-## Backend
+## Run the project
+
+Required Julia version: `>=1.5`
 
 1. Clone the project.
 
@@ -25,8 +27,15 @@ git clone https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-probl
 ```bash
 cd nurse-scheduling-problem-solver
 ```
+3. Install dependecies
 
-3. Run server.
+```bash
+julia
+julia> using Pkg
+julia> Pkg.activate(".")
+julia> Pkg.instantiate()
+```
+4. Run server.
 
 ```bash
 julia --project=. src/server.jl
