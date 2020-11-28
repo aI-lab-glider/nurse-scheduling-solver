@@ -57,9 +57,9 @@ function repair_schedule(schedule_data)
             workers_info,
             return_errors = true,
         )
-        act_frozen_shifts = eval_frozen_shifts(month_info, errors, no_improved_iters, workers, previous_best_iter_score > OPT_LVL_1_PEN)
-        nbhd = if previous_best_iter_score > OPT_LVL_1_PEN 
-            Neighborhood(best_iter_res.shifts, act_frozen_shifts, OPT_LVL_1_SAMPLE)
+        act_frozen_shifts = eval_frozen_shifts(month_info, errors, no_improved_iters, workers, !(previous_best_iter_score > NBHD_OPT_PEN))
+        nbhd = if previous_best_iter_score > NBHD_OPT_PEN 
+            Neighborhood(best_iter_res.shifts, act_frozen_shifts, NBHD_OPT_SAMPLE_SIZE)
         else
             Neighborhood(best_iter_res.shifts, act_frozen_shifts)
         end
@@ -152,7 +152,7 @@ function eval_frozen_shifts(
     errors::Vector,
     no_improved_iters::Int,
     workers,
-    only_const::Bool
+    return_iter_shifts::Bool
 )::Vector{Tuple{Int,Int}}
     num_days = length(month_info["children_number"])
     num_wrks = length(workers)
@@ -162,7 +162,7 @@ function eval_frozen_shifts(
         for (wrk, day_no) in month_info["frozen_shifts"]
     ]
 
-    if only_const
+    if !return_iter_shifts
         return always_frozen_shifts
     end
 

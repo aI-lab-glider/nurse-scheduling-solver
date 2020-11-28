@@ -20,8 +20,16 @@ struct Neighborhood
     mutation_recipes::Vector{MutationRecipe}
     shifts::Shifts
 
-    function Neighborhood(mutation_recipes::Vector{MutationRecipe}, shifts::Shifts)
-        new(mutation_recipes, shifts)
+    function Neighborhood(mutation_recipes::Vector{MutationRecipe}, shifts::Shifts, sample_size::Real=1)
+        if sample_size <= 0 || sample_size > 1
+            throw(ArgumentError("sample_size must be in range (0,1]"))
+        end
+        if sample_size == 1
+            new(mutation_recipes, shifts)
+        else
+            size = max(floor(Int, (length(mutation_recipes) * sample_size)), 1)
+            new(sample(mutation_recipes, size, replace=false), shifts)
+        end
     end
 
     function Neighborhood(shifts::Shifts)
@@ -29,26 +37,14 @@ struct Neighborhood
         new(mutation_recipes, shifts)
     end
 
-    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int})
+    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, sample_size::Real=1)
         allowed_mutations = filter(recipe -> !(recipe.day in frozen_days), get_nbhd(shifts))
-        new(allowed_mutations, shifts)
+        Neighborhood(allowed_mutations, shifts, sample_size)
     end
 
-    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int,Int}})
+    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, sample_size::Real=1)
         allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts))
-        new(allowed_mutations, shifts)
-    end
-
-    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, sample_size::Real)
-        allowed_mutations = filter(recipe -> !(recipe.day in frozen_days), get_nbhd(shifts))
-        size = max(floor(Int, (length(allowed_mutations) * sample_size)), 1)
-        new(sample(allowed_mutations, size, replace=false), shifts)
-    end
-
-    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, sample_size::Real)
-        allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts))
-        size = max(floor(Int, length(allowed_mutations) * sample_size), 1)
-        new(sample(allowed_mutations, size, replace=false), shifts)
+        Neighborhood(allowed_mutations, shifts, sample_size)
     end
 end
 

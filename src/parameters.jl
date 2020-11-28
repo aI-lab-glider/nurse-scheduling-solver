@@ -16,9 +16,9 @@ const EXTENDED_NBHD_LVL_1 = 10
 const WRKS_RANDOM_FACTOR = 0.2
 
 # Minimal score to decrease nbhd size
-const OPT_LVL_1_PEN = 100
+const NBHD_OPT_PEN = 200
 # Percentage of nhbd checked while penalty is higher than the threshold
-const OPT_LVL_1_SAMPLE = 0.2
+const NBHD_OPT_SAMPLE_SIZE = 0.2
 
 # basic local search
 const MAX_NO_IMPROVS = 20
