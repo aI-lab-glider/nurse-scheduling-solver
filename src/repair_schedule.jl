@@ -57,9 +57,12 @@ function repair_schedule(schedule_data)
             workers_info,
             return_errors = true,
         )
-        act_frozen_shifts =
-            eval_frozen_shifts(month_info, errors, no_improved_iters, workers)
-        nbhd = Neighborhood(best_iter_res.shifts, act_frozen_shifts)
+        act_frozen_shifts = eval_frozen_shifts(month_info, errors, no_improved_iters, workers, !(previous_best_iter_score > NBHD_OPT_PEN))
+        nbhd = if previous_best_iter_score > NBHD_OPT_PEN 
+            Neighborhood(best_iter_res.shifts, act_frozen_shifts, NBHD_OPT_SAMPLE_SIZE)
+        else
+            Neighborhood(best_iter_res.shifts, act_frozen_shifts)
+        end
 
         if length(nbhd) == 0
             println("Nbhd empty after the frozen shifts evaluation")
@@ -149,6 +152,7 @@ function eval_frozen_shifts(
     errors::Vector,
     no_improved_iters::Int,
     workers,
+    return_iter_shifts::Bool
 )::Vector{Tuple{Int,Int}}
     num_days = length(month_info["children_number"])
     num_wrks = length(workers)
@@ -157,6 +161,10 @@ function eval_frozen_shifts(
         (wrk === 0 ? wrk : findfirst(w -> w === wrk, workers), day_no)
         for (wrk, day_no) in month_info["frozen_shifts"]
     ]
+
+    if !return_iter_shifts
+        return always_frozen_shifts
+    end
 
     exclusion_range = if no_improved_iters > FULL_NBHD_ITERS
         println("Entire nbhd being evaluated")
