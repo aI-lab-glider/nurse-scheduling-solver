@@ -4,6 +4,8 @@ export Neighborhood, get_max_nbhd_size, n_split_nbhd
 
 using ..NurseSchedules:
     Schedule, Shifts, get_shifts, W, CHANGEABLE_SHIFTS, Mutation, MutationRecipe
+    
+using StatsBase: sample
 
 import Base: length, iterate, getindex, in
 
@@ -35,6 +37,18 @@ struct Neighborhood
     function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int,Int}})
         allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts))
         new(allowed_mutations, shifts)
+    end
+
+    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, sample_size::Real)
+        allowed_mutations = filter(recipe -> !(recipe.day in frozen_days), get_nbhd(shifts))
+        size = max(floor(Int, (length(allowed_mutations) * sample_size)), 1)
+        new(sample(allowed_mutations, size, replace=false), shifts)
+    end
+
+    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, sample_size::Real)
+        allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts))
+        size = max(floor(Int, length(allowed_mutations) * sample_size), 1)
+        new(sample(allowed_mutations, size, replace=false), shifts)
     end
 end
 
