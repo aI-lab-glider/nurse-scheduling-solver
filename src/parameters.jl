@@ -16,7 +16,7 @@ const EXTENDED_NBHD_LVL_1 = 10
 const WRKS_RANDOM_FACTOR = 0.2
 
 # Minimal score to decrease nbhd size
-const OPT_LVL_1_PEN  = 100
+const OPT_LVL_1_PEN = 100
 # Percentage of nhbd checked while penalty is higher than the threshold
 const OPT_LVL_1_SAMPLE = 0.2
 
