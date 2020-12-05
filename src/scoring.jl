@@ -264,8 +264,9 @@ function ck_workers_worktime(workers, shifts, workers_info, month_info)::Scoring
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     workers_worktime = Dict{String,Int}()
-    num_days = size(shifts, 2)
-    num_weeks = ceil(Int, num_days / WEEK_DAYS_NO)
+    
+    num_weeks = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
+    num_days = num_weeks * NUM_WORKING_DAYS
 
     max_overtime = num_weeks * MAX_OVERTIME
     max_undertime = num_weeks * MAX_UNDERTIME
