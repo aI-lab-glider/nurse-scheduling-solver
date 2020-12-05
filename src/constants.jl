@@ -67,6 +67,7 @@ const WORKTIME_BASE = 40
 
 const WEEK_DAYS_NO = 7
 const NUM_WORKING_DAYS = 5
+const SUNDAY_NO = 0
 
 @se TimeOfDay begin
     MORNING => "MORNING"
