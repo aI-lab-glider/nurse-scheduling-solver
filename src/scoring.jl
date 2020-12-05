@@ -60,7 +60,7 @@ function score(
 
     score_res += ck_workers_rights(workers, shifts)
 
-    score_res += ck_workers_worktime(workers, shifts, workers_info)
+    score_res += ck_workers_worktime(workers, shifts, workers_info, month_info)
 
     if return_errors
         score_res
@@ -258,7 +258,7 @@ function ck_workers_rights(workers, shifts)::ScoringResult
     return ScoringResult((penalty, errors))
 end
 
-function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
+function ck_workers_worktime(workers, shifts, workers_info, month_info)::ScoringResult
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     workers_worktime = Dict{String,Int}()
@@ -266,6 +266,8 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
 
     max_overtime = num_weeks * MAX_OVERTIME
     max_undertime = num_weeks * MAX_UNDERTIME
+
+    holidays = length(filter((x) -> x % 7 != 6, get(month_info, "holidays", Int[])))
 
     for worker_no in axes(shifts, 1)
         exempted_days_no = 0
@@ -286,7 +288,7 @@ function ck_workers_worktime(workers, shifts, workers_info)::ScoringResult
         hours_per_week::Float32 = workers_info["time"][workers[worker_no]] * WORKTIME_BASE
 
         worktime = num_weeks * hours_per_week
-        exempted_worktime = hours_per_week / NUM_WORKING_DAYS * exempted_days_no
+        exempted_worktime = (hours_per_week / NUM_WORKING_DAYS) * (exempted_days_no + holidays)
         req_worktime = worktime - exempted_worktime
 
         act_worktime = sum(map(s -> SHIFTS_TIME[s], shifts[worker_no, :]))

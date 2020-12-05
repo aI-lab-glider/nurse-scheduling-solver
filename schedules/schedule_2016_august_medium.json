@@ -11,6 +11,9 @@
         ],
         "children_number": [
             24, 21, 21, 21, 21, 21, 21
+        ],
+        "holidays": [
+            5, 6, 10
         ]
     },
     "employee_info": {
