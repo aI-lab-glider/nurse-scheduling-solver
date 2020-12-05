@@ -41,6 +41,7 @@ using ..NurseSchedules:
     WEEK_DAYS_NO,
     NUM_WORKING_DAYS,
     SUNDAY_NO,
+    WORKTIME_DAILY,
     TimeOfDay,
     WorkerType,
     ErrorCode
@@ -263,7 +264,8 @@ function ck_workers_worktime(workers, shifts, workers_info, month_info)::Scoring
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     workers_worktime = Dict{String,Int}()
-    num_weeks = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
+    num_days = size(shifts, 2)
+    num_weeks = ceil(Int, num_days / WEEK_DAYS_NO)
 
     max_overtime = num_weeks * MAX_OVERTIME
     max_undertime = num_weeks * MAX_UNDERTIME
@@ -275,7 +277,7 @@ function ck_workers_worktime(workers, shifts, workers_info, month_info)::Scoring
     )
 
     for worker_no in axes(shifts, 1)
-        exempted_days_no = 0
+        exempted_days_no = holidays_no
         worker_shifts = shifts[worker_no, :]
 
         while !isempty(worker_shifts)
@@ -290,11 +292,9 @@ function ck_workers_worktime(workers, shifts, workers_info, month_info)::Scoring
             end
         end
 
-        hours_per_week::Float32 = workers_info["time"][workers[worker_no]] * WORKTIME_BASE
+        hours_per_day::Float32 = workers_info["time"][workers[worker_no]] * WORKTIME_DAILY
 
-        worktime = num_weeks * hours_per_week
-        exempted_worktime = (hours_per_week / NUM_WORKING_DAYS) * (exempted_days_no + holidays_no)
-        req_worktime = worktime - exempted_worktime
+        req_worktime = (num_days - exempted_days_no) * hours_per_day
 
         act_worktime = sum(map(s -> SHIFTS_TIME[s], shifts[worker_no, :]))
 
