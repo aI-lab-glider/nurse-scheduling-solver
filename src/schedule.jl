@@ -13,6 +13,18 @@ mutable struct Schedule
     end
 end
 
+function get_penalties(schedule)::Dict{String,Any}
+    default_params = JSON.parsefile("config/default.json")["penalties"]
+    schedule_params = get(schedule.data, "solver_params", nothing)
+    if !isnothing(schedule_params)
+        for key in keys(default_params)
+            default_params[key] = get(schedule_params, key, default_params[key])
+        end
+    end
+
+    return default_params
+end
+
 function get_shifts(schedule::Schedule)::ScheduleShifts
     workers = collect(keys(schedule.data["shifts"]))
     shifts = collect(values(schedule.data["shifts"]))

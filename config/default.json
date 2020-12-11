@@ -1,0 +1,8 @@
+{
+    "penalties" : {
+        "LACKING_NURSE" : 40,
+        "LACKING_WORKER" : 30,
+        "NO_LONG_BREAK" : 20,
+        "DISALLOWED_SHIFT_SEQ" : 10
+    }
+}
