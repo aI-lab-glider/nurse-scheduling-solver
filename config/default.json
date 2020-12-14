@@ -1,8 +1,14 @@
 {
-    "penalties" : {
-        "LACKING_NURSE" : 40,
-        "LACKING_WORKER" : 30,
-        "NO_LONG_BREAK" : 20,
-        "DISALLOWED_SHIFT_SEQ" : 10
-    }
+    "penalties" : [
+        "LACKING_NURSE",
+        "LACKING_WORKER",
+        "NO_LONG_BREAK",
+        "DISALLOWED_SHIFT_SEQ"
+    ],
+    "weightMap" : [
+        40,
+        30,
+        20,
+        10
+    ]
 }

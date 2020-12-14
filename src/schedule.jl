@@ -1,3 +1,6 @@
+using ..NurseSchedules:
+        CONFIG
+
 mutable struct Schedule
     data::Dict
 
@@ -14,15 +17,20 @@ mutable struct Schedule
 end
 
 function get_penalties(schedule)::Dict{String,Any}
-    default_params = JSON.parsefile("config/default.json")["penalties"]
-    schedule_params = get(schedule.data, "solver_params", nothing)
-    if !isnothing(schedule_params)
-        for key in keys(default_params)
-            default_params[key] = get(schedule_params, key, default_params[key])
-        end
+    weights = CONFIG["weightMap"]
+    custom_priority = get(schedule.data, "penalty_priorities", nothing)
+    penalties = Dict{String,Any}()
+
+    priority = if !isnothing(custom_priority)
+        custom_priority
+    else
+        CONFIG["penalties"]
     end
 
-    return default_params
+    for (key, pen) in zip(priority, weights)
+        penalties[key] = pen
+    end
+    return penalties
 end
 
 function get_shifts(schedule::Schedule)::ScheduleShifts
