@@ -5,10 +5,10 @@
         "year": 2016
     },
     "penalty_priorities" : [
-        "LACKING_NURSE",
-        "DISALLOWED_SHIFT_SEQ",
-        "NO_LONG_BREAK",
-        "LACKING_WORKER"
+        "AON",
+        "LLB",
+        "DSS",
+        "WND"
     ],
     "month_info": {
         "frozen_shifts": [],

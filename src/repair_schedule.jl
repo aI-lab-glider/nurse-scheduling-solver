@@ -32,12 +32,10 @@ function repair_schedule(schedule_data)
     nurse_schedule = Schedule(schedule_data)
 
     schedule_shifts = get_shifts(nurse_schedule)
-    schedule_penalties = get_penalties(nurse_schedule)
     workers, shifts = schedule_shifts
     month_info = get_month_info(nurse_schedule)
-    workers_info = get_workers_info(nurse_schedule)
 
-    initial_penalty = score(schedule_shifts, month_info, workers_info, schedule_penalties)
+    initial_penalty = score(schedule_shifts, nurse_schedule)
     best_res = BestResult((shifts = shifts, score = initial_penalty))
     best_iter_res = BestResult((shifts = best_res.shifts, score = Inf))
 
@@ -55,9 +53,7 @@ function repair_schedule(schedule_data)
 
         _, errors = score(
             (workers, best_iter_res.shifts),
-            month_info,
-            workers_info,
-            schedule_penalties,
+            nurse_schedule,
             return_errors = true
         )
         act_frozen_shifts = eval_frozen_shifts(month_info, errors, no_improved_iters, workers, !(previous_best_iter_score > NBHD_OPT_PEN))
@@ -78,8 +74,9 @@ function repair_schedule(schedule_data)
             map(
                 nbhd -> @spawn(get_best_nbr(
                     nbhd,
-                    (workers, month_info, workers_info, shifts, schedule_penalties),
+                    nurse_schedule,
                     tabu_list,
+                    (workers, shifts)
                 )),
                 nbhds,
             ),
@@ -133,9 +130,7 @@ function repair_schedule(schedule_data)
     with_logger(logger) do
         improved_penalty, errors = score(
             (workers, best_res.shifts),
-            month_info,
-            workers_info,
-            schedule_penalties,
+            nurse_schedule,
             return_errors = true,
         )
         println("Penalty changed: '$(initial_penalty)' -> '$(improved_penalty)'")
@@ -206,15 +201,14 @@ function eval_frozen_shifts(
     return vcat(always_frozen_shifts, iter_frozen_shifts)
 end
 
-function get_best_nbr(nbhd::Neighborhood, schedule_info, tabu_list)::BestResult
+function get_best_nbr(nbhd::Neighborhood, schedule::Schedule, tabu_list, schedule_shifts)::BestResult
     best_ngb = BestResult((shifts = nothing, score = Inf))
-
-    workers, month_info, workers_info, initial_shifts, schedule_params = schedule_info
+    workers, initial_shifts = schedule_shifts
 
     length(nbhd) == 0 && return best_ngb
 
     for candidate_shifts in nbhd
-        candidate_score = score((workers, candidate_shifts), month_info, workers_info, schedule_params)
+        candidate_score = score((workers, candidate_shifts), schedule)
         candidate_score += get_shifts_distance(initial_shifts, candidate_shifts) / length(initial_shifts)
         if best_ngb.score > candidate_score && !(candidate_shifts in tabu_list)
             best_ngb = BestResult((candidate_shifts, candidate_score))

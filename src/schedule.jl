@@ -17,7 +17,7 @@ mutable struct Schedule
 end
 
 function get_penalties(schedule)::Dict{String,Any}
-    weights = CONFIG["weightMap"]
+    weights = CONFIG["weight_map"]
     custom_priority = get(schedule.data, "penalty_priorities", nothing)
     penalties = Dict{String,Any}()
 

@@ -6,6 +6,9 @@ import Base.+
 
 using ..NurseSchedules:
     Schedule,
+    get_penalties,
+    get_workers_info,
+    get_month_info,
     ScoringResult,
     ScoringResultOrPenalty,
     ScheduleShifts,
@@ -39,6 +42,7 @@ using ..NurseSchedules:
     SUNDAY_NO,
     WORKTIME_DAILY,
     TimeOfDay,
+    Constraints,
     WorkerType,
     ErrorCode
 
@@ -47,19 +51,16 @@ using ..NurseSchedules:
 
 function score(
     schedule_shifts::ScheduleShifts,
-    month_info::Dict{String,Any},
-    workers_info::Dict{String,Any},
-    pen::Dict{String,Any};
+    schedule::Schedule;
     return_errors::Bool = false
 )::ScoringResultOrPenalty
-    workers, shifts = schedule_shifts
     score_res = ScoringResult((0, []))
 
-    score_res += ck_workers_presence(schedule_shifts, month_info, workers_info, pen)
+    score_res += ck_workers_presence(schedule_shifts, schedule)
 
-    score_res += ck_workers_rights(workers, shifts, pen)
+    score_res += ck_workers_rights(schedule_shifts, schedule)
 
-    score_res += ck_workers_worktime(workers, shifts, workers_info, month_info,)
+    score_res += ck_workers_worktime(schedule_shifts, schedule)
 
     if return_errors
         score_res
@@ -70,16 +71,14 @@ end
 
 function ck_workers_presence(
     schedule_shifts::ScheduleShifts,
-    month_info::Dict{String,Any},
-    workers_info::Dict{String,Any},
-    pen::Dict{String,Any}
+    schedule::Schedule
 )::ScoringResult
     workers, shifts = schedule_shifts
     score_res = ScoringResult((0, []))
     for day_no in axes(shifts, 2)
         day_shifts = shifts[:, day_no]
-        score_res += ck_workers_to_children(day_no, day_shifts, month_info, pen)
-        score_res += ck_nurse_presence(day_no, workers, day_shifts, workers_info, pen)
+        score_res += ck_workers_to_children(day_no, day_shifts, schedule)
+        score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
     end
     if score_res.penalty > 0
         @debug "Lacking workers total penalty: $(score_res.penalty)"
@@ -90,9 +89,12 @@ end
 function ck_workers_to_children(
     day::Int,
     day_shifts::Vector{String},
-    month_info::Dict{String,Any},
-    pen::Dict{String,Any}
+    schedule::Schedule
 )::ScoringResult
+
+    month_info = get_month_info(schedule)
+    penalties = get_penalties(schedule)
+
     errors = Vector{Dict{String,Any}}()
 
     req_wrk_day::Int =
@@ -114,7 +116,7 @@ function ck_workers_to_children(
     missing_wrk_night = (missing_wrk_night < 0) ? 0 : missing_wrk_night
 
     # penalty is charged only for workers lacking during daytime
-    penalty = missing_wrk_day * pen["LACKING_WORKER"]
+    penalty = missing_wrk_day * penalties[string(Constraints.PEN_LACKING_WORKER)]
 
     if penalty > 0
         error_details = ""
@@ -149,11 +151,13 @@ end
 
 function ck_nurse_presence(
     day::Int, 
-    wrks, 
-    day_shifts, 
-    workers_info::Dict{String,Any}, 
-    pen::Dict{String, Any}
+    wrks,
+    day_shifts,
+    schedule::Schedule
 )::ScoringResult
+    workers_info = get_workers_info(schedule)
+    penalties = get_penalties(schedule)
+    
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     nrs_shifts = [
@@ -164,7 +168,7 @@ function ck_nurse_presence(
     ]
     if isempty(SHIFTS_MORNING ∩ nrs_shifts)
         @debug "Lacking a nurse in the morning on day '$day'"
-        penalty += pen["LACKING_NURSE"]
+        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
         push!(
             errors,
             Dict(
@@ -176,7 +180,7 @@ function ck_nurse_presence(
     end
     if isempty(SHIFTS_AFTERNOON ∩ nrs_shifts)
         @debug "Lacking a nurse in the afternoon on day '$day'"
-        penalty += pen["LACKING_NURSE"]
+        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
         push!(
             errors,
             Dict(
@@ -188,7 +192,7 @@ function ck_nurse_presence(
     end
     if isempty(SHIFTS_NIGHT ∩ nrs_shifts)
         @debug "Lacking a nurse in the night on day '$day'"
-        penalty += pen["LACKING_NURSE"]
+        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
         push!(
             errors,
             Dict(
@@ -202,10 +206,12 @@ function ck_nurse_presence(
 end
 
 function ck_workers_rights(
-    workers, 
-    shifts, 
-    pen::Dict{String,Any}
+    schedule_shitfs::ScheduleShifts,
+    schedule::Schedule
 )::ScoringResult
+    workers, shifts = schedule_shitfs
+    penalties = get_penalties(schedule)
+
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     for worker_no in axes(shifts, 1)
@@ -221,7 +227,7 @@ function ck_workers_rights(
                shifts[worker_no, shift_no+1] in
                DISALLOWED_SHIFTS_SEQS[shifts[worker_no, shift_no]]
 
-                penalty += pen["DISALLOWED_SHIFT_SEQ"]
+                penalty += penalties[string(Constraints.PEN_DISALLOWED_SHIFT_SEQ)]
                 @debug "The worker '$(workers[worker_no])' has a disallowed shift sequence " *
                        "on day '$(shift_no + 1)': " *
                        "$(shifts[worker_no, shift_no]) -> $(shifts[worker_no, shift_no + 1])"
@@ -252,7 +258,7 @@ function ck_workers_rights(
         if false in long_breaks
             for (week_no, value) in enumerate(long_breaks)
                 if value == false
-                    penalty += pen["NO_LONG_BREAK"]
+                    penalty += penalties[string(Constraints.PEN_NO_LONG_BREAK)]
                     @debug "The worker '$(workers[worker_no])' does not have a long break in week: '$(week_no)'"
                     push!(
                         errors,
@@ -270,11 +276,13 @@ function ck_workers_rights(
 end
 
 function ck_workers_worktime(
-    workers, 
-    shifts, 
-    workers_info::Dict{String,Any}, 
-    month_info::Dict{String,Any}
+    schedule_shifts::ScheduleShifts,
+    schedule::Schedule
 )::ScoringResult
+    month_info = get_month_info(schedule)
+    workers_info = get_workers_info(schedule)
+    workers, shifts = schedule_shifts
+
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     workers_worktime = Dict{String,Int}()

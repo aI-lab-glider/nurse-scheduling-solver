@@ -68,6 +68,13 @@ const SUNDAY_NO = 0
 
 const WORKTIME_DAILY = WORKTIME_BASE / NUM_WORKING_DAYS
 
+@se Constraints begin
+    PEN_LACKING_NURSE => "AON"
+    PEN_LACKING_WORKER => "WND"
+    PEN_NO_LONG_BREAK => "LLB"
+    PEN_DISALLOWED_SHIFT_SEQ => "DSS"
+end
+
 @se TimeOfDay begin
     MORNING => "MORNING"
     AFTERNOON => "AFTERNOON"
