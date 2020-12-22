@@ -4,7 +4,7 @@ export Neighborhood, get_max_nbhd_size, n_split_nbhd
 
 using ..NurseSchedules:
     Schedule, Shifts, get_shifts, W, CHANGEABLE_SHIFTS, Mutation, MutationRecipe
-    
+
 using StatsBase: sample
 
 import Base: length, iterate, getindex, in

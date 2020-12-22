@@ -57,7 +57,7 @@ function repair_schedule(schedule_data)
             return_errors = true
         )
         act_frozen_shifts = eval_frozen_shifts(month_info, errors, no_improved_iters, workers, !(previous_best_iter_score > NBHD_OPT_PEN))
-        nbhd = if previous_best_iter_score > NBHD_OPT_PEN 
+        nbhd = if previous_best_iter_score > NBHD_OPT_PEN
             Neighborhood(best_iter_res.shifts, act_frozen_shifts, NBHD_OPT_SAMPLE_SIZE)
         else
             Neighborhood(best_iter_res.shifts, act_frozen_shifts)
@@ -205,12 +205,15 @@ function get_best_nbr(nbhd::Neighborhood, schedule::Schedule, tabu_list, schedul
     best_ngb = BestResult((shifts = nothing, score = Inf))
     workers, initial_shifts = schedule_shifts
 
+    
+
     length(nbhd) == 0 && return best_ngb
 
     for candidate_shifts in nbhd
+        candidate_shifts in tabu_list && continue
         candidate_score = score((workers, candidate_shifts), schedule)
         candidate_score += get_shifts_distance(initial_shifts, candidate_shifts) / length(initial_shifts)
-        if best_ngb.score > candidate_score && !(candidate_shifts in tabu_list)
+        if best_ngb.score > candidate_score
             best_ngb = BestResult((candidate_shifts, candidate_score))
         end
     end
