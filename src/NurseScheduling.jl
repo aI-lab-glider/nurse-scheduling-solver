@@ -3,6 +3,7 @@ module NurseSchedules
 export Schedule,
        Neighborhood,
        score,
+       get_penalties,
        get_shifts,
        get_max_nbhd_size,
        get_month_info,

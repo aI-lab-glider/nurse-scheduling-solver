@@ -1,0 +1,14 @@
+{
+    "penalties" : [
+        "AON",
+        "WND",
+        "LLB",
+        "DSS"
+    ],
+    "weight_map" : [
+        40,
+        30,
+        20,
+        10
+    ]
+}

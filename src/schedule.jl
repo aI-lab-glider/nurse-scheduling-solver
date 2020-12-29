@@ -1,3 +1,6 @@
+using ..NurseSchedules:
+        CONFIG
+
 mutable struct Schedule
     data::Dict
 
@@ -11,6 +14,23 @@ mutable struct Schedule
         @debug "Schedule loaded correctly."
         new(data)
     end
+end
+
+function get_penalties(schedule)::Dict{String,Any}
+    weights = CONFIG["weight_map"]
+    custom_priority = get(schedule.data, "penalty_priorities", nothing)
+    penalties = Dict{String,Any}()
+
+    priority = if !isnothing(custom_priority)
+        custom_priority
+    else
+        CONFIG["penalties"]
+    end
+
+    for (key, pen) in zip(priority, weights)
+        penalties[key] = pen
+    end
+    return penalties
 end
 
 function get_shifts(schedule::Schedule)::ScheduleShifts

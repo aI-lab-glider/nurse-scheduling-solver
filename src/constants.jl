@@ -53,14 +53,11 @@ const DISALLOWED_SHIFTS_SEQS =
 # there has to be such a seq each week
 const LONG_BREAK_SEQ = (([U, L4, W], [N, U, L4, W]), ([R, P, D], [U, L4, W]))
 
-# penalties
-const PEN_LACKING_NURSE = 40
-const PEN_LACKING_WORKER = 30
-const PEN_NO_LONG_BREAK = 20
-const PEN_DISALLOWED_SHIFT_SEQ = 10
 # under and overtime pen is equal to hours from <0, MAX_OVERTIME>
 const MAX_OVERTIME = 10 # scaled by the number of weeks
 const MAX_UNDERTIME = 0 # scaled by the number of weeks
+
+const CONFIG = JSON.parsefile("config/default.json")
 
 # weekly worktime
 const WORKTIME_BASE = 40
@@ -70,6 +67,13 @@ const NUM_WORKING_DAYS = 5
 const SUNDAY_NO = 0
 
 const WORKTIME_DAILY = WORKTIME_BASE / NUM_WORKING_DAYS
+
+@se Constraints begin
+    PEN_LACKING_NURSE => "AON"
+    PEN_LACKING_WORKER => "WND"
+    PEN_NO_LONG_BREAK => "LLB"
+    PEN_DISALLOWED_SHIFT_SEQ => "DSS"
+end
 
 @se TimeOfDay begin
     MORNING => "MORNING"
