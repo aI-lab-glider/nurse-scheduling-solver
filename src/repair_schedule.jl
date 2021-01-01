@@ -18,12 +18,12 @@ function get_errors(schedule_data)
 
     nurse_schedule = Schedule(schedule_data)
 
-    schedule_penalties = get_penalties(nurse_schedule)
     schedule_shifts = get_shifts(nurse_schedule)
     month_info = get_month_info(nurse_schedule)
     workers_info = get_workers_info(nurse_schedule)
+    schedule_penalties = get_penalties(nurse_schedule)
 
-    _, errors = score(schedule_shifts, month_info, workers_info, schedule_penalties, return_errors = true)
+    _, errors = score(schedule_shifts, nurse_schedule, return_errors = true)
     return errors
 end
 
@@ -204,8 +204,6 @@ end
 function get_best_nbr(nbhd::Neighborhood, schedule::Schedule, tabu_list, schedule_shifts)::BestResult
     best_ngb = BestResult((shifts = nothing, score = Inf))
     workers, initial_shifts = schedule_shifts
-
-    
 
     length(nbhd) == 0 && return best_ngb
 
