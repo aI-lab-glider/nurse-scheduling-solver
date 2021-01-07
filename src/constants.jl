@@ -57,11 +57,16 @@ const LONG_BREAK_SEQ = (([U, L4, W], [N, U, L4, W]), ([R, P, D], [U, L4, W]))
 const MAX_OVERTIME = 10 # scaled by the number of weeks
 const MAX_UNDERTIME = 0 # scaled by the number of weeks
 
-const CONFIG = JSON.parsefile("config/default.json")
+const CONFIG = JSON.parsefile("config/default/priorities.json")
+
+const SHIFTS = JSON.parsefile("config/default/shifts.json")
 
 # weekly worktime
 const WORKTIME_BASE = 40
 
+const DAY_BEGIN = 7
+const DAY_END = 19
+const DAY_HOURS_NO = 24
 const WEEK_DAYS_NO = 7
 const NUM_WORKING_DAYS = 5
 const SUNDAY_NO = 0
@@ -71,6 +76,7 @@ const WORKTIME_DAILY = WORKTIME_BASE / NUM_WORKING_DAYS
 @se Constraints begin
     PEN_LACKING_NURSE => "AON"
     PEN_LACKING_WORKER => "WND"
+    PEN_LACKING_WORKER_NIGHT => "WNN"
     PEN_NO_LONG_BREAK => "LLB"
     PEN_DISALLOWED_SHIFT_SEQ => "DSS"
 end

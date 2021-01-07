@@ -46,7 +46,7 @@ function contains_all_or_none_penalties(data::Dict)
     schedule_priority = get(data, "penalty_priorities", nothing)
 
     if !isnothing(schedule_priority)
-        default_priority = JSON.parsefile("config/default.json")["penalties"]
+        default_priority = JSON.parsefile("config/default/priorities.json")["penalties"]
         sort!(schedule_priority)
         sort!(default_priority)
         if length(default_priority) != length(schedule_priority)

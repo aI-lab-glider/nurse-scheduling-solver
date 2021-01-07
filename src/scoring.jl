@@ -9,6 +9,7 @@ using ..NurseSchedules:
     get_penalties,
     get_workers_info,
     get_month_info,
+    get_shift_options,
     ScoringResult,
     ScoringResultOrPenalty,
     ScheduleShifts,
@@ -39,6 +40,9 @@ using ..NurseSchedules:
     WORKTIME_BASE,
     WEEK_DAYS_NO,
     NUM_WORKING_DAYS,
+    DAY_HOURS_NO,
+    DAY_BEGIN,
+    DAY_END,
     SUNDAY_NO,
     WORKTIME_DAILY,
     TimeOfDay,
@@ -91,7 +95,7 @@ function ck_workers_to_children(
     day_shifts::Vector{String},
     schedule::Schedule
 )::ScoringResult
-
+    shift_info = get_shift_options(schedule)
     month_info = get_month_info(schedule)
     penalties = get_penalties(schedule)
 
@@ -102,9 +106,9 @@ function ck_workers_to_children(
         month_info["extra_workers"][day]
     req_wrk_night::Int = ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_NIGHT)
 
-    act_wrk_night = count(s -> (s in SHIFTS_NIGHT), day_shifts)
+    act_wrk_night = count(s -> is_night_shift(shift_info[s]), day_shifts)
 
-    act_wrk_day = count(s -> (s in SHIFTS_FULL_DAY), day_shifts)
+    act_wrk_day = count(s -> is_full_day_shift(shift_info[s]), day_shifts)
     act_wrk_day +=
         min(count(s -> (s == R), day_shifts), count(s -> (s in [P, PN]), day_shifts))
     # night shifts complement day shifts
@@ -155,53 +159,39 @@ function ck_nurse_presence(
     day_shifts,
     schedule::Schedule
 )::ScoringResult
+    shift_info = get_shift_options(schedule)
     workers_info = get_workers_info(schedule)
     penalties = get_penalties(schedule)
     
     penalty = 0
     errors = Vector{Dict{String,Any}}()
-    nrs_shifts = [
-        shift
-        for
-        (wrk, shift) in zip(wrks, day_shifts) if
-        workers_info["type"][wrk] == string(WorkerType.NURSE)
+
+    #Get set of nurses shifts
+
+    hours_pop = [
+        count([
+            within(hour, shift_info[shift])
+            for (wrk, shift) in zip(wrks, day_shifts) if 
+            workers_info["type"][wrk] == string(WorkerType.NURSE)
+        ])
+        for hour in 1:24
     ]
-    if isempty(SHIFTS_MORNING ∩ nrs_shifts)
-        @debug "Lacking a nurse in the morning on day '$day'"
-        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
-        push!(
-            errors,
-            Dict(
-                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
-                "day" => day,
-                "time_of_day" => string(TimeOfDay.MORNING),
-            ),
-        )
+
+    for hour in 1:24
+        if hours_pop == 0
+            @debug "Lacking a nurse at '$hour' on day '$day'"
+            penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
+            push!(
+                errors,
+                Dict(
+                    "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
+                    "day" => day,
+                    "hour" => string(hour)
+                )
+            )
+        end
     end
-    if isempty(SHIFTS_AFTERNOON ∩ nrs_shifts)
-        @debug "Lacking a nurse in the afternoon on day '$day'"
-        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
-        push!(
-            errors,
-            Dict(
-                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
-                "day" => day,
-                "time_of_day" => string(TimeOfDay.AFTERNOON),
-            ),
-        )
-    end
-    if isempty(SHIFTS_NIGHT ∩ nrs_shifts)
-        @debug "Lacking a nurse in the night on day '$day'"
-        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
-        push!(
-            errors,
-            Dict(
-                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
-                "day" => day,
-                "time_of_day" => string(TimeOfDay.NIGHT),
-            ),
-        )
-    end
+
     return ScoringResult((penalty, errors))
 end
 
@@ -279,6 +269,7 @@ function ck_workers_worktime(
     schedule_shifts::ScheduleShifts,
     schedule::Schedule
 )::ScoringResult
+    shift_info = get_shift_options(schedule)
     month_info = get_month_info(schedule)
     workers_info = get_workers_info(schedule)
     workers, shifts = schedule_shifts
@@ -319,7 +310,7 @@ function ck_workers_worktime(
 
         req_worktime = (num_days - exempted_days_no) * hours_per_day
 
-        act_worktime = sum(map(s -> SHIFTS_TIME[s], shifts[worker_no, :]))
+        act_worktime = sum(map(s -> shift_length(shift_info[s]), shifts[worker_no, :]))
 
         workers_worktime[workers[worker_no]] = act_worktime - req_worktime
     end
@@ -360,4 +351,63 @@ function ck_workers_worktime(
     return ScoringResult((penalty, errors))
 end
 
-end # ScheduleScore
+# Shift hours are half open interval
+# [from, to)
+
+function within(hour, shift)::Bool
+    if !shift["is_working_shift"]
+        false
+    elseif shift["from"] > shift["to"]
+        !(shift["to"] <= hour < shift["from"])
+    elseif shift["to"] > shift["from"]
+        shift["from"] <= hour < shift["to"]
+    else
+        true
+    end
+end
+
+# Assumption
+# Always:
+# DAY_BEGIN < DAY_END
+# Thus night periods always crosses midnight, and day shift never
+
+# Day is also a half open interval
+# [DAY_BEGIN, DAY_END)
+
+function shift_length(shift)::Int
+    if !shift["is_working_shift"]
+        0
+    elseif shift["from"] > shift["to"]
+        24 - shift["from"] +  shift["to"]
+    elseif shift["to"] > shift["from"]
+        shift["to"] - shift["from"]
+    else
+        24
+    end
+end
+
+function is_night_shift(shift)::Bool
+    if !shift["is_working_shift"]
+        false
+    elseif shift["from"] > shift["to"]
+        shift["from"] <= DAY_END && shift["to"] >= DAY_BEGIN 
+    elseif shift["to"] > shift["from"]
+        false
+    else
+        true
+    end
+end
+
+function is_full_day_shift(shift)::Bool
+    if !shift["is_working_shift"]
+        false
+    elseif shift["from"] > shift["to"]
+        shift["to"] >= DAY_END
+    elseif shift["to"] > shift["from"]
+        shift["from"] <= DAY_BEGIN && shift["to"] >= DAY_END
+    else
+        true
+    end
+end
+
+end # ScheduleScoring

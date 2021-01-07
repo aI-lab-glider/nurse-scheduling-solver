@@ -1,5 +1,6 @@
 using ..NurseSchedules:
-        CONFIG
+        CONFIG,
+        SHIFTS
 
 mutable struct Schedule
     data::Dict
@@ -31,6 +32,10 @@ function get_penalties(schedule)::Dict{String,Any}
         penalties[key] = pen
     end
     return penalties
+end
+
+function get_shift_options(schedule::Schedule)
+    merge(SHIFTS, get(schedule.data, "custom_shifts", Dict()))
 end
 
 function get_shifts(schedule::Schedule)::ScheduleShifts
