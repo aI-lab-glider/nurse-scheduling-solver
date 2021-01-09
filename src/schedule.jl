@@ -38,6 +38,23 @@ function get_shift_options(schedule::Schedule)
     merge(SHIFTS, get(schedule.data, "custom_shifts", Dict()))
 end
 
+function get_day(schedule::Schedule)
+    day_begin = get(schedule.data["month_info"], "day_begin", DAY_BEGIN)
+    day_end   = get(schedule.data["month_info"], "day_end", DAY_END)
+    return (day_begin, day_end)
+end
+
+function get_changeable_shifts(schedule::Schedule)
+    [ key for (key, shift) in get_shift_options(schedule)
+        if shift["is_working_shift"]
+    ]
+end
+
+function get_disallowed_sequences(schedule::Schedule)
+    Dict(N => [R, P, D, PN, DN], PN => get_changeable_shifts(schedule), DN => get_changeable_shifts(schedule))
+end
+
+
 function get_shifts(schedule::Schedule)::ScheduleShifts
     workers = collect(keys(schedule.data["shifts"]))
     shifts = collect(values(schedule.data["shifts"]))

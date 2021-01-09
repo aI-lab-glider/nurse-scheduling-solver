@@ -5,6 +5,8 @@
         "year": 2016
     },
     "month_info": {
+        "day_begin" : 7,
+        "day_end" : 19,
         "frozen_shifts": [],
         "extra_workers": [
             4, 4, 4, 4, 4, 4, 4

@@ -19,6 +19,11 @@ function validate(data::Dict)
     if resp != "OK"
         error("Schedule input file is corrupted: $resp")
     end
+
+    resp = day_night_assumption(data)
+    if resp != "OK"
+        error("Schedule input doesn't satisfy day/night requirements")
+    end
 end
 
 function contains_all_keys(data::Dict)
@@ -56,6 +61,21 @@ function contains_all_or_none_penalties(data::Dict)
         else
             "OK"
         end
+    else
+        "OK"
+    end
+end
+
+function day_night_assumption(data::Dict)
+    day_begin = get(data["month_info"], "day_begin", nothing)
+    day_end = get(data["month_info"], "day_end", nothing)
+
+    if isnothing(day_begin) && isnothing(day_end)
+        "OK"
+    elseif isnothing(day_begin) || isnothing(day_end)
+        "NOT OK"
+    elseif data["month_info"]["day_end"] <= data["month_info"]["day_begin"]
+        "NOT OK"
     else
         "OK"
     end

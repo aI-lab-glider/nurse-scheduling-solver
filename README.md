@@ -88,7 +88,7 @@ Table of error codes and their description:
 
 |Constraints                    |Code|Other keys                                                     |
 |-------------------------------|:--:|---------------------------------------------------------------|
-|Always at least one nurse      |AON |day::Int, day_time::(“MORNING”&#124;”AFTERNOON”&#124;”NIGHT”)  |
+|Always at least one nurse      |AON |day::Int, segments::(Vector{[segment_begin, segment_end]})     |
 |Workers number during the day  |WND |day::Int, required::Int, actual::Int                           |
 |Workers number during the night|WNN |day::Int, required::Int, actual::Int                           |
 |Disallowed shift sequence      |DSS |day::Int, worker::String, preceding::Shifts, succeeding::Shifts|
@@ -120,6 +120,66 @@ Sample JSON list of broken constraints:
     }
 ]
 ```
+
+### Passing holidays
+
+Occurrences of national holidays impact scoring due to the reduced number of working hours. Information about them can be passed in schedule JSON, in _month_info_ dictionary as a table of day indexes:
+
+```json
+    "month_info": {
+        ...
+        "holidays": [
+            7, 15
+        ],
+        ...
+    }
+```
+
+## Custom shifts
+
+Custom shifts can be specified for a given month passing a list containing them in the main part of the JSON:
+
+```json
+    "custom_shifts" : [
+      {
+        "code" : "R",
+        "from" : 7,
+        "to" : 15,
+        "color" : "pink",
+        "name" : "morning",
+        "is_working_shift" : true
+    }, {
+        "code" : "P",
+        "from" : 15,
+        "to" : 19,
+        "color" : "pink",
+        "name" : "afternoon",
+        "is_working_shift" : true
+    }]
+```
+
+## Custom priorities
+
+Penalty priorities can be changed for a given schedule. They can be changes passing an ordered list of penalties (in descending order) in the main part of JSON as follows:
+```json
+    "penalty_priorities" : [
+        "AON",
+        "LLB",
+        "DSS",
+        "WND"
+    ]
+```
+_(All penalties must be listed, otherwise schedule won't be accepted)_
+
+Table of penalties, and their default weights:
+
+| Penalty                         | Code | default weight |
+|---------------------------------|------|----------------|
+| Lacking nurse                   | AON  | 50             |
+| Lacking worker during the day   | WND  | 40             |
+| Lacking worker during the night | WNN  | 30             |
+| Lacking long break              | LLB  | 20             |
+| Disallowed shift sequence       | DSS  | 10             |
 
 ## Neighborhood generator
 

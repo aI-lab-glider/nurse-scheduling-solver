@@ -10,30 +10,16 @@ using ..NurseSchedules:
     get_workers_info,
     get_month_info,
     get_shift_options,
+    get_disallowed_sequences,
+    get_day,
     ScoringResult,
     ScoringResultOrPenalty,
     ScheduleShifts,
     Shifts,
     Workers,
-    R,
-    P,
-    D,
-    N,
-    DN,
-    PN,
-    W,
-    U,
-    L4,
-    CHANGEABLE_SHIFTS,
-    SHIFTS_FULL_DAY,
-    SHIFTS_NIGHT,
-    SHIFTS_MORNING,
-    SHIFTS_AFTERNOON,
     SHIFTS_EXEMPT,
-    SHIFTS_TIME,
     REQ_CHLDN_PER_NRS_DAY,
     REQ_CHLDN_PER_NRS_NIGHT,
-    DISALLOWED_SHIFTS_SEQS,
     LONG_BREAK_SEQ,
     MAX_OVERTIME,
     MAX_UNDERTIME,
@@ -41,11 +27,8 @@ using ..NurseSchedules:
     WEEK_DAYS_NO,
     NUM_WORKING_DAYS,
     DAY_HOURS_NO,
-    DAY_BEGIN,
-    DAY_END,
     SUNDAY_NO,
     WORKTIME_DAILY,
-    TimeOfDay,
     Constraints,
     WorkerType,
     ErrorCode
@@ -82,7 +65,9 @@ function ck_workers_presence(
     for day_no in axes(shifts, 2)
         day_shifts = shifts[:, day_no]
         score_res += ck_workers_to_children(day_no, day_shifts, schedule)
-        score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
+        # TODO
+        # Stucked at 6.105
+        # score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
     end
     if score_res.penalty > 0
         @debug "Lacking workers total penalty: $(score_res.penalty)"
@@ -106,13 +91,14 @@ function ck_workers_to_children(
         month_info["extra_workers"][day]
     req_wrk_night::Int = ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_NIGHT)
 
-    act_wrk_night = count(s -> is_night_shift(shift_info[s]), day_shifts)
-
-    act_wrk_day = count(s -> is_full_day_shift(shift_info[s]), day_shifts)
-    act_wrk_day +=
-        min(count(s -> (s == R), day_shifts), count(s -> (s in [P, PN]), day_shifts))
-    # night shifts complement day shifts
-    act_wrk_day = min(act_wrk_day, act_wrk_night)
+    wrk_hourly = [
+        count(s -> within(hour, shift_info[s]), day_shifts)
+        for hour in 1:24
+    ]
+    
+    day_begin, day_end = get_day(schedule)
+    act_wrk_day = minimum(wrk_hourly[day_begin:day_end])
+    act_wrk_night = minimum(vcat(wrk_hourly[1:day_begin], wrk_hourly[day_end:-1]))
 
     missing_wrk_day = req_wrk_day - act_wrk_day
     missing_wrk_day = (missing_wrk_day < 0) ? 0 : missing_wrk_day
@@ -177,21 +163,37 @@ function ck_nurse_presence(
         for hour in 1:24
     ]
 
+    empty_segments = []
+    segment_begin = nothing
+
     for hour in 1:24
-        if hours_pop == 0
-            @debug "Lacking a nurse at '$hour' on day '$day'"
+        if hours_pop[hour] == 0 
             penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
-            push!(
-                errors,
-                Dict(
-                    "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
-                    "day" => day,
-                    "hour" => string(hour)
-                )
-            )
+            if isnothing(segment_begin) 
+                segment_begin = hour
+            end
+        else
+            push!(empty_segments, (segment_begin, hour))
+            segment_begin = nothing
         end
     end
 
+    # Close last
+    if !isnothing(segment_begin)
+        push!(empty_segments, (segment_begin, 24))
+    end
+
+    if empty_segments != []
+        @debug "Lacking a nurse at on day '$day'"
+        push!(
+            errors,
+            Dict(
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
+                "day" => day,
+                "segments" => empty_segments
+            )
+        )
+    end
     return ScoringResult((penalty, errors))
 end
 
@@ -201,6 +203,7 @@ function ck_workers_rights(
 )::ScoringResult
     workers, shifts = schedule_shitfs
     penalties = get_penalties(schedule)
+    disallowed_shift_seq = get_disallowed_sequences(schedule)
 
     penalty = 0
     errors = Vector{Dict{String,Any}}()
@@ -213,9 +216,9 @@ function ck_workers_rights(
                 continue
             end
 
-            if shifts[worker_no, shift_no] in keys(DISALLOWED_SHIFTS_SEQS) &&
+            if shifts[worker_no, shift_no] in keys(disallowed_shift_seq) &&
                shifts[worker_no, shift_no+1] in
-               DISALLOWED_SHIFTS_SEQS[shifts[worker_no, shift_no]]
+               disallowed_shift_seq[shifts[worker_no, shift_no]]
 
                 penalty += penalties[string(Constraints.PEN_DISALLOWED_SHIFT_SEQ)]
                 @debug "The worker '$(workers[worker_no])' has a disallowed shift sequence " *
@@ -386,11 +389,12 @@ function shift_length(shift)::Int
     end
 end
 
-function is_night_shift(shift)::Bool
+function is_night_shift(shift, schedule::Schedule)::Bool
+    day_begin, day_end = get_day(schedule)
     if !shift["is_working_shift"]
         false
     elseif shift["from"] > shift["to"]
-        shift["from"] <= DAY_END && shift["to"] >= DAY_BEGIN 
+        shift["from"] <= day_end && shift["to"] >= day_begin 
     elseif shift["to"] > shift["from"]
         false
     else
@@ -398,13 +402,14 @@ function is_night_shift(shift)::Bool
     end
 end
 
-function is_full_day_shift(shift)::Bool
+function is_full_day_shift(shift, schedule::Schedule)::Bool
+    day_begin, day_end = get_day(schedule)
     if !shift["is_working_shift"]
         false
     elseif shift["from"] > shift["to"]
-        shift["to"] >= DAY_END
+        shift["to"] >= day_end
     elseif shift["to"] > shift["from"]
-        shift["from"] <= DAY_BEGIN && shift["to"] >= DAY_END
+        shift["from"] <= day_begin && shift["to"] >= day_end
     else
         true
     end
