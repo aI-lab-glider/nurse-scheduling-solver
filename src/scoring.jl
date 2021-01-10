@@ -67,7 +67,7 @@ function ck_workers_presence(
         score_res += ck_workers_to_children(day_no, day_shifts, schedule)
         # TODO
         # Stucked at 6.105
-        # score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
+        score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
     end
     if score_res.penalty > 0
         @debug "Lacking workers total penalty: $(score_res.penalty)"
@@ -172,7 +172,7 @@ function ck_nurse_presence(
             if isnothing(segment_begin) 
                 segment_begin = hour
             end
-        else
+        elseif !isnothing(segment_begin)
             push!(empty_segments, (segment_begin, hour))
             segment_begin = nothing
         end
