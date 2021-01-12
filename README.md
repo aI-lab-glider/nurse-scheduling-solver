@@ -135,27 +135,27 @@ Occurrences of national holidays impact scoring due to the reduced number of wor
     }
 ```
 
-## Custom shifts
+## Shifts types
 
-Custom shifts can be specified for a given month passing a list containing them in the main part of the JSON:
+All shift used in a given month, and additional available for solver should be described in the schedule JSON in _shift_types_ dict:
 
 ```json
-    "custom_shifts" : [
-      {
-        "code" : "R",
+    "shift_types" : {
+      "R" : {
         "from" : 7,
         "to" : 15,
         "color" : "pink",
         "name" : "morning",
         "is_working_shift" : true
-    }, {
-        "code" : "P",
+    }, 
+      "P" : {
         "from" : 15,
         "to" : 19,
         "color" : "pink",
         "name" : "afternoon",
         "is_working_shift" : true
-    }]
+    }, ...
+    }
 ```
 
 ## Custom priorities

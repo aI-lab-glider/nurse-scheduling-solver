@@ -1,6 +1,5 @@
-using ..NurseSchedules:
-        CONFIG,
-        SHIFTS
+using ..OldNurseSchedules:
+        CONFIG
 
 mutable struct Schedule
     data::Dict
@@ -11,7 +10,6 @@ mutable struct Schedule
     end
 
     function Schedule(data::Dict{String,Any})
-        validate(data)
         @debug "Schedule loaded correctly."
         new(data)
     end
@@ -33,29 +31,6 @@ function get_penalties(schedule)::Dict{String,Any}
     end
     return penalties
 end
-
-function get_shift_options(schedule::Schedule)
-    get(schedule.data, "shift_types", Dict())
-end
-
-function get_day(schedule::Schedule)
-    day_begin = get(schedule.data["month_info"], "day_begin", DAY_BEGIN)
-    day_end   = get(schedule.data["month_info"], "night_begin", DAY_END)
-    return (day_begin, day_end)
-end
-
-function get_changeable_shifts(schedule::Schedule)
-    [ key for (key, shift) in get_shift_options(schedule)
-        if shift["is_working_shift"]
-    ]
-end
-
-function get_disallowed_sequences(schedule::Schedule)
-    #TODO
-    # Generate proper DSS dict
-    Dict(N => [R, P, D, PN, DN], PN => get_changeable_shifts(schedule), DN => get_changeable_shifts(schedule))
-end
-
 
 function get_shifts(schedule::Schedule)::ScheduleShifts
     workers = collect(keys(schedule.data["shifts"]))

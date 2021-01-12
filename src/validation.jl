@@ -68,13 +68,13 @@ end
 
 function day_night_assumption(data::Dict)
     day_begin = get(data["month_info"], "day_begin", nothing)
-    day_end = get(data["month_info"], "day_end", nothing)
+    day_end = get(data["month_info"], "night_begin", nothing)
 
     if isnothing(day_begin) && isnothing(day_end)
         "OK"
     elseif isnothing(day_begin) || isnothing(day_end)
         "NOT OK"
-    elseif data["month_info"]["day_end"] <= data["month_info"]["day_begin"]
+    elseif day_end <= day_begin
         "NOT OK"
     else
         "OK"
