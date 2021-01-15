@@ -5,7 +5,7 @@ export Neighborhood, get_max_nbhd_size, n_split_nbhd
 using ..NurseSchedules:
     Schedule, 
     Shifts, 
-    get_changeable_shifts,
+    get_changeable_shifts_keys,
     get_shifts, 
     W,
     Mutation, 
@@ -123,7 +123,7 @@ function get_nbhd(shifts::Shifts, schedule::Schedule)::Vector{MutationRecipe}
     for person_shift in CartesianIndices(shifts)
         mutated_schedules = if shifts[person_shift] == W
             with_shift_addtion(shifts, person_shift, schedule)
-        elseif shifts[person_shift] in get_changeable_shifts(schedule)
+        elseif shifts[person_shift] in get_changeable_shifts_keys(schedule)
             vcat(
                 with_shift_deletion(shifts, person_shift),
                 with_shift_swap(shifts, person_shift, schedule),
@@ -143,7 +143,7 @@ function with_shift_addtion(shifts::Shifts, p_shift, schedule::Schedule)::Vector
             day = p_shift[2],
             wrk_no = p_shift[1],
             optional_info = allowed_shift,
-        )) for allowed_shift in get_changeable_shifts(schedule)
+        )) for allowed_shift in get_changeable_shifts_keys(schedule)
     ]
 end
 
@@ -167,7 +167,7 @@ function with_shift_swap(shifts::Shifts, p_shift, schedule::Schedule)::Vector{Mu
         for
         o_person in axes(shifts, 1) if
         p_shift[1] < o_person &&
-        shifts[o_person, p_shift[2]] in get_changeable_shifts(schedule) &&
+        shifts[o_person, p_shift[2]] in get_changeable_shifts_keys(schedule) &&
         shifts[o_person, p_shift[2]] != shifts[p_shift]
     ]
 end

@@ -18,6 +18,7 @@ using JSON
 using SuperEnum
 
 include("constants.jl")
+include("shifts.jl")
 include("schedule.jl")
 include("validation.jl")
 include("scoring.jl")

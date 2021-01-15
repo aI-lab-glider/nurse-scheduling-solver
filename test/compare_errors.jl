@@ -1,7 +1,3 @@
-using Pkg
-Pkg.activate(".")
-Pkg.instantiate()
-
 include("old_engine/NurseScheduling.jl")
 include("../src/repair_schedule.jl")
 

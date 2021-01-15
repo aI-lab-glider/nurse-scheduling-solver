@@ -31,7 +31,9 @@ using ..NurseSchedules:
     WORKTIME_DAILY,
     Constraints,
     WorkerType,
-    ErrorCode
+    ErrorCode,
+    within,
+    get_shift_length
 
 (+)(l::ScoringResult, r::ScoringResult) =
     ScoringResult((l.penalty + r.penalty, vcat(l.errors, r.errors)))
@@ -65,8 +67,6 @@ function ck_workers_presence(
     for day_no in axes(shifts, 2)
         day_shifts = shifts[:, day_no]
         score_res += ck_workers_to_children(day_no, day_shifts, schedule)
-        # TODO
-        # Stucked at 6.105
         score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
     end
     if score_res.penalty > 0
@@ -313,7 +313,7 @@ function ck_workers_worktime(
 
         req_worktime = (num_days - exempted_days_no) * hours_per_day
 
-        act_worktime = sum(map(s -> shift_length(shift_info[s]), shifts[worker_no, :]))
+        act_worktime = sum(map(s -> get_shift_length(shift_info[s]), shifts[worker_no, :]))
 
         workers_worktime[workers[worker_no]] = act_worktime - req_worktime
     end
@@ -353,66 +353,4 @@ function ck_workers_worktime(
     end
     return ScoringResult((penalty, errors))
 end
-
-# Shift hours are half open interval
-# [from, to)
-
-function within(hour, shift)::Bool
-    if !shift["is_working_shift"]
-        false
-    elseif shift["from"] > shift["to"]
-        !(shift["to"] <= hour < shift["from"])
-    elseif shift["to"] > shift["from"]
-        shift["from"] <= hour < shift["to"]
-    else
-        true
-    end
-end
-
-# Assumption
-# Always:
-# DAY_BEGIN < DAY_END
-# Thus night periods always crosses midnight, and day shift never
-
-# Day is also a half open interval
-# [DAY_BEGIN, DAY_END)
-
-function shift_length(shift)::Int
-    if !shift["is_working_shift"]
-        0
-    elseif shift["from"] > shift["to"]
-        24 - shift["from"] +  shift["to"]
-    elseif shift["to"] > shift["from"]
-        shift["to"] - shift["from"]
-    else
-        24
-    end
-end
-
-function is_night_shift(shift, schedule::Schedule)::Bool
-    day_begin, day_end = get_day(schedule)
-    if !shift["is_working_shift"]
-        false
-    elseif shift["from"] > shift["to"]
-        shift["from"] <= day_end && shift["to"] >= day_begin 
-    elseif shift["to"] > shift["from"]
-        false
-    else
-        true
-    end
-end
-
-function is_full_day_shift(shift, schedule::Schedule)::Bool
-    day_begin, day_end = get_day(schedule)
-    if !shift["is_working_shift"]
-        false
-    elseif shift["from"] > shift["to"]
-        shift["to"] >= day_end
-    elseif shift["to"] > shift["from"]
-        shift["from"] <= day_begin && shift["to"] >= day_end
-    else
-        true
-    end
-end
-
 end # ScheduleScoring

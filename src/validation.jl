@@ -24,6 +24,11 @@ function validate(data::Dict)
     if resp != "OK"
         error("Schedule input doesn't satisfy day/night requirements")
     end
+
+    resp = contains_all_required_shifts(data)
+    if resp != "OK"
+        error("Schedule input file is corrupted: $resp")
+    end
 end
 
 function contains_all_keys(data::Dict)
@@ -78,6 +83,21 @@ function day_night_assumption(data::Dict)
         "NOT OK"
     else
         "OK"
+    end
+end
+
+function contains_all_required_shifts(data::Dict)
+    if !("shift_types" in keys(data))
+        return "No shift type has been described" 
+    end
+    used_shifts = Set(Iterators.flatten([
+        shift for shift in values(data["shifts"])
+    ]))
+    available_shifts = Set(keys(data["shift_types"]))
+    if intersect(used_shifts, available_shifts) == used_shifts
+        "OK"
+    else
+        "Lacking shift description for: '$(setdiff(used_shifts, available_shifts))'"
     end
 end
 

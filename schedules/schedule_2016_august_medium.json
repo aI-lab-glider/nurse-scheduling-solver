@@ -19,11 +19,6 @@
         ]
     },
     "shift_types" : {
-        "TEST" : {
-            "from" : 8,
-            "to" : 20,
-            "is_working_shift" : true
-        },
         "R" : {
             "from" : 7,
             "to" : 15,

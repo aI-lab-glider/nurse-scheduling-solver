@@ -1,6 +1,6 @@
 using ..NurseSchedules:
         CONFIG,
-        SHIFTS
+        get_rest_length
 
 mutable struct Schedule
     data::Dict
@@ -44,18 +44,22 @@ function get_day(schedule::Schedule)
     return (day_begin, day_end)
 end
 
-function get_changeable_shifts(schedule::Schedule)
+function get_changeable_shifts_keys(schedule::Schedule)
     [ key for (key, shift) in get_shift_options(schedule)
         if shift["is_working_shift"]
     ]
 end
 
 function get_disallowed_sequences(schedule::Schedule)
-    #TODO
-    # Generate proper DSS dict
-    Dict(N => [R, P, D, PN, DN], PN => get_changeable_shifts(schedule), DN => get_changeable_shifts(schedule))
+    shift_dict = get_shift_options(schedule)
+    Dict(
+        shift => [
+            illegal_shift 
+            for illegal_shift in get_changeable_shifts_keys(schedule)
+            if get_shifts_distance(shift_dict[shift], shift_dict[illegal_shift]) <= get_rest_length(shift_dict[shift])
+        ] for shift in get_changeable_shifts_keys(schedule) 
+    )
 end
-
 
 function get_shifts(schedule::Schedule)::ScheduleShifts
     workers = collect(keys(schedule.data["shifts"]))

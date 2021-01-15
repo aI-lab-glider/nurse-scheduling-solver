@@ -1,11 +1,7 @@
-using Pkg
-Pkg.activate(".")
-Pkg.instantiate()
-
-file = "schedules/schedule_2016_august_medium.json"
-
 include("old_engine/NurseScheduling.jl")
 include("../src/repair_schedule.jl")
+
+file = "schedules/schedule_2016_august_medium.json"
 
 function repair!(schedule)
     fix = repair_schedule(schedule.data)
