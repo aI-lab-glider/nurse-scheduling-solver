@@ -55,26 +55,11 @@ julia --project=. src/server.jl
 
   response - JSON - errors
 
-
-## Supported work shifts
-
-|Shift code|Shift          |Work-time|Equivalent|
-|:--------:|---------------|:-------:|:--------:|
-|    R     |morning        |  7-15   |    -     |
-|    P     |afternoon      |  15-19  |    -     |
-|    D     |daytime        |  7-19   |  R + P   |
-|    N     |night          |  19-7   |    -     |
-|    DN    |day            |   7-7   |  D + N   |
-|    PN    |afternoon-night|  15-7   |  P + N   |
-|    W     |day free       |   N/A   |    -     |
-|    U     |vacation       |   N/A   |    -     |
-|    L4    |sick leave     |   N/A   |    -     |
-
 ## Constraints
 
  - always at least one nurse
- - from 6 to 22 at least one worker for each 3 children
- - from 22 to 6 at least one worker for each 5 children
+ - During the day at least one worker for each 3 children
+ - During the night least one worker for each 5 children
  - after DN shift 24h off, after PN 16h and after the rest 11h
  - each worker has 35h off once a week (counted from MO to SU)
  - undertime and overtime hours
@@ -121,19 +106,6 @@ Sample JSON list of broken constraints:
 ]
 ```
 
-### Passing holidays
-
-Occurrences of national holidays impact scoring due to the reduced number of working hours. Information about them can be passed in schedule JSON, in _month_info_ dictionary as a table of day indexes:
-
-```json
-    "month_info": {
-        ...
-        "holidays": [
-            7, 15
-        ],
-        ...
-    }
-```
 
 ## Shifts types
 
@@ -156,6 +128,41 @@ All shift used in a given month, and additional available for solver should be d
         "is_working_shift" : true
     }, ...
     }
+```
+
+Keys are shift codes, and values are dictionaries containing the following entries:
+
+| Key              | Value                                    |
+|------------------|------------------------------------------|
+| from             | First hour of the shift                  |
+| to               | First hour after the shift               |
+| is_working_shift | Logic value whether the shift is working |
+
+
+### Passing holidays
+
+Occurrences of national holidays impact scoring due to the reduced number of working hours. Information about them can be passed in schedule JSON, in _month_info_ dictionary as a table of day indexes:
+
+```json
+    "month_info": {
+        ...
+        "holidays": [
+            7, 15
+        ],
+        ...
+    }
+```
+
+## Day/night handling
+
+Beginning of the day and the night can be passed in the schedule JSON, in _month_info_ dictionary passing _day_begin_ and _night_begin_:
+
+```JSON
+ "month_info": {
+    "day_begin" : 7,
+    "night_begin" : 19,
+    ...
+  }    
 ```
 
 ## Custom priorities
