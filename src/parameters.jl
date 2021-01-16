@@ -1,3 +1,6 @@
+# This Source Code Form is subject to the terms of the Mozilla Public 
+# License, v. 2.0. If a copy of the MPL was not distributed with this 
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 const ITERATION_NUMBER = 3000
 const INITIAL_MAX_TABU_SIZE = 150
 const INC_TABU_SIZE_ITER = 0
