@@ -1,5 +1,7 @@
 using ..NurseSchedules:
         CONFIG,
+        SHIFTS,
+        get_distance,
         get_rest_length
 
 mutable struct Schedule
@@ -35,7 +37,11 @@ function get_penalties(schedule)::Dict{String,Any}
 end
 
 function get_shift_options(schedule::Schedule)
-    get(schedule.data, "shift_types", Dict())
+    if !("shift_types" in keys(schedule.data))
+        SHIFTS
+    else
+        get(schedule.data, "shift_types", Dict())
+    end
 end
 
 function get_day(schedule::Schedule)
@@ -56,7 +62,7 @@ function get_disallowed_sequences(schedule::Schedule)
         shift => [
             illegal_shift 
             for illegal_shift in get_changeable_shifts_keys(schedule)
-            if get_shifts_distance(shift_dict[shift], shift_dict[illegal_shift]) <= get_rest_length(shift_dict[shift])
+            if get_distance(shift_dict[shift], shift_dict[illegal_shift]) <= get_rest_length(shift_dict[shift])
         ] for shift in get_changeable_shifts_keys(schedule) 
     )
 end

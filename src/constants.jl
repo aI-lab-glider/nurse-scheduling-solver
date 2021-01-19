@@ -47,6 +47,7 @@ const MAX_OVERTIME = 10 # scaled by the number of weeks
 const MAX_UNDERTIME = 0 # scaled by the number of weeks
 
 const CONFIG = JSON.parsefile("config/default/priorities.json")
+const SHIFTS = JSON.parsefile("config/default/shifts.json")
 const DAY_BEGIN = 7
 const DAY_END = 19
 

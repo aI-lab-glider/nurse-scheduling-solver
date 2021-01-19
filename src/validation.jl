@@ -87,13 +87,14 @@ function day_night_assumption(data::Dict)
 end
 
 function contains_all_required_shifts(data::Dict)
-    if !("shift_types" in keys(data))
-        return "No shift type has been described" 
+    available_shifts = if !("shift_types" in keys(data))
+        Set(keys(JSON.parsefile("config/default/shifts.json")))
+    else
+        Set(keys(data["shift_types"]))
     end
     used_shifts = Set(Iterators.flatten([
         shift for shift in values(data["shifts"])
     ]))
-    available_shifts = Set(keys(data["shift_types"]))
     if intersect(used_shifts, available_shifts) == used_shifts
         "OK"
     else
