@@ -1,3 +1,6 @@
+# This Source Code Form is subject to the terms of the Mozilla Public 
+# License, v. 2.0. If a copy of the MPL was not distributed with this 
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 include("NurseScheduling.jl")
 include("parameters.jl")
 
@@ -19,6 +22,9 @@ function get_errors(schedule_data)
     nurse_schedule = Schedule(schedule_data)
 
     schedule_shifts = get_shifts(nurse_schedule)
+    month_info = get_month_info(nurse_schedule)
+    workers_info = get_workers_info(nurse_schedule)
+    schedule_penalties = get_penalties(nurse_schedule)
 
     _, errors = score(schedule_shifts, nurse_schedule, return_errors = true)
     return errors
@@ -201,8 +207,6 @@ end
 function get_best_nbr(nbhd::Neighborhood, schedule::Schedule, tabu_list, schedule_shifts)::BestResult
     best_ngb = BestResult((shifts = nothing, score = Inf))
     workers, initial_shifts = schedule_shifts
-
-    
 
     length(nbhd) == 0 && return best_ngb
 

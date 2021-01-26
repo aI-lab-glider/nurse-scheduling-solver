@@ -1,9 +1,13 @@
+# This Source Code Form is subject to the terms of the Mozilla Public 
+# License, v. 2.0. If a copy of the MPL was not distributed with this 
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using Genie, Genie.Router, Genie.Renderer.Json, Genie.Requests
 using HTTP
 include("repair_schedule.jl")
 
 Genie.config.run_as_server = true
-Genie.config.cors_headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+Genie.config.server_host = "0.0.0.0"
+Genie.config.cors_headers["Access-Control-Allow-Origin"] = "*"
 Genie.config.cors_headers["Access-Control-Allow-Headers"] = "Content-Type"
 Genie.config.cors_headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
 Genie.config.cors_allowed_origins = ["*"]

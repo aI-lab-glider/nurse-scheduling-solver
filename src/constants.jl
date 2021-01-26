@@ -1,3 +1,6 @@
+# This Source Code Form is subject to the terms of the Mozilla Public 
+# License, v. 2.0. If a copy of the MPL was not distributed with this 
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # CUSTOM TYPES
 #
 # Scoring
@@ -65,6 +68,8 @@ const WORKTIME_DAILY = WORKTIME_BASE / NUM_WORKING_DAYS
     PEN_LACKING_NURSE => "AON"
     PEN_LACKING_WORKER => "WND"
     PEN_LACKING_WORKER_NIGHT => "WNN"
+    PEN_NO_LONG_BREAK => "LLB"
+    PEN_DISALLOWED_SHIFT_SEQ => "DSS"
     PEN_NO_LONG_BREAK => "LLB"
     PEN_DISALLOWED_SHIFT_SEQ => "DSS"
 end

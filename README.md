@@ -149,7 +149,7 @@ Occurrences of national holidays impact scoring due to the reduced number of wor
 
 ## Day/night handling
 
-The start of day and night can be adjusted by providing the information in the input. Otherwise the default configuration is used (day starts at 7 and night at 22).
+The start of day and night can be adjusted by providing the information in the input. Otherwise the default configuration is used (day starts at 6 and night at 22).
 
 ```JSON
  "month_info": {
