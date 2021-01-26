@@ -48,8 +48,8 @@ const MAX_UNDERTIME = 0 # scaled by the number of weeks
 
 const CONFIG = JSON.parsefile("config/default/priorities.json")
 const SHIFTS = JSON.parsefile("config/default/shifts.json")
-const DAY_BEGIN = 7
-const NIGHT_BEGIN = 19
+const DAY_BEGIN = 6
+const NIGHT_BEGIN = 22
 
 # weekly worktime
 const WORKTIME_BASE = 40
