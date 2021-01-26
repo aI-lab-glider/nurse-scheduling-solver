@@ -15,7 +15,7 @@ function within(hour::Int, shift::ShiftType)::Bool
     end
 end
 
-function get_distance(first_shift::ShiftType, second_shift::ShiftType)::Int
+function get_next_day_distance(first_shift::ShiftType, second_shift::ShiftType)::Int
     if first_shift["from"] < first_shift["to"]
         24 + second_shift["from"] - first_shift["to"]
     else

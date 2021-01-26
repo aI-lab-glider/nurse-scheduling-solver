@@ -1,7 +1,7 @@
 using ..NurseSchedules:
         CONFIG,
         SHIFTS,
-        get_distance,
+        get_next_day_distance,
         get_rest_length
 
 mutable struct Schedule
@@ -46,7 +46,7 @@ end
 
 function get_day(schedule::Schedule)
     day_begin = get(schedule.data["month_info"], "day_begin", DAY_BEGIN)
-    day_end   = get(schedule.data["month_info"], "night_begin", DAY_END)
+    day_end   = get(schedule.data["month_info"], "night_begin", NIGHT_BEGIN)
     return (day_begin, day_end)
 end
 
@@ -62,7 +62,7 @@ function get_disallowed_sequences(schedule::Schedule)
         shift => [
             illegal_shift 
             for illegal_shift in get_changeable_shifts_keys(schedule)
-            if get_distance(shift_dict[shift], shift_dict[illegal_shift]) <= get_rest_length(shift_dict[shift])
+            if get_next_day_distance(shift_dict[shift], shift_dict[illegal_shift]) <= get_rest_length(shift_dict[shift])
         ] for shift in get_changeable_shifts_keys(schedule) 
     )
 end
