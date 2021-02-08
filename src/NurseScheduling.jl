@@ -6,6 +6,7 @@ module NurseSchedules
 export Schedule,
        Neighborhood,
        score,
+       get_shift_options,
        get_penalties,
        get_shifts,
        get_max_nbhd_size,
@@ -20,6 +21,7 @@ using JSON
 using SuperEnum
 
 include("constants.jl")
+include("shifts.jl")
 include("schedule.jl")
 include("validation.jl")
 include("scoring.jl")

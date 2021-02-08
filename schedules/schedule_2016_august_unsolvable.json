@@ -17,6 +17,53 @@
             25, 26, 26, 26, 26, 26, 24
         ]
     },
+    "shift_types" : {
+        "R" : {
+            "from" : 7,
+            "to" : 15,
+            "is_working_shift" : true
+        },
+        "P" : {
+            "from" : 15,
+            "to" : 19,
+            "is_working_shift" : true
+        },
+        "D" : {
+            "from" : 7,
+            "to" : 19,
+            "is_working_shift" : true
+        },
+        "N" : {
+            "from" : 19,
+            "to" : 7,
+            "is_working_shift" : true
+        },
+        "DN" : {
+            "from" : 7,
+            "to" : 7,
+            "is_working_shift" : true
+        },
+        "PN" : {
+            "from" : 15,
+            "to" : 7,
+            "is_working_shift" : true
+        },
+        "W" : {
+            "from" : 7,
+            "to" : 15,
+            "is_working_shift" : false
+        },
+        "U" : {
+            "from" : 7,
+            "to" : 15,
+            "is_working_shift" : false
+        },
+        "L4" : {
+            "from" : 7,
+            "to" : 15,
+            "is_working_shift" : false
+        }
+    },
     "employee_info": {
         "time": {
             "nurse_1":  1.0,

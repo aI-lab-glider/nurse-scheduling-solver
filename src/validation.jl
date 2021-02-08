@@ -22,6 +22,16 @@ function validate(data::Dict)
     if resp != "OK"
         error("Schedule input file is corrupted: $resp")
     end
+
+    resp = day_night_assumption(data)
+    if resp != "OK"
+        error("Schedule input doesn't satisfy day/night requirements")
+    end
+
+    resp = contains_all_required_shifts(data)
+    if resp != "OK"
+        error("Schedule input file is corrupted: $resp")
+    end
 end
 
 function contains_all_keys(data::Dict)
@@ -49,7 +59,7 @@ function contains_all_or_none_penalties(data::Dict)
     schedule_priority = get(data, "penalty_priorities", nothing)
 
     if !isnothing(schedule_priority)
-        default_priority = JSON.parsefile("config/default.json")["penalties"]
+        default_priority = JSON.parsefile("config/default/priorities.json")["penalties"]
         sort!(schedule_priority)
         sort!(default_priority)
         if length(default_priority) != length(schedule_priority)
@@ -61,6 +71,37 @@ function contains_all_or_none_penalties(data::Dict)
         end
     else
         "OK"
+    end
+end
+
+function day_night_assumption(data::Dict)
+    day_begin = get(data["month_info"], "day_begin", nothing)
+    day_end = get(data["month_info"], "night_begin", nothing)
+
+    if isnothing(day_begin) && isnothing(day_end)
+        "OK"
+    elseif isnothing(day_begin) || isnothing(day_end)
+        "NOT OK"
+    elseif day_end <= day_begin
+        "NOT OK"
+    else
+        "OK"
+    end
+end
+
+function contains_all_required_shifts(data::Dict)
+    available_shifts = if !("shift_types" in keys(data))
+        Set(keys(JSON.parsefile("config/default/shifts.json")))
+    else
+        Set(keys(data["shift_types"]))
+    end
+    used_shifts = Set(Iterators.flatten([
+        shift for shift in values(data["shifts"])
+    ]))
+    if intersect(used_shifts, available_shifts) == used_shifts
+        "OK"
+    else
+        "Lacking shift description for: '$(setdiff(used_shifts, available_shifts))'"
     end
 end
 

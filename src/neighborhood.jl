@@ -6,7 +6,14 @@ module NeighborhoodGen
 export Neighborhood, get_max_nbhd_size, n_split_nbhd
 
 using ..NurseSchedules:
-    Schedule, Shifts, get_shifts, W, CHANGEABLE_SHIFTS, Mutation, MutationRecipe
+    Schedule, 
+    Shifts, 
+    get_changeable_shifts_keys,
+    get_shifts, 
+    W,
+    Mutation, 
+    MutationRecipe
+    
 
 using StatsBase: sample
 
@@ -35,18 +42,18 @@ struct Neighborhood
         end
     end
 
-    function Neighborhood(shifts::Shifts)
-        mutation_recipes = get_nbhd(shifts)
+    function Neighborhood(shifts::Shifts, schedule::Schedule)
+        mutation_recipes = get_nbhd(shifts, schedule)
         new(mutation_recipes, shifts)
     end
 
-    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, sample_size::Real=1)
-        allowed_mutations = filter(recipe -> !(recipe.day in frozen_days), get_nbhd(shifts))
+    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, schedule::Schedule, sample_size::Real=1)
+        allowed_mutations = filter(recipe -> !(recipe.day in frozen_days), get_nbhd(shifts, schedule))
         Neighborhood(allowed_mutations, shifts, sample_size)
     end
 
-    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, sample_size::Real=1)
-        allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts))
+    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, schedule::Schedule, sample_size::Real=1)
+        allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts, schedule))
         Neighborhood(allowed_mutations, shifts, sample_size)
     end
 end
@@ -113,16 +120,16 @@ function perform_mutation!(shifts::Shifts, recipe::MutationRecipe)::Shifts
     return shifts
 end
 
-function get_nbhd(shifts::Shifts)::Vector{MutationRecipe}
+function get_nbhd(shifts::Shifts, schedule::Schedule)::Vector{MutationRecipe}
     nbhd_recipes = Vector()
 
     for person_shift in CartesianIndices(shifts)
         mutated_schedules = if shifts[person_shift] == W
-            with_shift_addtion(shifts, person_shift)
-        elseif shifts[person_shift] in CHANGEABLE_SHIFTS
+            with_shift_addtion(shifts, person_shift, schedule)
+        elseif shifts[person_shift] in get_changeable_shifts_keys(schedule)
             vcat(
                 with_shift_deletion(shifts, person_shift),
-                with_shift_swap(shifts, person_shift),
+                with_shift_swap(shifts, person_shift, schedule),
             )
         else
             []
@@ -132,14 +139,14 @@ function get_nbhd(shifts::Shifts)::Vector{MutationRecipe}
     return nbhd_recipes
 end
 
-function with_shift_addtion(shifts::Shifts, p_shift)::Vector{MutationRecipe}
+function with_shift_addtion(shifts::Shifts, p_shift, schedule::Schedule)::Vector{MutationRecipe}
     return [
         MutationRecipe((
             Mutation.ADD,
             day = p_shift[2],
             wrk_no = p_shift[1],
             optional_info = allowed_shift,
-        )) for allowed_shift in CHANGEABLE_SHIFTS
+        )) for allowed_shift in get_changeable_shifts_keys(schedule)
     ]
 end
 
@@ -152,7 +159,7 @@ function with_shift_deletion(shifts::Shifts, p_shift)::Vector{MutationRecipe}
     ))]
 end
 
-function with_shift_swap(shifts::Shifts, p_shift)::Vector{MutationRecipe}
+function with_shift_swap(shifts::Shifts, p_shift, schedule::Schedule)::Vector{MutationRecipe}
     return [
         MutationRecipe((
             Mutation.SWP,
@@ -163,7 +170,7 @@ function with_shift_swap(shifts::Shifts, p_shift)::Vector{MutationRecipe}
         for
         o_person in axes(shifts, 1) if
         p_shift[1] < o_person &&
-        shifts[o_person, p_shift[2]] in CHANGEABLE_SHIFTS &&
+        shifts[o_person, p_shift[2]] in get_changeable_shifts_keys(schedule) &&
         shifts[o_person, p_shift[2]] != shifts[p_shift]
     ]
 end

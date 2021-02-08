@@ -2,10 +2,12 @@
     "penalties" : [
         "AON",
         "WND",
+        "WNN",
         "LLB",
         "DSS"
     ],
     "weight_map" : [
+        50,
         40,
         30,
         20,

@@ -61,14 +61,14 @@ function repair_schedule(schedule_data)
         )
         act_frozen_shifts = eval_frozen_shifts(month_info, errors, no_improved_iters, workers, !(previous_best_iter_score > NBHD_OPT_PEN))
         nbhd = if previous_best_iter_score > NBHD_OPT_PEN
-            Neighborhood(best_iter_res.shifts, act_frozen_shifts, NBHD_OPT_SAMPLE_SIZE)
+            Neighborhood(best_iter_res.shifts, act_frozen_shifts, nurse_schedule, NBHD_OPT_SAMPLE_SIZE)
         else
-            Neighborhood(best_iter_res.shifts, act_frozen_shifts)
+            Neighborhood(best_iter_res.shifts, act_frozen_shifts, nurse_schedule)
         end
 
         if length(nbhd) == 0
             println("Nbhd empty after the frozen shifts evaluation")
-            nbhd = Neighborhood(best_iter_res.shifts)
+            nbhd = Neighborhood(best_iter_res.shifts, nurse_schedule)
         end
 
         nbhds = n_split_nbhd(nbhd, nthreads())

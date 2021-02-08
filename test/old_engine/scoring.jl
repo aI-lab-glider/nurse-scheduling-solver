@@ -7,36 +7,47 @@ export score
 
 import Base.+
 
-using ..NurseSchedules:
+using ..OldNurseSchedules:
     Schedule,
     get_penalties,
     get_workers_info,
     get_month_info,
-    get_shift_options,
-    get_disallowed_sequences,
-    get_day,
     ScoringResult,
     ScoringResultOrPenalty,
     ScheduleShifts,
     Shifts,
     Workers,
+    R,
+    P,
+    D,
+    N,
+    DN,
+    PN,
+    W,
+    U,
+    L4,
+    CHANGEABLE_SHIFTS,
+    SHIFTS_FULL_DAY,
+    SHIFTS_NIGHT,
+    SHIFTS_MORNING,
+    SHIFTS_AFTERNOON,
     SHIFTS_EXEMPT,
+    SHIFTS_TIME,
     REQ_CHLDN_PER_NRS_DAY,
     REQ_CHLDN_PER_NRS_NIGHT,
+    DISALLOWED_SHIFTS_SEQS,
     LONG_BREAK_SEQ,
     MAX_OVERTIME,
     MAX_UNDERTIME,
     WORKTIME_BASE,
     WEEK_DAYS_NO,
     NUM_WORKING_DAYS,
-    DAY_HOURS_NO,
     SUNDAY_NO,
     WORKTIME_DAILY,
+    TimeOfDay,
     Constraints,
     WorkerType,
-    ErrorCode,
-    within,
-    get_shift_length
+    ErrorCode
 
 (+)(l::ScoringResult, r::ScoringResult) =
     ScoringResult((l.penalty + r.penalty, vcat(l.errors, r.errors)))
@@ -83,7 +94,7 @@ function ck_workers_to_children(
     day_shifts::Vector{String},
     schedule::Schedule
 )::ScoringResult
-    shift_info = get_shift_options(schedule)
+
     month_info = get_month_info(schedule)
     penalties = get_penalties(schedule)
 
@@ -94,14 +105,13 @@ function ck_workers_to_children(
         month_info["extra_workers"][day]
     req_wrk_night::Int = ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_NIGHT)
 
-    wrk_hourly = [
-        count(s -> within(hour, shift_info[s]), day_shifts)
-        for hour in 1:24
-    ]
-    
-    day_begin, day_end = get_day(schedule)
-    act_wrk_day = minimum(wrk_hourly[day_begin:day_end])
-    act_wrk_night = minimum(vcat(wrk_hourly[1:day_begin], wrk_hourly[day_end:-1]))
+    act_wrk_night = count(s -> (s in SHIFTS_NIGHT), day_shifts)
+
+    act_wrk_day = count(s -> (s in SHIFTS_FULL_DAY), day_shifts)
+    act_wrk_day +=
+        min(count(s -> (s == R), day_shifts), count(s -> (s in [P, PN]), day_shifts))
+    # night shifts complement day shifts
+    act_wrk_day = min(act_wrk_day, act_wrk_night)
 
     missing_wrk_day = req_wrk_day - act_wrk_day
     missing_wrk_day = (missing_wrk_day < 0) ? 0 : missing_wrk_day
@@ -148,53 +158,51 @@ function ck_nurse_presence(
     day_shifts,
     schedule::Schedule
 )::ScoringResult
-    shift_info = get_shift_options(schedule)
     workers_info = get_workers_info(schedule)
     penalties = get_penalties(schedule)
     
     penalty = 0
     errors = Vector{Dict{String,Any}}()
-
-    #Get set of nurses shifts
-
-    hours_pop = [
-        count([
-            within(hour, shift_info[shift])
-            for (wrk, shift) in zip(wrks, day_shifts) if 
-            workers_info["type"][wrk] == string(WorkerType.NURSE)
-        ])
-        for hour in 1:24
+    nrs_shifts = [
+        shift
+        for
+        (wrk, shift) in zip(wrks, day_shifts) if
+        workers_info["type"][wrk] == string(WorkerType.NURSE)
     ]
-
-    empty_segments = []
-    segment_begin = nothing
-
-    for hour in 1:24
-        if hours_pop[hour] == 0 
-            penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
-            if isnothing(segment_begin) 
-                segment_begin = hour
-            end
-        elseif !isnothing(segment_begin)
-            push!(empty_segments, (segment_begin, hour))
-            segment_begin = nothing
-        end
-    end
-
-    # Close last
-    if !isnothing(segment_begin)
-        push!(empty_segments, (segment_begin, 24))
-    end
-
-    if empty_segments != []
-        @debug "Lacking a nurse at on day '$day'"
+    if isempty(SHIFTS_MORNING ∩ nrs_shifts)
+        @debug "Lacking a nurse in the morning on day '$day'"
+        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
         push!(
             errors,
             Dict(
                 "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
                 "day" => day,
-                "segments" => empty_segments
-            )
+                "time_of_day" => string(TimeOfDay.MORNING),
+            ),
+        )
+    end
+    if isempty(SHIFTS_AFTERNOON ∩ nrs_shifts)
+        @debug "Lacking a nurse in the afternoon on day '$day'"
+        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
+        push!(
+            errors,
+            Dict(
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
+                "day" => day,
+                "time_of_day" => string(TimeOfDay.AFTERNOON),
+            ),
+        )
+    end
+    if isempty(SHIFTS_NIGHT ∩ nrs_shifts)
+        @debug "Lacking a nurse in the night on day '$day'"
+        penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
+        push!(
+            errors,
+            Dict(
+                "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
+                "day" => day,
+                "time_of_day" => string(TimeOfDay.NIGHT),
+            ),
         )
     end
     return ScoringResult((penalty, errors))
@@ -206,7 +214,6 @@ function ck_workers_rights(
 )::ScoringResult
     workers, shifts = schedule_shitfs
     penalties = get_penalties(schedule)
-    disallowed_shift_seq = get_disallowed_sequences(schedule)
 
     penalty = 0
     errors = Vector{Dict{String,Any}}()
@@ -219,9 +226,9 @@ function ck_workers_rights(
                 continue
             end
 
-            if shifts[worker_no, shift_no] in keys(disallowed_shift_seq) &&
+            if shifts[worker_no, shift_no] in keys(DISALLOWED_SHIFTS_SEQS) &&
                shifts[worker_no, shift_no+1] in
-               disallowed_shift_seq[shifts[worker_no, shift_no]]
+               DISALLOWED_SHIFTS_SEQS[shifts[worker_no, shift_no]]
 
                 penalty += penalties[string(Constraints.PEN_DISALLOWED_SHIFT_SEQ)]
                 @debug "The worker '$(workers[worker_no])' has a disallowed shift sequence " *
@@ -275,7 +282,6 @@ function ck_workers_worktime(
     schedule_shifts::ScheduleShifts,
     schedule::Schedule
 )::ScoringResult
-    shift_info = get_shift_options(schedule)
     month_info = get_month_info(schedule)
     workers_info = get_workers_info(schedule)
     workers, shifts = schedule_shifts
@@ -316,7 +322,7 @@ function ck_workers_worktime(
 
         req_worktime = (num_days - exempted_days_no) * hours_per_day
 
-        act_worktime = sum(map(s -> get_shift_length(shift_info[s]), shifts[worker_no, :]))
+        act_worktime = sum(map(s -> SHIFTS_TIME[s], shifts[worker_no, :]))
 
         workers_worktime[workers[worker_no]] = act_worktime - req_worktime
     end
@@ -356,4 +362,5 @@ function ck_workers_worktime(
     end
     return ScoringResult((penalty, errors))
 end
-end # ScheduleScoring
+
+end # ScheduleScore
