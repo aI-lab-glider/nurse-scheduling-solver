@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 module NeighborhoodGen
 
-export Neighborhood, get_max_nbhd_size, n_split_nbhd
+export Neighborhood, get_max_nbhd_size, n_split_nbhd, random_change!
 
 using ..NurseSchedules:
     Schedule, 
@@ -173,6 +173,43 @@ function with_shift_swap(shifts::Shifts, p_shift, schedule::Schedule)::Vector{Mu
         shifts[o_person, p_shift[2]] in get_changeable_shifts_keys(schedule) &&
         shifts[o_person, p_shift[2]] != shifts[p_shift]
     ]
+end
+
+function random_change!(shifts::Shifts, schedule::Schedule)
+    p_shift = rand(CartesianIndices(shifts))
+    day = p_shift[2]
+    wrk = p_shift[1]
+    if shifts[p_shift] == W
+        type = Mutation.ADD
+        optional = rand(get_changeable_shifts_keys(schedule)) 
+    elseif shifts[p_shift] in get_changeable_shifts_keys(schedule)
+        optional = nothing
+        swap_options = filter(
+            x -> wrk < x &&
+            shifts[x, p_shift[2]] in get_changeable_shifts_keys(schedule) &&
+            shifts[x, p_shift[2]] != shifts[p_shift],
+            axes(shifts, 1)
+        )
+        if isempty(swap_options)
+            type = Mutation.DEL
+        else
+            type = rand([Mutation.DEL, Mutation.SWP])
+            if type == Mutation.SWP
+                o_person = rand(swap_options)
+                wrk = (wrk, o_person)
+            end
+        end
+    else
+        random_change!(shifts, schedule)
+        return
+    end
+    recipe = MutationRecipe((
+        type,
+        day = day,
+        wrk_no = wrk,
+        optional_info = optional
+    ))
+    perform_mutation!(shifts, recipe)
 end
 
 function get_max_nbhd_size(shifts::Shifts)::Int
