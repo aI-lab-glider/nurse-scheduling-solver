@@ -23,13 +23,13 @@ function get_new_log_id(log_dir::String)::Int
                 filter(
                     isinteger,
                     map(
-                        x -> split(x, '.')[1]
+                        x -> split(x, '.')[1],
                         files
         )))) + 1
     end
 end
 
-function save_schedule(schedule::dict, id::Int)
+function save_schedule(schedule::Dict, id::Int)
     if SAVE_SCHEDULES
         open(REQUEST_DIR * string(log_id) * ".txt", "w") do 
             JSON.print(f, schedule_data)

@@ -32,7 +32,7 @@ route("/fix_schedule", method = POST) do
         @error "Unexpected error at fix schedule : " err.msg
         @error "Schedule ID: " log_id
         @error "Backtrace: " catch_backtrace() 
-        {} |> json
+        Dict() |> json
     end
 end
 
@@ -50,7 +50,7 @@ route("/schedule_errors", method = POST) do
         @error "Unexpected error at schedule errors : " err.msg
         @error "Schedule ID: " log_id
         @error "Backtrace: " catch_backtrace() 
-        {} |> json
+        Dict() |> json
     end
 end
 
