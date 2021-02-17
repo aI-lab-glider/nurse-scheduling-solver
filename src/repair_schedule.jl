@@ -98,6 +98,15 @@ function repair_schedule(schedule_data)
         end
         println(@sprintf "The best score: '%.3f' %s" best_res.score best_diff)
 
+        if no_improved_iters > MAX_NO_IMPROVS
+            println("Stuck in local optima, applying $(NO_RANDOM_CHANGES) random changes")
+            perform_random_jumps!(best_res.shifts, nurse_schedule, NO_RANDOM_CHANGES)
+            best_res = BestResult((
+                shifts = best_res.shifts,
+                score = score((workers, best_res.shifts), nurse_schedule)
+            ))
+        end
+
         if no_improved_iters <= INC_TABU_SIZE_ITER
             max_tabu_size = INITIAL_MAX_TABU_SIZE
             length(tabu_list) > INITIAL_MAX_TABU_SIZE &&
@@ -112,7 +121,7 @@ function repair_schedule(schedule_data)
         while length(tabu_list) > max_tabu_size
             popfirst!(tabu_list)
         end
-
+        
         if best_res.score < 1 || no_improved_iters > NO_IMPROVE_QUIT_ITERS
             println("We will not be better, finishing.")
             break

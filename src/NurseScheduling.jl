@@ -14,6 +14,7 @@ export Schedule,
        get_workers_info,
        update_shifts!,
        n_split_nbhd,
+       perform_random_jumps!,
        get_shifts_distance,
        Shifts
 

@@ -23,5 +23,6 @@ const NBHD_OPT_PEN = 200
 # Percentage of nhbd checked while penalty is higher than the threshold
 const NBHD_OPT_SAMPLE_SIZE = 0.2
 
-# basic local search
-const MAX_NO_IMPROVS = 20
+# Shuffle schedule if stuck in local optima
+const MAX_NO_IMPROVS = 10
+const NO_RANDOM_CHANGES = 250

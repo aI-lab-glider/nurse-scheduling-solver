@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 module NeighborhoodGen
 
-export Neighborhood, get_max_nbhd_size, n_split_nbhd
+export Neighborhood, get_max_nbhd_size, n_split_nbhd, perform_random_jumps!
 
 using ..NurseSchedules:
     Schedule, 
@@ -18,6 +18,7 @@ using ..NurseSchedules:
 using StatsBase: sample
 
 import Base: length, iterate, getindex, in
+import Random: shuffle!
 
 struct Neighborhood
     """
@@ -42,18 +43,21 @@ struct Neighborhood
         end
     end
 
-    function Neighborhood(shifts::Shifts, schedule::Schedule)
+    function Neighborhood(shifts::Shifts, schedule::Schedule; shuffle::Bool=false)
         mutation_recipes = get_nbhd(shifts, schedule)
+        shuffle && shuffle!(mutation_recipes)
         new(mutation_recipes, shifts)
     end
 
-    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, schedule::Schedule, sample_size::Real=1)
+    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, schedule::Schedule, sample_size::Real=1; shuffle::Bool=false)
         allowed_mutations = filter(recipe -> !(recipe.day in frozen_days), get_nbhd(shifts, schedule))
+        shuffle && shuffle!(allowed_mutations)
         Neighborhood(allowed_mutations, shifts, sample_size)
     end
 
-    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, schedule::Schedule, sample_size::Real=1)
+    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, schedule::Schedule, sample_size::Real=1; shuffle::Bool=false)
         allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts, schedule))
+        shuffle && shuffle!(allowed_mutations)
         Neighborhood(allowed_mutations, shifts, sample_size)
     end
 end
@@ -173,6 +177,13 @@ function with_shift_swap(shifts::Shifts, p_shift, schedule::Schedule)::Vector{Mu
         shifts[o_person, p_shift[2]] in get_changeable_shifts_keys(schedule) &&
         shifts[o_person, p_shift[2]] != shifts[p_shift]
     ]
+end
+
+function perform_random_jumps!(shifts::Shifts, schedule::Schedule, jumps::Int)
+    for i in 1:jumps
+        recipe = rand(get_nbhd(shifts, schedule))
+        perform_mutation!(shifts, recipe)
+    end
 end
 
 function get_max_nbhd_size(shifts::Shifts)::Int
