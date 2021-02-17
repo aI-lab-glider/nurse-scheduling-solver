@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 module NeighborhoodGen
 
-export Neighborhood, get_max_nbhd_size, n_split_nbhd, random_change!
+export Neighborhood, get_max_nbhd_size, n_split_nbhd, perform_random_jumps!
 
 using ..NurseSchedules:
     Schedule, 
@@ -18,6 +18,7 @@ using ..NurseSchedules:
 using StatsBase: sample
 
 import Base: length, iterate, getindex, in
+import Random: shuffle!
 
 struct Neighborhood
     """
@@ -42,18 +43,21 @@ struct Neighborhood
         end
     end
 
-    function Neighborhood(shifts::Shifts, schedule::Schedule)
+    function Neighborhood(shifts::Shifts, schedule::Schedule; shuffle::Bool=false)
         mutation_recipes = get_nbhd(shifts, schedule)
+        shuffle && shuffle!(mutation_recipes)
         new(mutation_recipes, shifts)
     end
 
-    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, schedule::Schedule, sample_size::Real=1)
+    function Neighborhood(shifts::Shifts, frozen_days::Vector{Int}, schedule::Schedule, sample_size::Real=1; shuffle::Bool=false)
         allowed_mutations = filter(recipe -> !(recipe.day in frozen_days), get_nbhd(shifts, schedule))
+        shuffle && shuffle!(allowed_mutations)
         Neighborhood(allowed_mutations, shifts, sample_size)
     end
 
-    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, schedule::Schedule, sample_size::Real=1)
+    function Neighborhood(shifts::Shifts, frozen_shifts::Vector{Tuple{Int, Int}}, schedule::Schedule, sample_size::Real=1; shuffle::Bool=false)
         allowed_mutations = filter(recipe -> !(recipe in frozen_shifts), get_nbhd(shifts, schedule))
+        shuffle && shuffle!(allowed_mutations)
         Neighborhood(allowed_mutations, shifts, sample_size)
     end
 end
@@ -175,41 +179,11 @@ function with_shift_swap(shifts::Shifts, p_shift, schedule::Schedule)::Vector{Mu
     ]
 end
 
-function random_change!(shifts::Shifts, schedule::Schedule)
-    p_shift = rand(CartesianIndices(shifts))
-    day = p_shift[2]
-    wrk = p_shift[1]
-    if shifts[p_shift] == W
-        type = Mutation.ADD
-        optional = rand(get_changeable_shifts_keys(schedule)) 
-    elseif shifts[p_shift] in get_changeable_shifts_keys(schedule)
-        optional = nothing
-        swap_options = filter(
-            x -> wrk < x &&
-            shifts[x, p_shift[2]] in get_changeable_shifts_keys(schedule) &&
-            shifts[x, p_shift[2]] != shifts[p_shift],
-            axes(shifts, 1)
-        )
-        if isempty(swap_options)
-            type = Mutation.DEL
-        else
-            type = rand([Mutation.DEL, Mutation.SWP])
-            if type == Mutation.SWP
-                o_person = rand(swap_options)
-                wrk = (wrk, o_person)
-            end
-        end
-    else
-        random_change!(shifts, schedule)
-        return
+function perform_random_jumps!(shifts::Shifts, schedule::Schedule, jumps::Int)
+    for i in 1:jumps
+        recipe = rand(get_nbhd(shifts, schedule))
+        perform_mutation!(shifts, recipe)
     end
-    recipe = MutationRecipe((
-        type,
-        day = day,
-        wrk_no = wrk,
-        optional_info = optional
-    ))
-    perform_mutation!(shifts, recipe)
 end
 
 function get_max_nbhd_size(shifts::Shifts)::Int

@@ -100,9 +100,7 @@ function repair_schedule(schedule_data)
 
         if no_improved_iters > MAX_NO_IMPROVS
             println("Stuck in local optima, applying $(NO_RANDOM_CHANGES) random changes")
-            for i in 1:NO_RANDOM_CHANGES
-                random_change!(best_res.shifts, nurse_schedule)
-            end
+            perform_random_jumps!(best_res.shifts, nurse_schedule, NO_RANDOM_CHANGES)
             best_res = BestResult((
                 shifts = best_res.shifts,
                 score = score((workers, best_res.shifts), nurse_schedule)
