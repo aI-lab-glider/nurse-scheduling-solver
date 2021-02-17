@@ -3,7 +3,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using Genie, Genie.Router, Genie.Renderer.Json, Genie.Requests
 using HTTP
+using JSON
 include("repair_schedule.jl")
+include("logger.jl")
+
+using .Logger: get_new_log_id, save_schedule
 
 Genie.config.run_as_server = true
 Genie.config.server_host = "0.0.0.0"
@@ -13,24 +17,41 @@ Genie.config.cors_headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
 Genie.config.cors_allowed_origins = ["*"]
 
 route("/fix_schedule", method = POST) do
-
     schedule_data = jsonpayload()
 
-    repaired_shifts = repair_schedule(schedule_data)
+    log_id = get_new_log_id(REQUEST_DIR)
+    save_schedule(schedule_data, log_id)
+    @info "Received log no. '$log_id'"
 
-    schedule = Schedule(schedule_data)
-
-    update_shifts!(schedule, repaired_shifts)
-
-    schedule.data |> json
+    try
+        repaired_shifts = repair_schedule(schedule_data)
+        schedule = Schedule(schedule_data)
+        update_shifts!(schedule, repaired_shifts)
+        schedule.data |> json
+    catch err
+        @error "Unexpected error at fix schedule : " err.msg
+        @error "Schedule ID: " log_id
+        @error "Backtrace: " catch_backtrace() 
+        {} |> json
+    end
 end
 
 route("/schedule_errors", method = POST) do
-    schedule = jsonpayload()
+    schedule_data = jsonpayload()
 
-    errors = get_errors(schedule)
+    log_id = get_new_log_id(REQUEST_DIR)
+    save_schedule(schedule_data, log_id)
+    @info "Received log no. '$log_id'"
 
-    errors |> json
+    try
+        errors = get_errors(schedule_data)
+        errors |> json
+    catch err
+        @error "Unexpected error at schedule errors : " err.msg
+        @error "Schedule ID: " log_id
+        @error "Backtrace: " catch_backtrace() 
+        {} |> json
+    end
 end
 
 Genie.startup(async = false)

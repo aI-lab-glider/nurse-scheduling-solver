@@ -49,7 +49,7 @@ function repair_schedule(schedule_data)
     no_improved_iters = 0
 
     for i = 1:ITERATION_NUMBER
-        println("[Iteration $(i)]")
+        @info ("[Iteration $(i)]")
 
         previous_best_iter_score = best_iter_res.score
         best_iter_res = BestResult((shifts = best_iter_res.shifts, score = Inf))
@@ -67,7 +67,7 @@ function repair_schedule(schedule_data)
         end
 
         if length(nbhd) == 0
-            println("Nbhd empty after the frozen shifts evaluation")
+            @info ("Nbhd empty after the frozen shifts evaluation")
             nbhd = Neighborhood(best_iter_res.shifts, nurse_schedule)
         end
 
@@ -96,15 +96,15 @@ function repair_schedule(schedule_data)
             best_diff = ""
             no_improved_iters += 1
         end
-        println(@sprintf "The best score: '%.3f' %s" best_res.score best_diff)
+        @info (@sprintf "The best score: '%.3f' %s" best_res.score best_diff)
 
         if no_improved_iters <= INC_TABU_SIZE_ITER
             max_tabu_size = INITIAL_MAX_TABU_SIZE
             length(tabu_list) > INITIAL_MAX_TABU_SIZE &&
-                println("Reseting max tabu size to: $(max_tabu_size)")
+                @info ("Reseting max tabu size to: $(max_tabu_size)")
         elseif length(tabu_list) >= max_tabu_size
             max_tabu_size += 1
-            println("Increasing max tabu size to: $(max_tabu_size)")
+            @info ("Increasing max tabu size to: $(max_tabu_size)")
         end
 
         push!(tabu_list, hash(best_iter_res.shifts))
@@ -114,18 +114,18 @@ function repair_schedule(schedule_data)
         end
 
         if best_res.score < 1 || no_improved_iters > NO_IMPROVE_QUIT_ITERS
-            println("We will not be better, finishing.")
+            @info ("We will not be better, finishing.")
             break
         else
-            print(@sprintf "Iteration best score: '%.3f'" best_iter_res.score)
+            txt = @sprintf "Iteration best score: '%.3f'" best_iter_res.score
             scores_diff = previous_best_iter_score == Inf ? 0 :
                 best_iter_res.score - previous_best_iter_score
             if scores_diff == 0
-                println(" (=)")
+                @info (@sprintf "%s (=)" txt)
             elseif scores_diff < 0
-                println(@sprintf " (%.2f)" scores_diff)
+                @info (@sprintf "%s (%.2f)" txt scores_diff)
             else
-                println(@sprintf " (+%.2f)" scores_diff)
+                @info (@sprintf "%s (+%.2f)" txt scores_diff)
             end
         end
     end
@@ -136,8 +136,8 @@ function repair_schedule(schedule_data)
             nurse_schedule,
             return_errors = true,
         )
-        println("Penalty changed: '$(initial_penalty)' -> '$(improved_penalty)'")
-        println("Number of changes with respect to initial shifts: '$(get_shifts_distance(shifts, best_res.shifts))'")
+        @info ("Penalty changed: '$(initial_penalty)' -> '$(improved_penalty)'")
+        @info ("Number of changes with respect to initial shifts: '$(get_shifts_distance(shifts, best_res.shifts))'")
         show(best_res.shifts)
     end
 
@@ -169,7 +169,7 @@ function eval_frozen_shifts(
     end
 
     exclusion_range = if no_improved_iters > FULL_NBHD_ITERS
-        println("Entire nbhd being evaluated")
+        @info ("Entire nbhd being evaluated")
         return always_frozen_shifts
     elseif no_improved_iters > EXTENDED_NBHD_LVL_2
         2
@@ -188,7 +188,7 @@ function eval_frozen_shifts(
             exclusion_range > 1 && push!(changeable_days, error["day"] + 1)
         end
 
-        println("Number of days being evaluated: '$(length(Set(changeable_days)))'")
+        @info ("Number of days being evaluated: '$(length(Set(changeable_days)))'")
         [(0, day_no) for day_no in setdiff(Set(1:num_days), Set(changeable_days))]
     else
         changeable_wrkrs = [
@@ -198,7 +198,7 @@ function eval_frozen_shifts(
             changeable_wrkrs,
             sample(1:num_wrks, floor(Int, num_wrks * WRKS_RANDOM_FACTOR), replace = false),
         )
-        println("Number of workers being evaluated: '$(length(Set(changeable_wrkrs)))'")
+        @info ("Number of workers being evaluated: '$(length(Set(changeable_wrkrs)))'")
         [(wrk_no, 0) for wrk_no in setdiff(Set(1:num_wrks), Set(changeable_wrkrs))]
     end
     return vcat(always_frozen_shifts, iter_frozen_shifts)
