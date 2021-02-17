@@ -5,6 +5,7 @@ include("logConstants.jl")
 export get_new_log_id
 
 using Logging
+using JSON
 # Log setup
 if SAVE_STD
     io = open(STD_LOG, "w+")

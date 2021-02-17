@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using Genie, Genie.Router, Genie.Renderer.Json, Genie.Requests
 using HTTP
-using JSON
 include("repair_schedule.jl")
 include("logger.jl")
 
@@ -19,6 +18,7 @@ Genie.config.cors_allowed_origins = ["*"]
 route("/fix_schedule", method = POST) do
     schedule_data = jsonpayload()
 
+    println("test")
     log_id = get_new_log_id(REQUEST_DIR)
     save_schedule(schedule_data, log_id)
     @info "Received log no. '$log_id'"
@@ -39,6 +39,7 @@ end
 route("/schedule_errors", method = POST) do
     schedule_data = jsonpayload()
 
+    println("test")
     log_id = get_new_log_id(REQUEST_DIR)
     save_schedule(schedule_data, log_id)
     @info "Received log no. '$log_id'"
