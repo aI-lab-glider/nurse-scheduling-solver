@@ -53,21 +53,41 @@ function get_day(schedule::Schedule)
     return (day_begin, day_end)
 end
 
-function get_changeable_shifts_keys(schedule::Schedule)
-    [ key for (key, shift) in get_shift_options(schedule)
-        if shift["is_working_shift"]
-    ]
+function get_changeable_shifts(schedule::Schedule)
+    filter(
+        kv -> kv.second["is_working_shift"],
+        get_shift_options(schedule)
+    )
 end
 
 function get_disallowed_sequences(schedule::Schedule)
-    shift_dict = get_shift_options(schedule)
     Dict(
-        shift => [
-            illegal_shift 
-            for illegal_shift in get_changeable_shifts_keys(schedule)
-            if get_next_day_distance(shift_dict[shift], shift_dict[illegal_shift]) <= get_rest_length(shift_dict[shift])
-        ] for shift in get_changeable_shifts_keys(schedule) 
+        outer_key => [
+            inner_key 
+            for (inner_key, inner_val) in get_changeable_shifts(schedule)
+            if get_next_day_distance(outer_val, inner_val) <= get_rest_length(outer_val)
+        ] for (outer_key, outer_val) in get_changeable_shifts(schedule) 
     )
+end
+
+function get_earliest_shift_begin(schedule::Schedule)
+    minimum(
+        map(
+            x -> x["from"],
+            filter(
+                x -> x["is_working_shift"],
+                collect(values(get_shift_options(schedule)))
+    )))
+end
+
+function get_latest_shift_end(schedule::Schedule)
+    maximum(
+        map(
+            x -> x["to"] > x["from"] ? x["to"] : 24 + x["to"],
+            filter(
+                x -> x["is_working_shift"],
+                collect(values(get_shift_options(schedule)))
+    )))
 end
 
 function get_shifts(schedule::Schedule)::ScheduleShifts

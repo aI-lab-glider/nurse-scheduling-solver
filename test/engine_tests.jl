@@ -8,7 +8,9 @@ using Test
 using .NurseSchedules:
     Schedule,
     get_disallowed_sequences,
-    get_next_day_distance
+    get_next_day_distance,
+    get_earliest_shift_begin,
+    get_latest_shift_end
 
 function repair!(schedule::Schedule)
     fix = repair_schedule(schedule.data)
@@ -112,4 +114,10 @@ end
     @test get_next_day_distance(y, z) == -4
     @test get_next_day_distance(z, x) == 28
     @test get_next_day_distance(z, y) == 36
+end
+
+@testset "Schedule tests" begin
+    schedule = Schedule("schedules/schedule_2016_august_medium.json")
+    @test get_earliest_shift_begin(schedule) == 7
+    @test get_latest_shift_end(schedule) == 31
 end

@@ -44,6 +44,7 @@ const REQ_CHLDN_PER_NRS_NIGHT = 5
 
 # there has to be such a seq each week
 const LONG_BREAK_SEQ = (([U, L4, W], [N, U, L4, W]), ([R, P, D], [U, L4, W]))
+const LONG_BREAK_HOURS = 35
 
 # under and overtime pen is equal to hours from <0, MAX_OVERTIME>
 const MAX_OVERTIME = 10 # scaled by the number of weeks

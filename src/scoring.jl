@@ -14,6 +14,8 @@ using ..NurseSchedules:
     get_month_info,
     get_shift_options,
     get_disallowed_sequences,
+    get_earliest_shift_begin,
+    get_latest_shift_end,
     get_day,
     ScoringResult,
     ScoringResultOrPenalty,
@@ -24,6 +26,7 @@ using ..NurseSchedules:
     REQ_CHLDN_PER_NRS_DAY,
     REQ_CHLDN_PER_NRS_NIGHT,
     LONG_BREAK_SEQ,
+    LONG_BREAK_HOURS,
     MAX_OVERTIME,
     MAX_UNDERTIME,
     WORKTIME_BASE,
@@ -268,6 +271,32 @@ function ck_workers_rights(
             end
         end
     end
+    return ScoringResult((penalty, errors)) + ck_workers_long_breaks(schedule_shitfs, schedule)
+end
+
+function ck_workers_long_breaks(
+    schedule_shifts::Shifts,
+    schedule::Schedule
+)::ScoringResult
+    penalty = 0
+    errors = Vector{Dict{String,Any}}()
+    workers, shifts = schedule_shitfs
+    penalties = get_penalties(schedule)
+    weeks_no = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
+    required_break_time = LONG_BREAK_HOURS - (24 - get_latest_shift_end(schedule)) - get_earliest_shift_begin(schedule)
+
+    for week in 1:weeks_no
+        long_breaks = fill(false, size(workers, 1))
+        first_week_day = (week-1) * WEEK_DAYS_NO
+        last_week_day = week * WEEK_DAYS_NO - 1
+        for worker_no in axes(shifts, 1)
+            break_time = 0
+            for shifts_no in first_week_day:last_week_day
+
+            end
+        end
+    end
+
     return ScoringResult((penalty, errors))
 end
 
