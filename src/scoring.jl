@@ -14,6 +14,7 @@ using ..NurseSchedules:
     get_month_info,
     get_shift_options,
     get_disallowed_sequences,
+    get_changeable_shifts,
     get_earliest_shift_begin,
     get_latest_shift_end,
     get_day,
@@ -214,8 +215,6 @@ function ck_workers_rights(
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     for worker_no in axes(shifts, 1)
-        long_breaks = fill(false, ceil(Int, size(shifts, 2) / WEEK_DAYS_NO))
-
         for shift_no in axes(shifts, 2)
             # do not check rights on the last day
             if shift_no == size(shifts, 2)
@@ -223,8 +222,7 @@ function ck_workers_rights(
             end
 
             if shifts[worker_no, shift_no] in keys(disallowed_shift_seq) &&
-               shifts[worker_no, shift_no+1] in
-               disallowed_shift_seq[shifts[worker_no, shift_no]]
+               shifts[worker_no, shift_no+1] in disallowed_shift_seq[shifts[worker_no, shift_no]]
 
                 penalty += penalties[string(Constraints.PEN_DISALLOWED_SHIFT_SEQ)]
                 @debug "The worker '$(workers[worker_no])' has a disallowed shift sequence " *
@@ -241,41 +239,13 @@ function ck_workers_rights(
                     ),
                 )
             end
-
-            if shift_no % WEEK_DAYS_NO != 0 && (# long break between weeks does not count
-                shifts[worker_no, shift_no] in LONG_BREAK_SEQ[1][1] &&
-                shifts[worker_no, shift_no+1] in LONG_BREAK_SEQ[1][2]
-            ) || (
-                shifts[worker_no, shift_no] in LONG_BREAK_SEQ[2][1] &&
-                shifts[worker_no, shift_no+1] in LONG_BREAK_SEQ[2][2]
-            )
-
-                long_breaks[Int(ceil(shift_no / WEEK_DAYS_NO))] = true
-            end
-        end
-
-        if false in long_breaks
-            for (week_no, value) in enumerate(long_breaks)
-                if value == false
-                    penalty += penalties[string(Constraints.PEN_NO_LONG_BREAK)]
-                    @debug "The worker '$(workers[worker_no])' does not have a long break in week: '$(week_no)'"
-                    push!(
-                        errors,
-                        Dict(
-                            "code" => string(ErrorCode.LACKING_LONG_BREAK),
-                            "week" => week_no,
-                            "worker" => workers[worker_no],
-                        ),
-                    )
-                end
-            end
         end
     end
     return ScoringResult((penalty, errors)) + ck_workers_long_breaks(schedule_shitfs, schedule)
 end
 
 function ck_workers_long_breaks(
-    schedule_shifts::Shifts,
+    schedule_shitfs::ScheduleShifts,
     schedule::Schedule
 )::ScoringResult
     penalty = 0
@@ -283,20 +253,53 @@ function ck_workers_long_breaks(
     workers, shifts = schedule_shitfs
     penalties = get_penalties(schedule)
     weeks_no = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
-    required_break_time = LONG_BREAK_HOURS - (24 - get_latest_shift_end(schedule)) - get_earliest_shift_begin(schedule)
+    shift_types = get_shift_options(schedule)
 
     for week in 1:weeks_no
-        long_breaks = fill(false, size(workers, 1))
-        first_week_day = (week-1) * WEEK_DAYS_NO
-        last_week_day = week * WEEK_DAYS_NO - 1
+        first_week_day = (week-1) * WEEK_DAYS_NO + 1
+        last_week_day = week * WEEK_DAYS_NO
         for worker_no in axes(shifts, 1)
-            break_time = 0
-            for shifts_no in first_week_day:last_week_day
-
+            has_break = false
+            break_time = 24 - get_latest_shift_end(schedule)
+            for shift_no in first_week_day:last_week_day
+                shift = shifts[worker_no, shift_no]
+                # Changeable == working
+                if shift in keys(get_changeable_shifts(schedule))
+                    break_time += shift_types[shift]["from"]
+                    if break_time >= LONG_BREAK_HOURS
+                        has_break = true
+                        break
+                    end
+                    break_time = if shift_types[shift]["to"] > shift_types[shift]["from"]
+                        24 - shift_types[shift]["to"]
+                    else
+                        - shift_types[shift]["to"]
+                    end
+                else
+                    break_time += 24
+                    if break_time >= LONG_BREAK_HOURS
+                        has_break = true
+                        break
+                    end
+                end
+            end
+            break_time += get_earliest_shift_begin(schedule)
+            if break_time >= LONG_BREAK_HOURS
+                has_break = true
+            end
+            if !has_break
+                penalty += penalties[string(Constraints.PEN_NO_LONG_BREAK)]
+                @debug "The worker '$(workers[worker_no])' does not have a long break in week: '$(week)'"
+                push!(
+                    errors,
+                    Dict(
+                        "code" => string(ErrorCode.LACKING_LONG_BREAK),
+                        "week" => week,
+                        "worker" => workers[worker_no],
+                ))
             end
         end
     end
-
     return ScoringResult((penalty, errors))
 end
 
