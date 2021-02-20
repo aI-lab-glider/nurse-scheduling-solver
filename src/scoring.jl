@@ -1,5 +1,5 @@
-# This Source Code Form is subject to the terms of the Mozilla Public 
-# License, v. 2.0. If a copy of the MPL was not distributed with this 
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 module ScheduleScoring
 
@@ -44,7 +44,7 @@ using ..NurseSchedules:
 function score(
     schedule_shifts::ScheduleShifts,
     schedule::Schedule;
-    return_errors::Bool = false
+    return_errors::Bool = false,
 )::ScoringResultOrPenalty
     score_res = ScoringResult((0, []))
 
@@ -63,7 +63,7 @@ end
 
 function ck_workers_presence(
     schedule_shifts::ScheduleShifts,
-    schedule::Schedule
+    schedule::Schedule,
 )::ScoringResult
     workers, shifts = schedule_shifts
     score_res = ScoringResult((0, []))
@@ -81,7 +81,7 @@ end
 function ck_workers_to_children(
     day::Int,
     day_shifts::Vector{String},
-    schedule::Schedule
+    schedule::Schedule,
 )::ScoringResult
     shift_info = get_shift_options(schedule)
     month_info = get_month_info(schedule)
@@ -94,11 +94,8 @@ function ck_workers_to_children(
         month_info["extra_workers"][day]
     req_wrk_night::Int = ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_NIGHT)
 
-    wrk_hourly = [
-        count(s -> within(hour, shift_info[s]), day_shifts)
-        for hour in 1:24
-    ]
-    
+    wrk_hourly = [count(s -> within(hour, shift_info[s]), day_shifts) for hour = 1:24]
+
     day_begin, day_end = get_day(schedule)
     act_wrk_day = minimum(wrk_hourly[day_begin:day_end])
     act_wrk_night = minimum(vcat(wrk_hourly[1:day_begin], wrk_hourly[day_end:-1]))
@@ -142,16 +139,11 @@ function ck_workers_to_children(
     return ScoringResult((penalty, errors))
 end
 
-function ck_nurse_presence(
-    day::Int, 
-    wrks,
-    day_shifts,
-    schedule::Schedule
-)::ScoringResult
+function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::ScoringResult
     shift_info = get_shift_options(schedule)
     workers_info = get_workers_info(schedule)
     penalties = get_penalties(schedule)
-    
+
     penalty = 0
     errors = Vector{Dict{String,Any}}()
 
@@ -160,19 +152,19 @@ function ck_nurse_presence(
     hours_pop = [
         count([
             within(hour, shift_info[shift])
-            for (wrk, shift) in zip(wrks, day_shifts) if 
+            for
+            (wrk, shift) in zip(wrks, day_shifts) if
             workers_info["type"][wrk] == string(WorkerType.NURSE)
-        ])
-        for hour in 1:24
+        ]) for hour = 1:24
     ]
 
     empty_segments = []
     segment_begin = nothing
 
-    for hour in 1:24
-        if hours_pop[hour] == 0 
+    for hour = 1:24
+        if hours_pop[hour] == 0
             penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
-            if isnothing(segment_begin) 
+            if isnothing(segment_begin)
                 segment_begin = hour
             end
         elseif !isnothing(segment_begin)
@@ -193,8 +185,8 @@ function ck_nurse_presence(
             Dict(
                 "code" => string(ErrorCode.ALWAYS_AT_LEAST_ONE_NURSE),
                 "day" => day,
-                "segments" => empty_segments
-            )
+                "segments" => empty_segments,
+            ),
         )
     end
     return ScoringResult((penalty, errors))
@@ -202,7 +194,7 @@ end
 
 function ck_workers_rights(
     schedule_shitfs::ScheduleShifts,
-    schedule::Schedule
+    schedule::Schedule,
 )::ScoringResult
     workers, shifts = schedule_shitfs
     penalties = get_penalties(schedule)
@@ -220,7 +212,7 @@ function ck_workers_rights(
             end
 
             if shifts[worker_no, shift_no] in keys(disallowed_shift_seq) &&
-               shifts[worker_no, shift_no+1] in
+               shifts[worker_no, shift_no + 1] in
                disallowed_shift_seq[shifts[worker_no, shift_no]]
 
                 penalty += penalties[string(Constraints.PEN_DISALLOWED_SHIFT_SEQ)]
@@ -234,17 +226,19 @@ function ck_workers_rights(
                         "day" => shift_no + 1,
                         "worker" => workers[worker_no],
                         "preceding" => shifts[worker_no, shift_no],
-                        "succeeding" => shifts[worker_no, shift_no+1],
+                        "succeeding" => shifts[worker_no, shift_no + 1],
                     ),
                 )
             end
 
-            if shift_no % WEEK_DAYS_NO != 0 && (# long break between weeks does not count
-                shifts[worker_no, shift_no] in LONG_BREAK_SEQ[1][1] &&
-                shifts[worker_no, shift_no+1] in LONG_BREAK_SEQ[1][2]
-            ) || (
-                shifts[worker_no, shift_no] in LONG_BREAK_SEQ[2][1] &&
-                shifts[worker_no, shift_no+1] in LONG_BREAK_SEQ[2][2]
+            if shift_no % WEEK_DAYS_NO != 0 && (
+                (# long break between weeks does not count
+                    shifts[worker_no, shift_no] in LONG_BREAK_SEQ[1][1] &&
+                    shifts[worker_no, shift_no + 1] in LONG_BREAK_SEQ[1][2]
+                ) || (
+                    shifts[worker_no, shift_no] in LONG_BREAK_SEQ[2][1] &&
+                    shifts[worker_no, shift_no + 1] in LONG_BREAK_SEQ[2][2]
+                )
             )
 
                 long_breaks[Int(ceil(shift_no / WEEK_DAYS_NO))] = true
@@ -273,7 +267,7 @@ end
 
 function ck_workers_worktime(
     schedule_shifts::ScheduleShifts,
-    schedule::Schedule
+    schedule::Schedule,
 )::ScoringResult
     shift_info = get_shift_options(schedule)
     month_info = get_month_info(schedule)
@@ -283,7 +277,7 @@ function ck_workers_worktime(
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     workers_worktime = Dict{String,Int}()
-    
+
     num_weeks = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
     num_days = num_weeks * NUM_WORKING_DAYS
 
@@ -291,20 +285,18 @@ function ck_workers_worktime(
     max_undertime = num_weeks * MAX_UNDERTIME
 
     # Get list of holiday dates, filter out sundays and count them
-    holidays_no = length(
-        filter(day_no -> day_no % WEEK_DAYS_NO != SUNDAY_NO, 
-        get(month_info, "holidays", Int[]))
-    )
+    holidays_no = length(filter(
+        day_no -> day_no % WEEK_DAYS_NO != SUNDAY_NO,
+        get(month_info, "holidays", Int[]),
+    ))
 
     for worker_no in axes(shifts, 1)
         exempted_days_no = holidays_no
         worker_shifts = shifts[worker_no, :]
 
         while !isempty(worker_shifts)
-            week_exempted_days_no = count(
-                s -> (s in SHIFTS_EXEMPT),
-                splice!(worker_shifts, 1:WEEK_DAYS_NO)
-            )
+            week_exempted_days_no =
+                count(s -> (s in SHIFTS_EXEMPT), splice!(worker_shifts, 1:WEEK_DAYS_NO))
             exempted_days_no += if week_exempted_days_no > NUM_WORKING_DAYS
                 NUM_WORKING_DAYS
             else
