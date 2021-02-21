@@ -25,25 +25,15 @@ MutationRecipe = @NamedTuple{
     optional_info::StringOrNothing,
 }
 
-# shift types
-const R = "R"    # morning (7-15)
-const P = "P"    # afternoon (15-19)
-const D = "D"    # daytime == R + P (7-19)
-const N = "N"    # night (19-7)
-const DN = "DN"  # day == D + N (7-7)
-const PN = "PN"  # afternoon-night == P + N (15-7)
-const W = "W"    # day free
-const U = "U"    # vacation
-const L4 = "L4"  # sick leave
-
-# decrease required worktime
-const SHIFTS_EXEMPT = [U, L4]
+# day free dict
+const W_DICT = Dict("from" => 7,
+                    "to" => 15,
+                    "is_working_shift" => false)
 
 const REQ_CHLDN_PER_NRS_DAY = 3
 const REQ_CHLDN_PER_NRS_NIGHT = 5
 
 # there has to be such a seq each week
-const LONG_BREAK_SEQ = (([U, L4, W], [N, U, L4, W]), ([R, P, D], [U, L4, W]))
 const LONG_BREAK_HOURS = 35
 
 # under and overtime pen is equal to hours from <0, MAX_OVERTIME>

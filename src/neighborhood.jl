@@ -9,8 +9,7 @@ using ..NurseSchedules:
     Schedule, 
     Shifts, 
     get_changeable_shifts,
-    get_shifts, 
-    W,
+    get_shifts,
     Mutation, 
     MutationRecipe
     

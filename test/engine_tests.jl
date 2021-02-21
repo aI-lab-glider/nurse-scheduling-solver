@@ -26,18 +26,8 @@ function solve(file::String)
 end
 
 function get_errors_sets(file::String)::Tuple{Set, Set}
-    # Suppress scoring debug
-    debug = nothing
-    if "JULIA_DEBUG" in keys(ENV)
-        debug = ENV["JULIA_DEBUG"]
-        delete!(ENV, "JULIA_DEBUG")
-    end
     new_errors = get_errors(file)
     old_errors = OldNurseSchedules.get_errors(file)
-    if !isnothing(debug)
-        ENV["JULIA_DEBUG"] = debug
-    end
-
     old_errors = Set(vcat(
         # Pass non AON errors
         filter(x -> x["code"] != "AON", old_errors),
@@ -65,10 +55,10 @@ function check_single_type_errors(code::String, file::String)
     if old == new
         true
     else
-        @debug "Different errors for type and file: " code file 
-        @debug "Old \\ New " setdiff(old, new)
-        @debug "New \\ Old " setdiff(new, old)
-        @debug ""
+        @info "Different errors for type and file: " code file 
+        @info "Old \\ New " setdiff(old, new)
+        @info "New \\ Old " setdiff(new, old)
+        @info ""
         false
     end
 end
@@ -76,10 +66,10 @@ end
 ShiftSequence = Dict{String, Array{String, 1}}
 function compare_dss(old::ShiftSequence, new::ShiftSequence)
     for (key, table) in new
-        if table != [] && sort(old[key]) != sort(table)
-            @debug "Different sequences for key: " key
-            @debug "Old sequence " old[key]
-            @debug "New sequence " table
+        if !isempty(table) && sort(old[key]) != sort(table)
+            @info "Different sequences for key: " key
+            @info "Old sequence " old[key]
+            @info "New sequence " table
             return false
         end
     end

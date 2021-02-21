@@ -15,6 +15,7 @@ using ..NurseSchedules:
     get_shift_options,
     get_disallowed_sequences,
     get_changeable_shifts,
+    get_exempted_shifts,
     get_earliest_shift_begin,
     get_latest_shift_end,
     get_day,
@@ -23,10 +24,8 @@ using ..NurseSchedules:
     ScheduleShifts,
     Shifts,
     Workers,
-    SHIFTS_EXEMPT,
     REQ_CHLDN_PER_NRS_DAY,
     REQ_CHLDN_PER_NRS_NIGHT,
-    LONG_BREAK_SEQ,
     LONG_BREAK_HOURS,
     MAX_OVERTIME,
     MAX_UNDERTIME,
@@ -327,7 +326,7 @@ function ck_workers_worktime(
 
         while !isempty(worker_shifts)
             week_exempted_days_no =
-                count(s -> (s in SHIFTS_EXEMPT), splice!(worker_shifts, 1:WEEK_DAYS_NO))
+                count(s -> (s in keys(get_exempted_shifts(schedule))), splice!(worker_shifts, 1:WEEK_DAYS_NO))
             exempted_days_no += if week_exempted_days_no > NUM_WORKING_DAYS
                 NUM_WORKING_DAYS
             else

@@ -4,14 +4,18 @@
 using ..NurseSchedules:
         CONFIG,
         SHIFTS,
+        W_DICT,
         get_next_day_distance,
-        get_rest_length
+        get_rest_length        
 
 mutable struct Schedule
     data::Dict
 
     function Schedule(filename::AbstractString)
         data = JSON.parsefile(filename)
+        if haskey(data, "shift_types") && !haskey(data["shift_types"], "W")
+            data["shift_types"]["W"] = W_DICT
+        end
         Schedule(data)
     end
 
@@ -41,9 +45,9 @@ end
 
 function get_shift_options(schedule::Schedule)
     if !("shift_types" in keys(schedule.data))
-        SHIFTS
+        SHIFTS 
     else
-        get(schedule.data, "shift_types", Dict())
+        schedule.data["shift_types"]
     end
 end
 
@@ -60,34 +64,36 @@ function get_changeable_shifts(schedule::Schedule)
     )
 end
 
-function get_disallowed_sequences(schedule::Schedule)
-    Dict(
-        outer_key => [
-            inner_key 
-            for (inner_key, inner_val) in get_changeable_shifts(schedule)
-            if get_next_day_distance(outer_val, inner_val) <= get_rest_length(outer_val)
-        ] for (outer_key, outer_val) in get_changeable_shifts(schedule) 
+function get_exempted_shifts(schedule::Schedule)
+    filter(
+        kv -> !kv.second["is_working_shift"] && kv.first != "W",
+        get_shift_options(schedule)
     )
 end
 
+function get_disallowed_sequences(schedule::Schedule)
+    Dict(
+        first_shift_key => [
+            second_shift_key 
+            for (second_shift_key, second_shift_val) in get_changeable_shifts(schedule)
+            if get_next_day_distance(first_shift_val, second_shift_val) <= get_rest_length(first_shift_val)
+        ] for (first_shift_key, first_shift_val) in get_changeable_shifts(schedule) 
+    )
+end
+
+
 function get_earliest_shift_begin(schedule::Schedule)
-    minimum(
-        map(
-            x -> x["from"],
-            filter(
-                x -> x["is_working_shift"],
-                collect(values(get_shift_options(schedule)))
-    )))
+    changeable_shifts = collect(values(get_changeable_shifts(schedule))) 
+    minimum(x -> x["from"],
+            changeable_shifts     
+    )
 end
 
 function get_latest_shift_end(schedule::Schedule)
-    maximum(
-        map(
-            x -> x["to"] > x["from"] ? x["to"] : 24 + x["to"],
-            filter(
-                x -> x["is_working_shift"],
-                collect(values(get_shift_options(schedule)))
-    )))
+    changeable_shifts = collect(values(get_changeable_shifts(schedule)))
+    maximum(x -> x["to"] > x["from"] ? x["to"] : 24 + x["to"],
+            changeable_shifts
+    )
 end
 
 function get_shifts(schedule::Schedule)::ScheduleShifts
