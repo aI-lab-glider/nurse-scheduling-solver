@@ -98,6 +98,7 @@ function contains_all_required_shifts(data::Dict)
     used_shifts = Set(Iterators.flatten([
         shift for shift in values(data["shifts"])
     ]))
+    push!(used_shifts, "W")
     if intersect(used_shifts, available_shifts) == used_shifts
         "OK"
     else

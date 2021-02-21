@@ -8,7 +8,9 @@ using Test
 using .NurseSchedules:
     Schedule,
     get_disallowed_sequences,
-    get_next_day_distance
+    get_next_day_distance,
+    get_earliest_shift_begin,
+    get_latest_shift_end
 
 function repair!(schedule::Schedule)
     fix = repair_schedule(schedule.data)
@@ -48,13 +50,26 @@ end
 
 function check_single_type_errors(code::String, file::String)
     old_errors, new_errors = get_errors_sets(file)
-    filter(x -> x["code"] == code, old_errors) == filter(x -> x["code"] == code, new_errors)
+    old = filter(x -> x["code"] == code, old_errors) 
+    new = filter(x -> x["code"] == code, new_errors)
+    if old == new
+        true
+    else
+        @info "Different errors for type and file: " code file 
+        @info "Old \\ New " setdiff(old, new)
+        @info "New \\ Old " setdiff(new, old)
+        @info ""
+        false
+    end
 end
 
 ShiftSequence = Dict{String, Array{String, 1}}
 function compare_dss(old::ShiftSequence, new::ShiftSequence)
     for (key, table) in new
-        if table != [] && sort(old[key]) != sort(table)
+        if !isempty(table) && sort(old[key]) != sort(table)
+            @info "Different sequences for key: " key
+            @info "Old sequence " old[key]
+            @info "New sequence " table
             return false
         end
     end
@@ -63,10 +78,6 @@ end
 
 function get_new_dss()
     get_disallowed_sequences(Schedule("schedules/schedule_2016_august_medium.json"))
-end
-
-@testset "Check solver" begin
-    @test [] == OldNurseSchedules.get_errors(solve("schedules/schedule_2016_august_medium.json"))
 end
 
 @testset "Compare errors" begin
@@ -112,4 +123,10 @@ end
     @test get_next_day_distance(y, z) == -4
     @test get_next_day_distance(z, x) == 28
     @test get_next_day_distance(z, y) == 36
+end
+
+@testset "Schedule tests" begin
+    schedule = Schedule("schedules/schedule_2016_august_medium.json")
+    @test get_earliest_shift_begin(schedule) == 7
+    @test get_latest_shift_end(schedule) == 31
 end

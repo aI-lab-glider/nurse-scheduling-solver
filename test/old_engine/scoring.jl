@@ -246,12 +246,15 @@ function ck_workers_rights(
                 )
             end
 
-            if shift_no % WEEK_DAYS_NO != 0 && (# long break between weeks does not count
-                shifts[worker_no, shift_no] in LONG_BREAK_SEQ[1][1] &&
-                shifts[worker_no, shift_no+1] in LONG_BREAK_SEQ[1][2]
-            ) || (
-                shifts[worker_no, shift_no] in LONG_BREAK_SEQ[2][1] &&
-                shifts[worker_no, shift_no+1] in LONG_BREAK_SEQ[2][2]
+
+            if shift_no % WEEK_DAYS_NO != 0 && (
+                (# long break between weeks does not count
+                    shifts[worker_no, shift_no] in LONG_BREAK_SEQ[1][1] &&
+                    shifts[worker_no, shift_no + 1] in LONG_BREAK_SEQ[1][2]
+                ) || (
+                    shifts[worker_no, shift_no] in LONG_BREAK_SEQ[2][1] &&
+                    shifts[worker_no, shift_no + 1] in LONG_BREAK_SEQ[2][2]
+                )
             )
 
                 long_breaks[Int(ceil(shift_no / WEEK_DAYS_NO))] = true
