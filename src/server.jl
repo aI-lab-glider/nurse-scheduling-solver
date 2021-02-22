@@ -18,8 +18,7 @@ Genie.config.cors_allowed_origins = ["*"]
 route("/fix_schedule", method = POST) do
     schedule_data = jsonpayload()
 
-    println("test")
-    log_id = get_new_log_id(REQUEST_DIR)
+    log_id = get_new_log_id()
     save_schedule(schedule_data, log_id)
     @info "Received log no. '$log_id'"
 
@@ -39,8 +38,7 @@ end
 route("/schedule_errors", method = POST) do
     schedule_data = jsonpayload()
 
-    println("test")
-    log_id = get_new_log_id(REQUEST_DIR)
+    log_id = get_new_log_id()
     save_schedule(schedule_data, log_id)
     @info "Received log no. '$log_id'"
 
