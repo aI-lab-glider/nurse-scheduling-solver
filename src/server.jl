@@ -6,7 +6,7 @@ using HTTP
 include("repair_schedule.jl")
 include("logger.jl")
 
-using .Logger: get_new_log_id, save_schedule
+using .Logger
 
 Genie.config.run_as_server = true
 Genie.config.server_host = "0.0.0.0"

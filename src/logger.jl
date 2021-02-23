@@ -5,7 +5,7 @@ module Logger
 
 include("logConstants.jl")
 
-export get_new_log_id
+export get_new_log_id, save_schedule
 
 using Dates
 using Logging
@@ -14,18 +14,13 @@ using JSON
 
 function get_new_log_id()::Int
     files = readdir(REQUEST_DIR)
-    numeric_files = map(
-        x -> parse(Int, x),
-        filter(
-            x -> occursin(r"[0-9]+", x),
-            map(
-                x -> split(x, '.')[1],
-                files
-    )))
-    if isempty(numeric_files)
+    filenames = map(x -> split(x, '.')[1], files)
+    numeric_files = filter(x -> occursin(r"[0-9]+", x), filenames)
+    log_ids = map(x -> parse(Int, x), numeric_files)
+    if isempty(log_ids)
         1
     else
-        maximum(numeric_files) + 1
+        maximum(log_ids) + 1
     end
 end
 
