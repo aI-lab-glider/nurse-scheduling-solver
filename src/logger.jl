@@ -29,7 +29,6 @@ function save_schedule(schedule_data::Dict, id::String)
 end
 
 function flush_logs()
-    println("test")
     for io in ios
         flush(io)
     end
