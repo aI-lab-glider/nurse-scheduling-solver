@@ -102,7 +102,7 @@ The exemplary JSON list of the broken constraints:
 
 ### Shifts types
 
-All shifts recognized by the solver should be provided in the schedule's JSON under the __shift_types__ key:
+All shifts that should be recognized by the solver must be provided in the schedule's JSON under the __shift_types__ key:
 
 ```json
 "shift_types": {
@@ -164,7 +164,7 @@ The process of automated fixing a schedule can be controlled in terms of removin
     "DSS"
 ]
 ```
-All the shift codes must be listed, otherwise the schedule will not be accepted.
+All the shift codes from the table below must be listed, otherwise the schedule will not be accepted.
 
 | Penalty                         | Code | default weight |
 |---------------------------------|------|:--------------:|
@@ -226,7 +226,7 @@ Each disallowed sequence in a schedule increases the score by  __PEN_DISALLOWED_
 
 #### Long breaks
 
-Each employee must have at least one long break each week. It  means a sequence of working and non-working shifts gives at least 35-hour uninterrupted free time. The long breaks are evaluated only from Monday to Sunday, the break between consecutive weeks does not value.
+Each employee must have at least one long break each week. It means a sequence of working and non-working shifts gives at least 35-hour uninterrupted free time. The long breaks are evaluated only from Monday to Sunday, the break between consecutive weeks does not value.
 
 Each week lacking a long break for each employee increases the score by __PEN_NO_LONG_BREAK__ (default 20).
 
