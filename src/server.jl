@@ -26,12 +26,13 @@ route("/fix_schedule", method = POST) do
         repaired_shifts = repair_schedule(schedule_data)
         schedule = Schedule(schedule_data)
         update_shifts!(schedule, repaired_shifts)
+        flush_logs()
         schedule.data |> json
-        @info "Response send to the client"
     catch err
         @error "Unexpected error at fix schedule : " err.msg
         @error "Schedule ID: " log_id
         @error "Backtrace: " catch_backtrace() 
+        flush_logs()
         Dict() |> json
     end
 end
@@ -45,12 +46,13 @@ route("/schedule_errors", method = POST) do
 
     try
         errors = get_errors(schedule_data)
+        flush_logs()
         errors |> json
-        @info "Response send to the client"
     catch err
         @error "Unexpected error at schedule errors : " err.msg
         @error "Schedule ID: " log_id
-        @error "Backtrace: " catch_backtrace() 
+        @error "Backtrace: " catch_backtrace()
+        flush_logs()
         Dict() |> json
     end
 end
