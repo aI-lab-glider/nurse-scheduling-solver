@@ -5,7 +5,7 @@ module Logger
 
 include("logConstants.jl")
 
-export get_new_log_id, save_schedule, flush_logs
+export get_request_name, save_schedule, flush_logs
 
 using Dates
 using Logging
@@ -15,7 +15,7 @@ using JSON
 !isdir(LOG_DIR) && mkdir(LOG_DIR)
 !isdir(REQUEST_DIR) && mkdir(REQUEST_DIR)
 
-function get_new_log_id()::String
+function get_request_name()::String
     replace(REQUEST_FILE, "*" => Dates.format(Dates.now(), REQUEST_DATE_FORMAT))
 end
 
@@ -30,14 +30,13 @@ end
 
 function flush_logs()
     println("test")
-    for io in ios
-        flush(io)
+    for logger in loggers
+        flush(logger.stream)
     end
 end
 
 # Log setup
 loggers = []
-ios = []
 
 if SAVE_TO_STDOUT
     logger = ConsoleLogger(stdout)
@@ -50,7 +49,6 @@ if SAVE_TO_FILE
     io = open(log_file, "w")
     logger = SimpleLogger(io)
     push!(loggers, logger)
-    push!(ios, io)
 end
 
 tee_log = TeeLogger(Tuple(loggers))
