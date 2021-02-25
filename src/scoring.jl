@@ -97,13 +97,6 @@ function ck_workers_to_children(
         month_info["extra_workers"][day]
     req_wrk_night::Int = ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_NIGHT)
 
-    wrk_hourly = [
-        count([
-            within(hour, shift_info[shift])
-            for shift in day_shifts
-        ]) for hour = 1:24
-    ]
-
     day_begin, day_end = get_day(schedule)
     day_segments = []
     day_segments_begin = nothing
@@ -114,14 +107,18 @@ function ck_workers_to_children(
     act_wrk_night = req_wrk_night
 
     for hour = 1:24
+        current_workers = count([
+            within(hour, shift_info[shift])
+            for shift in day_shifts    
+        ])
         if hour >= day_begin && hour < day_end
         # day
-            act_wrk_day = min(act_wrk_day, wrk_hourly[hour])
+            act_wrk_day = min(act_wrk_day, current_workers)
             if !isnothing(night_segments_begin)
                push!(night_segments, (night_segments_begin, hour))
                night_segments_begin = nothing
             end
-            if wrk_hourly[hour] < req_wrk_day 
+            if current_workers < req_wrk_day 
                 if isnothing(day_segments_begin)
                     day_segments_begin = hour
                 end
@@ -131,12 +128,12 @@ function ck_workers_to_children(
             end
         else
         # night
-            act_wrk_night = min(act_wrk_night, wrk_hourly[hour])
+            act_wrk_night = min(act_wrk_night, current_workers)
             if !isnothing(day_segments_begin)
                 push!(day_segments, (day_segments_begin, hour))
                 day_segments_begin = nothing
             end
-            if wrk_hourly[hour] < req_wrk_night
+            if current_workers < req_wrk_night
                 if isnothing(night_segments_begin)
                     night_segments_begin = hour
                 end
