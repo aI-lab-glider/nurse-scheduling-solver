@@ -145,9 +145,21 @@ function ck_workers_to_children(
     end
 
     if !isnothing(day_segments_begin)
-        push!(day_segments, (day_segments_begin, 24))
+        first_block = get(day_segments, 1, (-1, -1))
+        if first_block[1] == 1
+            popfirst!(day_segments)
+            push!(day_segments, (day_segments_begin, first_block[2]))
+        else
+            push!(day_segments, (day_segments_begin, 24))
+        end
     elseif !isnothing(night_segments_begin)
-        push!(night_segments, (night_segments_begin, 24))
+        first_block = get(night_segments, 1, (-1, -1))
+        if first_block[1] == 1
+            popfirst!(night_segments)
+            push!(night_segments, (night_segments_begin, first_block[2]))
+        else
+            push!(night_segments, (night_segments_begin, 24))
+        end
     end
 
 
