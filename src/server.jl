@@ -18,19 +18,21 @@ Genie.config.cors_allowed_origins = ["*"]
 route("/fix_schedule", method = POST) do
     schedule_data = jsonpayload()
 
-    log_id = get_new_log_id()
-    save_schedule(schedule_data, log_id)
-    @info "Received log no. '$log_id'"
+    request_name = get_request_name()
+    save_schedule(schedule_data, request_name)
+    @info "Received request '$request_name'"
 
     try
         repaired_shifts = repair_schedule(schedule_data)
         schedule = Schedule(schedule_data)
         update_shifts!(schedule, repaired_shifts)
+        flush_logs()
         schedule.data |> json
     catch err
         @error "Unexpected error at fix schedule : " err.msg
         @error "Schedule ID: " log_id
         @error "Backtrace: " catch_backtrace() 
+        flush_logs()
         Dict() |> json
     end
 end
@@ -38,17 +40,19 @@ end
 route("/schedule_errors", method = POST) do
     schedule_data = jsonpayload()
 
-    log_id = get_new_log_id()
-    save_schedule(schedule_data, log_id)
-    @info "Received log no. '$log_id'"
+    request_name = get_request_name()
+    save_schedule(schedule_data, request_name)
+    @info "Received request '$request_name'"
 
     try
         errors = get_errors(schedule_data)
+        flush_logs()
         errors |> json
     catch err
         @error "Unexpected error at schedule errors : " err.msg
         @error "Schedule ID: " log_id
-        @error "Backtrace: " catch_backtrace() 
+        @error "Backtrace: " catch_backtrace()
+        flush_logs()
         Dict() |> json
     end
 end

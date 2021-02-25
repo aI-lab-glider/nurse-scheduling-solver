@@ -97,23 +97,79 @@ function ck_workers_to_children(
         month_info["extra_workers"][day]
     req_wrk_night::Int = ceil(month_info["children_number"][day] / REQ_CHLDN_PER_NRS_NIGHT)
 
-    wrk_hourly = [count(s -> within(hour, shift_info[s]), day_shifts) for hour = 1:24]
-
     day_begin, day_end = get_day(schedule)
-    act_wrk_day = minimum(wrk_hourly[day_begin:day_end])
-    act_wrk_night = minimum(vcat(wrk_hourly[1:day_begin], wrk_hourly[day_end:-1]))
+    day_segments = []
+    day_segments_begin = nothing
+    night_segments = []
+    night_segments_begin = nothing
+    
+    act_wrk_day = req_wrk_day
+    act_wrk_night = req_wrk_night
 
-    missing_wrk_day = req_wrk_day - act_wrk_day
-    missing_wrk_day = (missing_wrk_day < 0) ? 0 : missing_wrk_day
-    missing_wrk_night = req_wrk_night - act_wrk_night
-    missing_wrk_night = (missing_wrk_night < 0) ? 0 : missing_wrk_night
+    for hour = 1:24
+        current_workers = count([
+            within(hour, shift_info[shift])
+            for shift in day_shifts    
+        ])
+        if hour >= day_begin && hour < day_end
+        # day
+            act_wrk_day = min(act_wrk_day, current_workers)
+            if !isnothing(night_segments_begin)
+               push!(night_segments, (night_segments_begin, hour))
+               night_segments_begin = nothing
+            end
+            if current_workers < req_wrk_day 
+                if isnothing(day_segments_begin)
+                    day_segments_begin = hour
+                end
+            elseif !isnothing(day_segments_begin)
+                push!(day_segments, (day_segments_begin, hour))
+                day_segments_begin = nothing
+            end
+        else
+        # night
+            act_wrk_night = min(act_wrk_night, current_workers)
+            if !isnothing(day_segments_begin)
+                push!(day_segments, (day_segments_begin, hour))
+                day_segments_begin = nothing
+            end
+            if current_workers < req_wrk_night
+                if isnothing(night_segments_begin)
+                    night_segments_begin = hour
+                end
+            elseif !isnothing(night_segments_begin)
+                push!(night_segments, (night_segments_begin, hour))
+                night_segments_begin = nothing
+            end
+        end
+    end
+
+    if !isnothing(day_segments_begin)
+        first_block = get(day_segments, 1, (-1, -1))
+        if first_block[1] == 1
+            popfirst!(day_segments)
+            push!(day_segments, (day_segments_begin, first_block[2]))
+        else
+            push!(day_segments, (day_segments_begin, 24))
+        end
+    elseif !isnothing(night_segments_begin)
+        first_block = get(night_segments, 1, (-1, -1))
+        if first_block[1] == 1
+            popfirst!(night_segments)
+            push!(night_segments, (night_segments_begin, first_block[2]))
+        else
+            push!(night_segments, (night_segments_begin, 24))
+        end
+    end
+
 
     # penalty is charged only for workers lacking during daytime
-    penalty = missing_wrk_day * penalties[string(Constraints.PEN_LACKING_WORKER)]
+    penalty = (req_wrk_day - act_wrk_day) * penalties[string(Constraints.PEN_LACKING_WORKER)]
+    penalty += (req_wrk_night - act_wrk_night) * penalties[string(Constraints.PEN_LACKING_WORKER)]
 
     if penalty > 0
         error_details = ""
-        if missing_wrk_day > 0
+        if req_wrk_day > act_wrk_day
             error_details *= "\nExpected '$(req_wrk_day)', got '$(act_wrk_day)' in the day."
             push!(
                 errors,
@@ -122,10 +178,11 @@ function ck_workers_to_children(
                     "day" => day,
                     "required" => req_wrk_day,
                     "actual" => act_wrk_day,
+                    "segments" => day_segments
                 ),
             )
         end
-        if missing_wrk_night > 0
+        if req_wrk_night > act_wrk_night
             error_details *= "\nExpected '$(req_wrk_night)', got '$(act_wrk_night)' at night."
             push!(
                 errors,
@@ -134,6 +191,7 @@ function ck_workers_to_children(
                     "day" => day,
                     "required" => req_wrk_night,
                     "actual" => act_wrk_night,
+                    "segments" => night_segments
                 ),
             )
         end
