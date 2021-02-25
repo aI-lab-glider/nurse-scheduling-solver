@@ -118,7 +118,6 @@ function ck_workers_to_children(
     missing_wrk_night = req_wrk_night - act_wrk_night
     missing_wrk_night = (missing_wrk_night < 0) ? 0 : missing_wrk_night
 
-    # penalty is charged only for workers lacking during daytime
     penalty = (missing_wrk_day + missing_wrk_night) * penalties[string(Constraints.PEN_LACKING_WORKER)]
 
     if penalty > 0
