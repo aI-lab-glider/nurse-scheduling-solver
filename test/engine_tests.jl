@@ -39,10 +39,10 @@ function get_errors_sets(file::String)::Tuple{Set, Set}
     ))
     new_errors = Set(vcat(
         # Pass non AON errors
-        filter(x -> x["code"] != "AON", new_errors),
-        # Drop segments from AON
+        filter(x -> !(x["code"] in ["AON", "WNN", "WND"]), new_errors),
+        # Drop segments from AON, WNN and WND
         map(x -> delete!(x, "segments"),
-            filter(x -> x["code"] == "AON", new_errors
+            filter(x -> x["code"] in ["AON", "WNN", "WND"], new_errors
         ))
     ))
     old_errors, new_errors
