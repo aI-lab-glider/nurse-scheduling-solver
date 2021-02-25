@@ -1,20 +1,21 @@
-# Nurse Scheduling Problem Solver
+# Nurse Scheduling Solver
 
-The algorithm implementation is part of the solution created for [Fundacja Rodzin Adopcyjnych](https://adopcja.org.pl), the preadoption center in Warsaw (Poland). The project originated during Project Summer [AILab](http://www.ailab.agh.edu.pl) & [Glider](http://www.glider.agh.edu.pl) 2020 event and has been under intensive development since then.
+The solver is part of the system created for [Fundacja Rodzin Adopcyjnych](https://adopcja.org.pl), the pre-adoption center in Warsaw (Poland). The project was set during Project Summer [AILab](http://www.ailab.agh.edu.pl) & [Glider](http://www.glider.agh.edu.pl) 2020 event and has been under intensive development since then.
 
-The system aims to improve the foundation's operation by efficiently and quickly creating work schedules for its employees. So far, this has been done manually in spreadsheets, which is a tedious job.
+The system aims to improve the operations of the foundation automatically, forming effective work schedules for employees. So far, this has been manually done in spreadsheets, which is a tedious job.
 
-The solution presented here is problem-specific. It assumes a particular form of input and output schedules, which the foundation adopted. The working plans themselves are adjusted based on the rules of the Polish Labour Code.
+The migration to the system is realized by importing a plan from an Excel spreadsheet, which is the form, the foundation adopted earlier. If this is impossible, the application can be incorporated without previous schedules.
 
-The system comprises three components, which can be found on two GitHub repositories:
+In the current version work plans are adjusted based on the legislation of Polish Labour Code for medical staff.
 
- - *web/desktop* application, which provides an environment for convenient preparation of work schedules (detailed information [here](https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem-frontend))
- - *solver*, responsible for finding issues in shift schedules and their automatic adjustment
- - *backend* ([Genie framework](https://genieframework.com/)), which allows for communication of both components
+The system comprises three components which can be found on two GitHub repositories:
+ - *web/desktop application* provides the environment for convenient preparation of work schedules (detailed information [here](https://github.com/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem-frontend))
+ - *solver* responsible for finding issues in work schedules and fixing them automatically (not introduced yet)
+ - *backend* ([Genie framework](https://genieframework.com/)) links the functions of both previous components
 
 This repository contains the solver and the backend.
 
-## Run the solver
+## Run solver
 
 Required Julia version: `>=1.5`
 
@@ -41,7 +42,10 @@ julia --project -E "using Pkg; Pkg.instantiate()"
 julia --project src/server.jl
 ```
 
-### Endpoints
+
+## Frontend communication
+
+### Server's endpoints
 
 * POST `/fix_schedule`
 
@@ -54,34 +58,24 @@ julia --project src/server.jl
   body - JSON - schedule
 
   response - JSON - errors
+  
+### Finding issues
 
-## Constraints
+The broken constraints are tracked, and the information is passed to the frontend in a JSON list.
 
- - always at least one nurse
- - during the day, at least one worker for each three children
- - during the night, at least one worker for each five children
- - after DN shift 24h off, after PN 16h and after the rest 11h
- - each worker has 35h off once a week (counted from MO to SU)
- - undertime and overtime hours
- - U and L4 untouchable (implicit constraint)
-
-## Frontend communication
-
-Broken constraints are tracked, and the information is passed to the frontend in a JSON list.
-
-Table of error codes and their description:
+The table of error codes and their description:
 
 |Constraints                    |Code|Other keys                                                     |
 |-------------------------------|:--:|---------------------------------------------------------------|
 |Always at least one nurse      |AON | day::Int, segments::(Vector{[segment_begin, segment_end]})    |
-|Workers number during the day  |WND | day::Int, required::Int, actual::Int                          |
-|Workers number during the night|WNN | day::Int, required::Int, actual::Int                          |
+|Workers number during daytime  |WND | day::Int, required::Int, actual::Int                          |
+|Workers number during night    |WNN | day::Int, required::Int, actual::Int                          |
 |Disallowed shift sequence      |DSS | day::Int, worker::String, preceding::Shift, succeeding::Shift |
 |Lacking long break             |LLB | week::Int, worker::String                                     |
 |Worker undertime hours         |WUH | hours::Int, worker::String                                    |
 |Worker overtime hours          |WOH | hours::Int, worker::String                                    |
 
-Exemplary JSON list of broken constraints:
+The exemplary JSON list of the broken constraints:
 
 ```json
 [
@@ -106,10 +100,9 @@ Exemplary JSON list of broken constraints:
 ]
 ```
 
+### Shifts types
 
-## Shifts types
-
-All shift available for the solver should be provided in the schedule's JSON under the _shift_types_ key:
+All shifts that should be recognized by the solver must be provided in the schedule's JSON under the __shift_types__ key:
 
 ```json
 "shift_types": {
@@ -126,61 +119,60 @@ All shift available for the solver should be provided in the schedule's JSON und
 }
 ```
 
-Keys are shift codes and values are dictionaries containing the following entries:
+The keys are shift codes and the values are dictionaries containing the following entries:
 
 | Key              | Value                                       |
 |------------------|---------------------------------------------|
-| from             | Hour (1-24) at which the shift begins       |
-| to               | Hour (1-24) at which the shift ends         |
+| from             | Hour (1-24) when a shift begins             |
+| to               | Hour (1-24) when a shift ends               |
 | is_working_shift | Boolean value whether it is a working shift |
 
 
 ### Passing holidays
 
-Occurrences of national holidays impact scoring due to the reduced number of working hours. Information about them can be passed in schedule JSON under the _month_info_ key as an array of day indices:
+Occurrences of national holidays impact scoring due to the reduced number of working hours. The information about them can be passed in schedule JSON under the __month_info__ key as an array of day indices:
 
 ```json
 "month_info": {
-    ...
     "holidays": [7, 15, ...],
     ...
 }
 ```
 
-## Day/night handling
+### Daytime/night handling
 
-The start of day and night can be adjusted by providing the information in the input. Otherwise, the default configuration is used (day starts at 6 and night at 22).
+The start of daytime and night can be adjusted by providing the information in the input. Otherwise, the default configuration works (day starts at 6 and night at 22).
 
 ```JSON
- "month_info": {
-    "day_begin" : 7,
-    "night_begin" : 19,
+"month_info": {
+    "day_begin" : 6,
+    "night_begin" : 22,
     ...
-  }
+}
 ```
 
-## Custom priorities
+### Custom penalties
 
 The process of automated fixing a schedule can be controlled in terms of removing particular issues before others. Each of the constraints has its weight (look at the table below). These with higher are considered as more important errors. The weights themselves can not be changed, but the priorities can by providing an ordered list of constraints' codes (from the highest priority to the lowest).
+
 ```json
-    "penalty_priorities" : [
-        "AON",
-        "WND",
-        "WNN",
-        "LLB",
-        "DSS"
-    ]
+"penalty_priorities" : [
+    "AON",
+    "WND",
+    "WNN",
+    "LLB",
+    "DSS"
+]
 ```
-_All penalties must be listed, otherwise the schedule won't be accepted._
+All the shift codes from the table below must be listed, otherwise the schedule will not be accepted.
 
 | Penalty                         | Code | default weight |
-|---------------------------------|------|----------------|
+|---------------------------------|------|:--------------:|
 | Lacking nurse                   | AON  | 50             |
-| Lacking worker during the day   | WND  | 40             |
-| Lacking worker during the night | WNN  | 30             |
+| Lacking worker during daytime   | WND  | 40             |
+| Lacking worker during night     | WNN  | 30             |
 | Lacking long break              | LLB  | 20             |
 | Disallowed shift sequence       | DSS  | 10             |
-
 
 ---
 
@@ -188,58 +180,64 @@ _All penalties must be listed, otherwise the schedule won't be accepted._
 
 The result of scoring is a sum of the following three subscores:
 
-- workers' presence - the proper number of employees and nurses during a day,
-- workers' rights - workers must have at least one long break each week and the proper breaks after each working shift,
-- workers' work time - the magnitude of undertime and overtime of each employee.
+- presence - the proper number of employees and nurses during a day,
+- rights - controlling the amount of free time of each worker properly,
+- working time - the magnitude of undertime and overtime of each employee.
 
-### Workers' presence
 
-For each day, the solver evaluates the presence of all employees and nurses in the following way:
+### Constraints overview
 
-#### Workers' presence:
+- always at least one nurse
+- at least one staff member for each three children during daytime
+- at least one staff member for each five children during night
+- proper rest time between consecutive working shifts (24h, 16h and 11h)
+- each worker has 35h off once a week (counted from MO to SU)
+- undertime and overtime hours
+- vacation and sick leave are untouchable (implicit constraint)
 
-1. the required number of workers during the daytime equals to the number of children divided by three (the number of children per worker at daytime) minus the number of extra workers,
+### Employees' presence
 
-2. the required number of workers during the night equals to the number of children divided by five (the number of children per worker at night),
+For each day, the solver evaluates the presence of all employees (workers and nurses) in the following way:
 
-3. the score is increased by the ___PEN_LACKING_WORKER___ (default 40) multiplied by the number of workers lacking each hour.
+#### Staff's presence:
 
-#### Nurses presence:
+1. the required number of employees during daytime equals to the number of children divided by three (the number of children per worker at daytime) minus the number of extra workers,
+2. the required number of employees during night equals to the number of children divided by five (the number of children per worker at night),
+3. the score is increased by the __PEN_LACKING_WORKER__ (default 40) multiplied by the number of employees lacking each hour.
 
-1. the solver checks if there is at least one nurse in each hour of the day,
+#### Nurses' presence:
 
-2. the score is increased by the ___PEN_LACKING_NURSE___ (default 50) multiplied by the number of hours which lacks a nurse.
+1. it is evaluated if there is, at least, one nurse in each hour of a day,
+2. the score is increased by the __PEN_LACKING_NURSE__ (default 50) multiplied by the number of hours with absence of a nurse.
 
-### Workers rights
+### Employees’ rights
 
 #### Disallowed shift sequences
 
-The algorithm evaluates succession of consecutive shifts to maintain a proper free time between working shifts of employees. The disallowed shift sequence is a two-element sequence stating the two working shifts cannot happen one after another. The sequences are determined by the time the first shift lasts.
+The algorithm evaluates succession of consecutive shifts to maintain a proper free time between working shifts of employees. The disallowed shift sequence is a two-element sequence stating the two working shifts cannot happen one after another. The sequences are determined by the duration and the ending hour first shift.
 
-| Working shift lasting time (hours) | Required free time (hours) |
-|:----------------------------------:|:--------------------------:|
-| <=8                                | 8                          |
-| 9-12                               | 16                         |
-| >=13                               | 24                         |
+| Working shift duration (hours) | Required free time (hours) |
+|:------------------------------:|:--------------------------:|
+| <=8                            | 8                          |
+| 9-12                           | 16                         |
+| >=13                           | 24                         |
 
-For each such a sequence in a schedule, the algorithm increases the score by ___PEN_DISALLOWED_SHIFT_SEQUENCE___ (default 10).
+Each disallowed sequence in a schedule increases the score by  __PEN_DISALLOWED_SHIFT_SEQUENCE__ (default 10).
 
 #### Long breaks
 
-Each worker must have at least one long break each week, meaning a sequence of working and non-working shifts giving at least 35-hour of uninterrupted free time. The long breaks are evaluated only from Monday to Sunday, the break between consecutive weeks does not value.
+Each employee must have at least one long break each week. It means a sequence of working and non-working shifts gives at least 35-hour uninterrupted free time. The long breaks are evaluated only from Monday to Sunday, the break between consecutive weeks does not value.
 
-The algorithm applies ___PEN_NO_LONG_BREAK___ (default 20) for each week lacking a long break for each worker.
+Each week lacking a long break for each employee increases the score by __PEN_NO_LONG_BREAK__ (default 20).
 
-### Workers work time
+### Employees’ working time
 
-The algorithm evaluates each worker's work time in the following way:
+The algorithm evaluates each employees’ working time in the following way:
 
-1. the number of exempted days equals to the sum of holidays, sick leaves and other not-working shifts,
+1. the number of exempted days equals to the sum of holidays, sick leaves and other non-working shifts,
+2. the required working time as the difference between the number of working days in a month and the exempted days multiplied by the number of hours an employee works per day (it results from employment or mandate contract),
+3. the actual working time equals to the sum of worker's shift lengths.
 
-2. the required work time as the difference between the number of working days in a month and the exempted days multiplied by the number of hours an employee work per day (it results from the employment or mandate contract),
+If the difference between actual and required working time is larger than __MAX_OVERTIME__ (default 10) * days_in_month / 7, the score is increased by the difference between the overtime and the threshold.
 
-3. the actual work time equals to the sum of worker's shifts lengths.
-
-If the difference between actual and required work time is larger than ___MAX_OVERTIME___ (default 10) * days_in_month / 7, the score is increased by the difference between the overtime and the threshold.
-
-If the difference between actual and required work time is smaller than ___MAX_UNDERTIME___ (default 0) * days_in_month / 7, the total score is increased by the difference between the threshold and the undertime.
+If the difference between actual and required work time is smaller than __MAX_UNDERTIME__ (default 0) * days_in_month / 7, the total score is increased by the difference between the threshold and the undertime.
