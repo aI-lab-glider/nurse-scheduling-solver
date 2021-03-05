@@ -81,6 +81,7 @@ function ck_workers_presence(
     return score_res
 end
 
+# WNN/WND
 function ck_workers_to_children(
     day::Int,
     day_shifts::Vector{String},
@@ -89,6 +90,10 @@ function ck_workers_to_children(
     shift_info = get_shift_options(schedule)
     month_info = get_month_info(schedule)
     penalties = get_penalties(schedule)
+
+    if penalties[string(Constraints.PEN_LACKING_WORKER)] == 0
+        return ScoringResult((0, []))
+    end
 
     errors = Vector{Dict{String,Any}}()
 
@@ -200,10 +205,15 @@ function ck_workers_to_children(
     return ScoringResult((penalty, errors))
 end
 
+# AON
 function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::ScoringResult
     shift_info = get_shift_options(schedule)
     workers_info = get_workers_info(schedule)
     penalties = get_penalties(schedule)
+
+    if penalties[string(Constraints.PEN_LACKING_NURSE)] == 0
+        return ScoringResult((0, []))
+    end
 
     penalty = 0
     errors = Vector{Dict{String,Any}}()
@@ -253,12 +263,18 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::Scor
     return ScoringResult((penalty, errors))
 end
 
+### LLB + DSS
 function ck_workers_rights(
     schedule_shitfs::ScheduleShifts,
     schedule::Schedule,
 )::ScoringResult
     workers, shifts = schedule_shitfs
     penalties = get_penalties(schedule)
+
+    if penalties[string(Constraints.PEN_DISALLOWED_SHIFT_SEQ)] == 0
+        return ck_workers_long_breaks(schedule_shitfs, schedule)
+    end
+
     disallowed_shift_seq = get_disallowed_sequences(schedule)
 
     penalty = 0
@@ -294,6 +310,7 @@ function ck_workers_rights(
     return ScoringResult((penalty, errors)) + ck_workers_long_breaks(schedule_shitfs, schedule)
 end
 
+# LLB
 function ck_workers_long_breaks(
     schedule_shitfs::ScheduleShifts,
     schedule::Schedule
@@ -302,6 +319,11 @@ function ck_workers_long_breaks(
     errors = Vector{Dict{String,Any}}()
     workers, shifts = schedule_shitfs
     penalties = get_penalties(schedule)
+    
+    if penalties[string(Constraints.PEN_NO_LONG_BREAK)] == 0
+        return ScoringResult((0, []))
+    end
+
     weeks_no = ceil(Int, size(shifts, 2) / WEEK_DAYS_NO)
     shift_types = get_shift_options(schedule)
 

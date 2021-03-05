@@ -59,19 +59,14 @@ function contains_all_or_none_penalties(data::Dict)
     schedule_priority = get(data, "penalty_priorities", nothing)
 
     if !isnothing(schedule_priority)
-        default_priority = JSON.parsefile("config/default/priorities.json")["penalties"]
-        sort!(schedule_priority)
-        sort!(default_priority)
-        if length(default_priority) != length(schedule_priority)
-            "wrong priorities length, received '$(length(schedule_priority))', excpected '$(length(default_priority))'"
-        elseif !isequal(default_priority, schedule_priority)
-            "priorities list doesn't contain all entries"
-        else
-            "OK"
+        accepted_list = JSON.parsefile("config/default/priorities.json")["penalties"]
+        for member in schedule_priority
+            if !(member in accepted_list)
+               return "NOT OK" 
+            end
         end
-    else
-        "OK"
     end
+    return "OK"
 end
 
 function day_night_assumption(data::Dict)
