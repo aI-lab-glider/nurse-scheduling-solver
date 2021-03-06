@@ -218,7 +218,7 @@ The algorithm evaluates succession of consecutive shifts to maintain a proper fr
 
 | Working shift duration (hours) | Required free time (hours) |
 |:------------------------------:|:--------------------------:|
-| <=8                            | 8                          |
+| <=8                            | 11                         |
 | 9-12                           | 16                         |
 | >=13                           | 24                         |
 
