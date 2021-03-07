@@ -164,7 +164,7 @@ The process of automated fixing a schedule can be controlled in terms of removin
     "DSS"
 ]
 ```
-All the shift codes from the table below must be listed, otherwise the schedule will not be accepted.
+If priority code is not listed, the solver will set weight as 0 and will not return any errors related to that code.
 
 | Penalty                         | Code | default weight |
 |---------------------------------|------|:--------------:|

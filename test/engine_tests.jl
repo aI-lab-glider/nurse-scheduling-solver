@@ -130,3 +130,13 @@ end
     @test get_earliest_shift_begin(schedule) == 7
     @test get_latest_shift_end(schedule) == 31
 end
+
+@testset "Custom penalties tests" begin
+    applied_errors = ["WNN", "WND", "LLB", "DSS"]
+    schedule = "schedules/schedule_2016_august_custom.json"
+    new_errors = get_errors(schedule)
+    @test isempty(filter(x -> x["code"] == "AON", new_errors))
+    for err_type in applied_errors
+        @test check_single_type_errors(err_type, schedule)
+    end
+end

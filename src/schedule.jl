@@ -28,18 +28,25 @@ end
 
 function get_penalties(schedule)::Dict{String,Any}
     weights = CONFIG["weight_map"]
+    default_priority = CONFIG["penalties"]
     custom_priority = get(schedule.data, "penalty_priorities", nothing)
     penalties = Dict{String,Any}()
 
-    priority = if !isnothing(custom_priority)
-        custom_priority
-    else
-        CONFIG["penalties"]
+    if isnothing(custom_priority)
+        return Dict(
+            key => pen
+            for (key, pen) in zip(default_priority, weights)
+        )
     end
 
-    for (key, pen) in zip(priority, weights)
-        penalties[key] = pen
+    for key in default_priority
+        if key in custom_priority
+            penalties[key] = weights[findall(x -> x == key, custom_priority)[1]]
+        else
+            penalties[key] = 0
+        end
     end
+
     return penalties
 end
 
