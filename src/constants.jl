@@ -44,6 +44,8 @@ const CONFIG = JSON.parsefile("config/default/priorities.json")
 const SHIFTS = JSON.parsefile("config/default/shifts.json")
 const DAY_BEGIN = 6
 const NIGHT_BEGIN = 22
+ 
+const PERIOD_BEGIN = 7
 
 # weekly worktime
 const WORKTIME_BASE = 40

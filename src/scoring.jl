@@ -19,6 +19,7 @@ using ..NurseSchedules:
     get_earliest_shift_begin,
     get_latest_shift_end,
     get_day,
+    get_period_range,
     ScoringResult,
     ScoringResultOrPenalty,
     ScheduleShifts,
@@ -111,7 +112,7 @@ function ck_workers_to_children(
     act_wrk_day = req_wrk_day
     act_wrk_night = req_wrk_night
 
-    for hour = 1:24
+    for hour in get_period_range()
         current_workers = count([
             within(hour, shift_info[shift])
             for shift in day_shifts    
@@ -232,7 +233,7 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::Scor
     empty_segments = []
     segment_begin = nothing
 
-    for hour = 1:24
+    for hour in get_period_range()
         if hours_pop[hour] == 0
             penalty += penalties[string(Constraints.PEN_LACKING_NURSE)]
             if isnothing(segment_begin)

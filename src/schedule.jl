@@ -5,6 +5,7 @@ using ..NurseSchedules:
         CONFIG,
         SHIFTS,
         W_DICT,
+        PERIOD_BEGIN,
         get_next_day_distance,
         get_rest_length        
 
@@ -124,6 +125,13 @@ function update_shifts!(schedule::Schedule, shifts)
     for worker_no in axes(shifts, 1)
         schedule.data["shifts"][workers[worker_no]] = shifts[worker_no, :]
     end
+end
+
+function get_period_range()::Vector{Int}
+    vcat(
+        collect(PERIOD_BEGIN:24),
+        collect(1:(PERIOD_BEGIN - 1))
+    )
 end
 
 get_shifts_distance(shifts_1::Shifts, shifts_2::Shifts)::Int =
