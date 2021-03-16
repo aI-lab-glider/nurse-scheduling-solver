@@ -20,6 +20,7 @@ using ..NurseSchedules:
     get_latest_shift_end,
     get_day,
     get_period_range,
+    get_interval_length,
     ScoringResult,
     ScoringResultOrPenalty,
     ScheduleShifts,
@@ -36,6 +37,7 @@ using ..NurseSchedules:
     DAY_HOURS_NO,
     SUNDAY_NO,
     WORKTIME_DAILY,
+    PERIOD_BEGIN,
     Constraints,
     WorkerType,
     ErrorCode,
@@ -75,6 +77,7 @@ function ck_workers_presence(
         day_shifts = shifts[:, day_no]
         score_res += ck_workers_to_children(day_no, day_shifts, schedule)
         score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
+        score_res += ck_daily_workers_teams(day_shifts, day_no, workers, schedule)
     end
     if score_res.penalty > 0
         @debug "Lacking workers total penalty: $(score_res.penalty)"
@@ -261,6 +264,71 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::Scor
             ),
         )
     end
+    return ScoringResult((penalty, errors))
+end
+
+#WMT
+function ck_daily_workers_teams(
+    day_shifts::Vector{String},
+    day::Int,
+    workers::Workers,
+    schedule::Schedule
+)::ScoringResult
+    penalty = 0
+    errors = []
+    penalties = get_penalties(schedule)
+    workers_info = get_workers_info(schedule)
+    shifts = get_shift_options(schedule)
+
+    if penalties[string(Constraints.PEN_MULTIPLE_TEAMS)] == 0 || !haskey(workers_info, "team")
+        return ScoringResult((0, []))
+    end
+
+    worker_teams = map(x -> workers_info["team"][x], workers)
+
+    teams_hourly = [
+        unique(
+            team
+            for (worker, team) in enumerate(worker_teams)
+            if within(hour, shifts[day_shifts[worker]])
+        )
+        for hour = 1:24
+    ]
+    segment_begin = nothing
+
+    for hour in get_period_range()
+        if size(teams_hourly[hour], 1) > 1
+            if isnothing(segment_begin)
+                segment_begin = hour
+            end
+        elseif !isnothing(segment_begin)
+            penalty += penalties[string(Constraints.PEN_MULTIPLE_TEAMS)] * get_interval_length(segment_begin, hour)
+            push!(
+                errors,
+                Dict(
+                    "code" => string(ErrorCode.MULTIPLE_TEAMS),
+                    "day" => day,
+                    "from" => segment_begin,
+                    "to" => hour,
+                    "teams" => collect(teams_hourly[segment_begin])
+            ))
+            segment_begin = nothing
+        end
+    end
+
+    if !isnothing(segment_begin)
+        penalty += penalties[string(Constraints.PEN_MULTIPLE_TEAMS)] * get_interval_length(segment_begin, PERIOD_BEGIN)
+            push!(
+                errors,
+                Dict(
+                    "code" => string(ErrorCode.MULTIPLE_TEAMS),
+                    "day" => day,
+                    "from" => segment_begin,
+                    "to" => PERIOD_BEGIN,
+                    "teams" => collect(teams_hourly[segment_begin])
+            ))
+    end
+
     return ScoringResult((penalty, errors))
 end
 

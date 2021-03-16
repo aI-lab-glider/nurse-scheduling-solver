@@ -4,9 +4,11 @@
         "WND",
         "WNN",
         "LLB",
+        "MWT",
         "DSS"
     ],
     "weight_map" : [
+        60,
         50,
         40,
         30,

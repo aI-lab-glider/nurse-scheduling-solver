@@ -51,10 +51,16 @@ end
 function get_shift_length(shift::ShiftType)::Int
     if !shift["is_working_shift"]
         0
-    elseif shift["from"] > shift["to"]
-        24 - shift["from"] +  shift["to"]
-    elseif shift["to"] > shift["from"]
-        shift["to"] - shift["from"]
+    else
+        get_interval_length(shift["from"], shift["to"])
+    end
+end
+
+function get_interval_length(from::Int, to::Int)::Int
+    if from > to
+        24 - from +  to
+    elseif to > from
+        to - from
     else
         24
     end
