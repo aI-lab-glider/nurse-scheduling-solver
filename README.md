@@ -65,16 +65,16 @@ The broken constraints are tracked, and the information is passed to the fronten
 
 The table of error codes and their description:
 
-|Constraints                    |Code|Other keys                                                     |
-|-------------------------------|:--:|---------------------------------------------------------------|
-|Always at least one nurse      |AON | day::Int, segments::(Vector{[segment_begin, segment_end]})    |
-|Workers number during daytime  |WND | day::Int, required::Int, actual::Int                          |
-|Workers number during night    |WNN | day::Int, required::Int, actual::Int                          |
-|Disallowed shift sequence      |DSS | day::Int, worker::String, preceding::Shift, succeeding::Shift |
-|Lacking long break             |LLB | week::Int, worker::String                                     |
-|Worker undertime hours         |WUH | hours::Int, worker::String                                    |
-|Worker overtime hours          |WOH | hours::Int, worker::String                                    |
-|Multiple teams simultaneously  |MWT | day::Int, from::Int, to::Int, teams::Vector{teams_names}      |
+|Constraints                    |Code|Other keys                                                                            |
+|-------------------------------|:--:|--------------------------------------------------------------------------------------|
+|Always at least one nurse      |AON | day::Int, segments::Vector{[segment_begin, segment_end]}                             |
+|Workers number during daytime  |WND | day::Int, required::Int, actual::Int                                                 |
+|Workers number during night    |WNN | day::Int, required::Int, actual::Int                                                 |
+|Disallowed shift sequence      |DSS | day::Int, worker::String, preceding::Shift, succeeding::Shift                        |
+|Lacking long break             |LLB | week::Int, worker::String                                                            |
+|Worker undertime hours         |WUH | hours::Int, worker::String                                                           |
+|Worker overtime hours          |WOH | hours::Int, worker::String                                                           |
+|Worker teams collision         |WTC | day::Int, segments::Vector{[segment_begin, segment_end]}, teams::Vector{String}      |
 
 The exemplary JSON list of the broken constraints:
 
@@ -173,7 +173,7 @@ If priority code is not listed, the solver will set weight as 0 and will not ret
 | Lacking worker during daytime   | WND  | 50             |
 | Lacking worker during night     | WNN  | 40             |
 | Lacking long break              | LLB  | 30             |
-| Multiple working teams          | MWT  | 20             |
+| Multiple working teams          | WTC  | 20             |
 | Disallowed shift sequence       | DSS  | 10             |
 
 ---
