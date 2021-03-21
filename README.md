@@ -74,7 +74,7 @@ The table of error codes and their description:
 |Lacking long break             |LLB | week::Int, worker::String                                                            |
 |Worker undertime hours         |WUH | hours::Int, worker::String                                                           |
 |Worker overtime hours          |WOH | hours::Int, worker::String                                                           |
-|Worker teams collision         |WTC | day::Int, segments::Vector{[segment_begin, segment_end]}, teams::Vector{String}      |
+|Worker teams collision         |WTC | day::Int, hour::Int, workers::Vector{String}                                         |
 
 The exemplary JSON list of the broken constraints:
 
@@ -173,7 +173,7 @@ If priority code is not listed, the solver will set weight as 0 and will not ret
 | Lacking worker during daytime   | WND  | 50             |
 | Lacking worker during night     | WNN  | 40             |
 | Lacking long break              | LLB  | 30             |
-| Multiple working teams          | WTC  | 20             |
+| Worker teams collision          | WTC  | 20             |
 | Disallowed shift sequence       | DSS  | 10             |
 
 ---
@@ -216,7 +216,7 @@ For each day, the solver evaluates the presence of all employees (workers and nu
 #### Teams's presence:
 
 1. for each hour number of distinct teams is evaluated
-2. the score is increased by the __PEN_MULTIPLE_TEAMS__ (default 20) multiplied by the number of hours with multiple teams.
+2. the score is increased by the __PEN_MULTIPLE_TEAMS__ (default 20) multiplied by the number of teams for each hour.
 
 ### Employees’ rights
 

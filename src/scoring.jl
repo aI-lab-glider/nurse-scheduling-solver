@@ -295,38 +295,27 @@ function ck_daily_workers_teams(
         )
         for hour = 1:24
     ]
-    segment_begin = nothing
-    segments = []
-    teams = Set()
+    workers_hourly = [
+        [
+            worker 
+            for (num, worker) in enumerate(workers)
+            if within(hour, shifrs[day_shifts[num]]) 
+        ]
+    ]
 
     for hour in get_period_range()
-        if size(teams_hourly[hour], 1) > 1
-            union!(teams, Set(teams_hourly[hour]))
-            if isnothing(segment_begin)
-                segment_begin = hour
-            end
-        elseif !isnothing(segment_begin)
-            push!(segments, (segment_begin, hour))
-            segment_begin = nothing
-        end
-    end
-
-    if !isnothing(segment_begin)
-        push!(segments, (segment_begin, PERIOD_BEGIN))
-    end
-
-    if !isempty(segments)
-        penalty += penalties[string(Constraints.PEN_MULTIPLE_TEAMS)] * sum_segments(segments) 
+        if teams_hourly[hour] > 1
+            penalty += penalties[string(Constraints.PEN_MULTIPLE_TEAMS)] * (teams_hourly[hour] - 1)
             push!(
                 errors,
                 Dict(
                     "code" => string(ErrorCode.MULTIPLE_TEAMS),
                     "day" => day,
-                    "segments" => segments,
-                    "teams" => collect(teams)
+                    "hour" => hour,
+                    "workers" => workers_hourly[hour]
             ))
+        end
     end
-
     return ScoringResult((penalty, errors))
 end
 
