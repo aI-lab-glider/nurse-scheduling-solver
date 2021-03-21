@@ -288,19 +288,21 @@ function ck_daily_workers_teams(
     worker_teams = map(x -> workers_info["team"][x], workers)
 
     teams_hourly = [
+        size(
         unique(
             team
             for (worker, team) in enumerate(worker_teams)
             if within(hour, shifts[day_shifts[worker]])
-        )
+        ), 1)
         for hour = 1:24
     ]
     workers_hourly = [
         [
             worker 
             for (num, worker) in enumerate(workers)
-            if within(hour, shifrs[day_shifts[num]]) 
+            if within(hour, shifts[day_shifts[num]]) 
         ]
+        for hour = 1:24
     ]
 
     for hour in get_period_range()
