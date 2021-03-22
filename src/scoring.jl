@@ -285,7 +285,7 @@ function ck_daily_workers_teams(
         return ScoringResult((0, []))
     end
 
-    worker_teams = map(x -> workers_info["team"][x], workers)
+    worker_teams = map(w -> workers_info["team"][w], workers)
 
     teams_hourly = [
         size(
