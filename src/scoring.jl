@@ -26,7 +26,6 @@ using ..NurseSchedules:
     Shifts,
     Workers,
     REQ_CHLDN_PER_NRS_DAY,
-    PERIOD_BEGIN,
     REQ_CHLDN_PER_NRS_NIGHT,
     LONG_BREAK_HOURS,
     MAX_OVERTIME,
@@ -157,7 +156,7 @@ function ck_workers_to_children(
             popfirst!(day_segments)
             push!(day_segments, (day_segments_begin, first_block[2]))
         else
-            push!(day_segments, (day_segments_begin, PERIOD_BEGIN))
+            push!(day_segments, (day_segments_begin, 24))
         end
     elseif !isnothing(night_segments_begin)
         first_block = get(night_segments, 1, (-1, -1))
@@ -165,7 +164,7 @@ function ck_workers_to_children(
             popfirst!(night_segments)
             push!(night_segments, (night_segments_begin, first_block[2]))
         else
-            push!(night_segments, (night_segments_begin, PERIOD_BEGIN))
+            push!(night_segments, (night_segments_begin, 24))
         end
     end
 
@@ -248,7 +247,7 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::Scor
 
     # Close last
     if !isnothing(segment_begin)
-        push!(empty_segments, (segment_begin, PERIOD_BEGIN))
+        push!(empty_segments, (segment_begin, 24))
     end
 
     if empty_segments != []
