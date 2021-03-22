@@ -20,8 +20,6 @@ using ..NurseSchedules:
     get_latest_shift_end,
     get_day,
     get_period_range,
-    get_interval_length,
-    sum_segments,
     ScoringResult,
     ScoringResultOrPenalty,
     ScheduleShifts,
@@ -39,7 +37,6 @@ using ..NurseSchedules:
     DAY_HOURS_NO,
     SUNDAY_NO,
     WORKTIME_DAILY,
-    PERIOD_BEGIN,
     Constraints,
     WorkerType,
     ErrorCode,
@@ -79,7 +76,6 @@ function ck_workers_presence(
         day_shifts = shifts[:, day_no]
         score_res += ck_workers_to_children(day_no, day_shifts, schedule)
         score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
-        score_res += ck_daily_workers_teams(day_shifts, day_no, workers, schedule)
     end
     if score_res.penalty > 0
         @debug "Lacking workers total penalty: $(score_res.penalty)"
@@ -265,59 +261,6 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::Scor
                 "segments" => empty_segments,
             ),
         )
-    end
-    return ScoringResult((penalty, errors))
-end
-
-#WMT
-function ck_daily_workers_teams(
-    day_shifts::Vector{String},
-    day::Int,
-    workers::Workers,
-    schedule::Schedule
-)::ScoringResult
-    penalty = 0
-    errors = []
-    penalties = get_penalties(schedule)
-    workers_info = get_workers_info(schedule)
-    shifts = get_shift_options(schedule)
-
-    if penalties[string(Constraints.PEN_MULTIPLE_TEAMS)] == 0 || !haskey(workers_info, "team")
-        return ScoringResult((0, []))
-    end
-
-    worker_teams = map(w -> workers_info["team"][w], workers)
-
-    teams_hourly = [
-        size(
-        unique(
-            team
-            for (worker, team) in enumerate(worker_teams)
-            if within(hour, shifts[day_shifts[worker]])
-        ), 1)
-        for hour = 1:24
-    ]
-    workers_hourly = [
-        [
-            worker 
-            for (num, worker) in enumerate(workers)
-            if within(hour, shifts[day_shifts[num]]) 
-        ]
-        for hour = 1:24
-    ]
-
-    for hour in get_period_range()
-        if teams_hourly[hour] > 1
-            penalty += penalties[string(Constraints.PEN_MULTIPLE_TEAMS)] * (teams_hourly[hour] - 1)
-            push!(
-                errors,
-                Dict(
-                    "code" => string(ErrorCode.MULTIPLE_TEAMS),
-                    "day" => day,
-                    "hour" => hour,
-                    "workers" => workers_hourly[hour]
-            ))
-        end
     end
     return ScoringResult((penalty, errors))
 end
