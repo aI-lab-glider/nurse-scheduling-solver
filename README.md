@@ -65,15 +65,16 @@ The broken constraints are tracked, and the information is passed to the fronten
 
 The table of error codes and their description:
 
-|Constraints                    |Code|Other keys                                                     |
-|-------------------------------|:--:|---------------------------------------------------------------|
-|Always at least one nurse      |AON | day::Int, segments::(Vector{[segment_begin, segment_end]})    |
-|Workers number during daytime  |WND | day::Int, required::Int, actual::Int                          |
-|Workers number during night    |WNN | day::Int, required::Int, actual::Int                          |
-|Disallowed shift sequence      |DSS | day::Int, worker::String, preceding::Shift, succeeding::Shift |
-|Lacking long break             |LLB | week::Int, worker::String                                     |
-|Worker undertime hours         |WUH | hours::Int, worker::String                                    |
-|Worker overtime hours          |WOH | hours::Int, worker::String                                    |
+|Constraints                    |Code|Other keys                                                                            |
+|-------------------------------|:--:|--------------------------------------------------------------------------------------|
+|Always at least one nurse      |AON | day::Int, segments::Vector{[segment_begin, segment_end]}                             |
+|Workers number during daytime  |WND | day::Int, required::Int, actual::Int                                                 |
+|Workers number during night    |WNN | day::Int, required::Int, actual::Int                                                 |
+|Disallowed shift sequence      |DSS | day::Int, worker::String, preceding::Shift, succeeding::Shift                        |
+|Lacking long break             |LLB | week::Int, worker::String                                                            |
+|Worker undertime hours         |WUH | hours::Int, worker::String                                                           |
+|Worker overtime hours          |WOH | hours::Int, worker::String                                                           |
+|Worker teams collision         |WTC | day::Int, hour::Int, workers::Vector{String}                                         |
 
 The exemplary JSON list of the broken constraints:
 
@@ -168,10 +169,11 @@ If priority code is not listed, the solver will set weight as 0 and will not ret
 
 | Penalty                         | Code | default weight |
 |---------------------------------|------|:--------------:|
-| Lacking nurse                   | AON  | 50             |
-| Lacking worker during daytime   | WND  | 40             |
-| Lacking worker during night     | WNN  | 30             |
-| Lacking long break              | LLB  | 20             |
+| Lacking nurse                   | AON  | 60             |
+| Lacking worker during daytime   | WND  | 50             |
+| Lacking worker during night     | WNN  | 40             |
+| Lacking long break              | LLB  | 30             |
+| Worker teams collision          | WTC  | 20             |
 | Disallowed shift sequence       | DSS  | 10             |
 
 ---
@@ -190,6 +192,7 @@ The result of scoring is a sum of the following three subscores:
 - always at least one nurse
 - at least one staff member for each three children during daytime
 - at least one staff member for each five children during night
+- only members of the same team can work simultaneously
 - proper rest time between consecutive working shifts (24h, 16h and 11h)
 - each worker has 35h off once a week (counted from MO to SU)
 - undertime and overtime hours
@@ -209,6 +212,11 @@ For each day, the solver evaluates the presence of all employees (workers and nu
 
 1. it is evaluated if there is, at least, one nurse in each hour of a day,
 2. the score is increased by the __PEN_LACKING_NURSE__ (default 50) multiplied by the number of hours with absence of a nurse.
+
+#### Teams's presence:
+
+1. for each hour number of distinct teams is evaluated
+2. the score is increased by the __PEN_MULTIPLE_TEAMS__ (default 20) multiplied by the number of teams for each hour.
 
 ### Employees’ rights
 
