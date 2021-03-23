@@ -152,6 +152,21 @@ The start of daytime and night can be adjusted by providing the information in t
 }
 ```
 
+### Workers' teams
+
+Teams are passed inside ___employee_info___ inside a _team_ dictionary. If such is not provided, the algorithm will not evaluate teams collisions.
+```JSON
+  "employee_info": {
+      ...
+        "team": {
+            "nurse_1":  "NURSE",
+            "nurse_2":  "NURSE",
+            "babysitter_1": "OTHER",
+            "babysitter_2": "OTHER"
+        },
+      ...
+```
+
 ### Custom penalties
 
 The process of automated fixing a schedule can be controlled in terms of removing particular issues before others. Each of the constraints has its weight (look at the table below). These with higher are considered as more important errors. The weights themselves can not be changed, but the priorities can by providing an ordered list of constraints' codes (from the highest priority to the lowest).
