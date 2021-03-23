@@ -479,7 +479,7 @@ function ck_workers_worktime(
 
         act_worktime = sum(map(s -> get_shift_length(shift_info[s]), shifts[worker_no, :]))
 
-        workers_worktime[workers[worker_no]] = act_worktime - req_worktime
+        workers_worktime[workers[worker_no]] = floor(act_worktime - req_worktime)
     end
 
     for (worker, overtime) in workers_worktime
