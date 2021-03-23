@@ -154,7 +154,7 @@ The start of daytime and night can be adjusted by providing the information in t
 
 ### Workers' teams
 
-Teams are passed inside ___employee_info___ inside a _team_ dictionary. If such is not provided, the algorithm will not evaluate teams collisions.
+Teams are passed in the _team_ dictionary inside the ___employee_info___. If such is not provided, the algorithm will not evaluate teams collisions.
 ```JSON
   "employee_info": {
       ...
