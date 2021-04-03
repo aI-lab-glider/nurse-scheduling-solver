@@ -1,3 +1,6 @@
+name = "nurse-scheduling-problem-solver"
+uuid = "92cd2c7d-a66b-49fa-9b79-6db41388eebc"
+
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Genie = "c43c736e-a2d1-11e8-161f-af95117fbd1e"
