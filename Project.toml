@@ -1,4 +1,4 @@
-name = "nurse-scheduling-problem-solver"
+name = "NurseScheduling"
 uuid = "92cd2c7d-a66b-49fa-9b79-6db41388eebc"
 
 [deps]
