@@ -12,6 +12,8 @@ ShiftType = Dict{String, Any}
     Returns number of hours to be substracted from the norm
     Args:
         shift::ShiftType    - dictionary containing shift description
+    Note:
+        W shift is not working shift, so this function will return 8 instead of 0
 """
 function get_shift_norm_sub(shift::ShiftType)::Int
     if shift["is_working_shift"]

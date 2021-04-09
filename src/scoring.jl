@@ -467,7 +467,9 @@ function ck_workers_worktime(
 
         shift_exemption = 0
         for shift in worker_shifts
-            shift_exemption += get_shift_norm_sub(shift_info[shift])
+            if shift != "W"
+                shift_exemption += get_shift_norm_sub(shift_info[shift])
+            end
         end
 
         req_worktime = (num_days - holidays_no) * hours_per_day - shift_exemption
