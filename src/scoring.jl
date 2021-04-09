@@ -21,6 +21,7 @@ using ..NurseSchedules:
     get_day,
     get_period_range,
     get_interval_length,
+    get_shift_norm_sub,
     sum_segments,
     ScoringResult,
     ScoringResultOrPenalty,
@@ -460,22 +461,16 @@ function ck_workers_worktime(
     ))
 
     for worker_no in axes(shifts, 1)
-        exempted_days_no = holidays_no
         worker_shifts = shifts[worker_no, :]
-
-        while !isempty(worker_shifts)
-            week_exempted_days_no =
-                count(s -> (s in keys(get_exempted_shifts(schedule))), splice!(worker_shifts, 1:WEEK_DAYS_NO))
-            exempted_days_no += if week_exempted_days_no > NUM_WORKING_DAYS
-                NUM_WORKING_DAYS
-            else
-                week_exempted_days_no
-            end
-        end
 
         hours_per_day::Float32 = workers_info["time"][workers[worker_no]] * WORKTIME_DAILY
 
-        req_worktime = (num_days - exempted_days_no) * hours_per_day
+        shift_exemption = 0
+        for shift in worker_shifts
+            shift_exemption += get_shift_norm_sub(shift_info[shift])
+        end
+
+        req_worktime = (num_days - holidays_no) * hours_per_day - shift_exemption
 
         act_worktime = sum(map(s -> get_shift_length(shift_info[s]), shifts[worker_no, :]))
 

@@ -5,13 +5,15 @@ include("old_engine/NurseScheduling.jl")
 include("../src/repair_schedule.jl")
 
 using Test
+using JSON
 using .NurseSchedules:
     Schedule,
     get_disallowed_sequences,
     get_next_day_distance,
     get_earliest_shift_begin,
     get_latest_shift_end,
-    sum_segments
+    sum_segments,
+    get_shift_norm_sub
 
 function repair!(schedule::Schedule)
     fix = repair_schedule(schedule.data)
@@ -151,5 +153,14 @@ end
         @test sum_segments(segments) == 4
         push!(segments, (22, 2))
         @test sum_segments(segments) == 8
+    end
+
+    open("test/data/example_shift.json", "r") do io
+        shift = JSON.parse(io)
+        @test get_shift_norm_sub(shift) == 0
+        shift["is_working_shift"] = false
+        @test get_shift_norm_sub(shift) == 15
+        delete!(shift, "normSubstraction")
+        @test get_shift_norm_sub(shift) == 8
     end
 end

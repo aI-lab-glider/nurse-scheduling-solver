@@ -1,0 +1,8 @@
+{
+    "code": "test",
+    "name": "test",
+    "from": 1,
+    "to": 2,
+    "is_working_shift": true,
+    "normSubstraction": 15
+}
