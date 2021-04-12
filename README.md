@@ -1,5 +1,7 @@
 # Nurse Scheduling Solver
 
+![Codecov](https://img.shields.io/codecov/c/github/Project-Summer-AI-Lab-Glider/nurse-scheduling-problem-solver)
+
 The solver is part of the system created for [Fundacja Rodzin Adopcyjnych](https://adopcja.org.pl), the pre-adoption center in Warsaw (Poland). The project was set during Project Summer [AILab](http://www.ailab.agh.edu.pl) & [Glider](http://www.glider.agh.edu.pl) 2020 event and has been under intensive development since then.
 
 The system aims to improve the operations of the foundation automatically, forming effective work schedules for employees. So far, this has been manually done in spreadsheets, which is a tedious job.
