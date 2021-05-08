@@ -26,6 +26,7 @@ MutationRecipe = @NamedTuple{
 }
 
 # day free dict
+const W = "W"
 const W_DICT = Dict("from" => 7,
                     "to" => 15,
                     "is_working_shift" => false)

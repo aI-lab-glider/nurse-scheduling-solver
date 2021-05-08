@@ -11,7 +11,8 @@ using ..NurseSchedules:
     get_changeable_shifts,
     get_shifts,
     Mutation, 
-    MutationRecipe
+    MutationRecipe,
+    W
     
 
 using StatsBase: sample
