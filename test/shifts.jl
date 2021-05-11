@@ -2,28 +2,34 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this 
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-# X entry doesn't have any meaning, just forces Dict{String, Any} type
-x = Dict(
+x = Dict{String, Any}(
     "from" => 12,
     "to" => 18,
-    "x" => "y"
+    "is_working_shift" => true
 )
-y = Dict(
+y = Dict{String, Any}(
     "from" => 20,
     "to" => 6,
-    "x" => "y"
+    "is_working_shift" => true
 )
-z = Dict(
+z = Dict{String, Any}(
     "from" => 2,
     "to" => 8,
-    "x" => "y"
+    "is_working_shift" => true
 )
+a = Dict{String, Any}(
+    "from" => 2,
+    "to" => 8,
+    "is_working_shift" => false
+)
+
 
 @testset "within" begin
     @test within(15, x) == true
-    @tets within(18, x) == false
+    @test within(18, x) == false
     @test within(2, y) == true
     @test within(20, y) == true
+    @test within(7, a) == false
 end
 
 @testset "get_next_day_distance" begin
