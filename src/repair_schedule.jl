@@ -47,6 +47,7 @@ function repair_schedule(schedule_data)
     push!(tabu_list, hash(best_res.shifts))
 
     no_improved_iters = 0
+    minor_improved_iters = 0
 
     for i = 1:ITERATION_NUMBER
         @info ("[Iteration $(i)]")
@@ -88,6 +89,12 @@ function repair_schedule(schedule_data)
         _, best_score_pos = findmin([res.score for res in p_best_results])
         best_iter_res = p_best_results[best_score_pos]
 
+        if best_iter_res.score + IMPROVE_DELTA < best_res.score
+            minor_improved_iters = 0
+        else
+            minor_improved_iters += 1
+        end
+
         if best_res.score > best_iter_res.score
             best_diff = @sprintf "(%.2f)" best_iter_res.score - best_res.score
             best_res = best_iter_res
@@ -122,7 +129,7 @@ function repair_schedule(schedule_data)
             popfirst!(tabu_list)
         end
 
-        if best_res.score < 1 || no_improved_iters > NO_IMPROVE_QUIT_ITERS
+        if best_res.score < 1 || minor_improved_iters > NO_IMPROVE_QUIT_ITERS
             @info ("We will not be better, finishing.")
             break
         else
