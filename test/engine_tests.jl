@@ -1,21 +1,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public 
 # License, v. 2.0. If a copy of the MPL was not distributed with this 
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
-cd("../")
-
-include("old_engine/NurseScheduling.jl")
-include("../src/repair_schedule.jl")
-
-using Test
-using .NurseSchedules:
-    Schedule,
-    get_disallowed_sequences,
-    get_next_day_distance,
-    get_earliest_shift_begin,
-    get_latest_shift_end,
-    sum_segments
-
 function repair!(schedule::Schedule)
     fix = repair_schedule(schedule.data)
     update_shifts!(schedule, fix)
@@ -117,42 +102,5 @@ end
     @test isempty(filter(x -> x["code"] == "AON", new_errors))
     for err_type in applied_errors
         @test check_single_type_errors(err_type, schedule)
-    end
-end
-
-@testset "Shifts.jl tests" begin
-    @testset "Next day shift distance" begin
-        # X entry doesn't have any meaning, just forces Dict{String, Any} type
-        x = Dict(
-            "from" => 12,
-            "to" => 18,
-            "x" => "y"
-        )
-        y = Dict(
-            "from" => 20,
-            "to" => 6,
-            "x" => "y"
-        )
-        z = Dict(
-            "from" => 2,
-            "to" => 8,
-            "x" => "y"
-        )
-        @test get_next_day_distance(x, y) == 26
-        @test get_next_day_distance(x, z) == 8 
-        @test get_next_day_distance(y, x) == 6
-        @test get_next_day_distance(y, z) == -4
-        @test get_next_day_distance(z, x) == 28
-        @test get_next_day_distance(z, y) == 36
-    end
-
-    @testset "Segments sum tests" begin
-        segments = [
-            (1, 3),
-            (6, 8)
-        ]
-        @test sum_segments(segments) == 4
-        push!(segments, (22, 2))
-        @test sum_segments(segments) == 8
     end
 end

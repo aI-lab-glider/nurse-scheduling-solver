@@ -6,7 +6,8 @@ const INITIAL_MAX_TABU_SIZE = 150
 const INC_TABU_SIZE_ITER = 0
 const SCHEDULE_PATH = "schedules/schedule_2016_august_frontend.json"
 
-const NO_IMPROVE_QUIT_ITERS = 1000
+const NO_IMPROVE_QUIT_ITERS = 100
+const IMPROVE_DELTA = 0.01
 
 # reactive tabu search
 const FULL_NBHD_ITERS = 30
