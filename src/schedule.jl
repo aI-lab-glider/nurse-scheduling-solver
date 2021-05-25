@@ -4,6 +4,8 @@
 using ..NurseSchedules:
         CONFIG,
         SHIFTS,
+        W,
+        W_ID,
         W_DICT,
         PERIOD_BEGIN,
         get_next_day_distance,
@@ -11,19 +13,40 @@ using ..NurseSchedules:
 
 mutable struct Schedule
     data::Dict
+    shift_map::Dict{String, UInt8}
+    reverse_map::Dict{UInt8, String}
 
     function Schedule(filename::AbstractString)
         data = JSON.parsefile(filename)
-        if haskey(data, "shift_types") && !haskey(data["shift_types"], "W")
-            data["shift_types"]["W"] = W_DICT
-        end
         Schedule(data)
     end
 
     function Schedule(data::Dict{String,Any})
         validate(data)
         @debug "Schedule loaded correctly."
-        new(data)
+        shift_map = Dict{String, UInt8}()
+        reverse_map = Dict{UInt8, String}()
+        reverse_map[W_ID] = W
+        shift_map[W] = W_ID
+        next_val = W_ID + 1
+        if in("shift_types", keys(data))
+            for key in keys(data["shift_types"])
+                if key == W
+                    continue
+                end
+                shift_map[key] = next_val
+                reverse_map[next_val] = key
+                next_val += 1
+            end
+        else
+            for key in keys(SHIFTS)
+                shift_map[key] = next_val
+                reverse_map[next_val] = key
+                next_val += 1
+            end
+        end
+
+        new(data, shift_map, reverse_map)
     end
 end
 
@@ -52,11 +75,12 @@ function get_penalties(schedule)::Dict{String,Any}
 end
 
 function get_shift_options(schedule::Schedule)
-    if !("shift_types" in keys(schedule.data))
+    base = if !("shift_types" in keys(schedule.data))
         SHIFTS 
     else
         schedule.data["shift_types"]
     end
+    return Dict(schedule.shift_map[k] => v for (k,v) in base)
 end
 
 function get_day(schedule::Schedule)
@@ -74,7 +98,7 @@ end
 
 function get_exempted_shifts(schedule::Schedule)
     filter(
-        kv -> !kv.second["is_working_shift"] && kv.first != "W",
+        kv -> !kv.second["is_working_shift"] && kv.first != W_ID,
         get_shift_options(schedule)
     )
 end
@@ -82,7 +106,7 @@ end
 function get_disallowed_sequences(schedule::Schedule)
     Dict(
         first_shift_key => [
-            second_shift_key 
+            second_shift_key
             for (second_shift_key, second_shift_val) in get_changeable_shifts(schedule)
             if get_next_day_distance(first_shift_val, second_shift_val) <= get_rest_length(first_shift_val)
         ] for (first_shift_key, first_shift_val) in get_changeable_shifts(schedule) 
@@ -106,7 +130,10 @@ end
 
 function get_shifts(schedule::Schedule)::ScheduleShifts
     workers = collect(keys(schedule.data["shifts"]))
-    shifts = collect(values(schedule.data["shifts"]))
+    shifts = collect(map(
+        x -> map(y -> schedule.shift_map[y], x),
+        values(schedule.data["shifts"])
+    ))
 
     return workers,
     [shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])]
@@ -123,7 +150,7 @@ end
 function update_shifts!(schedule::Schedule, shifts)
     workers, _ = get_shifts(schedule)
     for worker_no in axes(shifts, 1)
-        schedule.data["shifts"][workers[worker_no]] = shifts[worker_no, :]
+        schedule.data["shifts"][workers[worker_no]] = map(x -> schedule.reverse_map[x], shifts[worker_no, :])
     end
 end
 

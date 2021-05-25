@@ -8,7 +8,8 @@ ScoringResult = @NamedTuple{penalty::Int, errors::Vector{Dict{String,Any}}}
 ScoringResultOrPenalty = Union{ScoringResult,Int}
 # Schedule related
 Workers = Vector{String}
-Shifts = Array{String,2}
+Shifts = Matrix{UInt8}
+DayShifts = Vector{UInt8}
 ScheduleShifts = Tuple{Workers,Shifts}
 # Neighborhood
 @se Mutation begin
@@ -17,16 +18,17 @@ ScheduleShifts = Tuple{Workers,Shifts}
     SWP => "SWAP"
 end
 IntOrTuple = Union{Int,Tuple{Int,Int}}
-StringOrNothing = Union{String,Nothing}
+IntOrNothing = Union{UInt8,Nothing}
 MutationRecipe = @NamedTuple{
     type::Mutation.MutationEnum,
     day::Int,
     wrk_no::IntOrTuple,
-    optional_info::StringOrNothing,
+    optional_info::IntOrNothing,
 }
 
 # day free dict
 const W = "W"
+const W_ID = 0
 const W_DICT = Dict("from" => 7,
                     "to" => 15,
                     "is_working_shift" => false)

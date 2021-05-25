@@ -26,6 +26,7 @@ using ..NurseSchedules:
     ScoringResultOrPenalty,
     ScheduleShifts,
     Shifts,
+    DayShifts,
     Workers,
     REQ_CHLDN_PER_NRS_DAY,
     PERIOD_BEGIN,
@@ -90,7 +91,7 @@ end
 # WNN/WND
 function ck_workers_to_children(
     day::Int,
-    day_shifts::Vector{String},
+    day_shifts::DayShifts,
     schedule::Schedule,
 )::ScoringResult
     shift_info = get_shift_options(schedule)
@@ -271,7 +272,7 @@ end
 
 #WMT
 function ck_daily_workers_teams(
-    day_shifts::Vector{String},
+    day_shifts::DayShifts,
     day::Int,
     workers::Workers,
     schedule::Schedule
@@ -359,8 +360,8 @@ function ck_workers_rights(
                         "code" => string(ErrorCode.DISALLOWED_SHIFT_SEQ),
                         "day" => shift_no + 1,
                         "worker" => workers[worker_no],
-                        "preceding" => shifts[worker_no, shift_no],
-                        "succeeding" => shifts[worker_no, shift_no + 1],
+                        "preceding" => schedule.reverse_map[shifts[worker_no, shift_no]],
+                        "succeeding" => schedule.reverse_map[shifts[worker_no, shift_no + 1]],
                     ),
                 )
             end
