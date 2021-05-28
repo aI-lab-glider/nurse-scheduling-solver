@@ -24,29 +24,36 @@ mutable struct Schedule
     function Schedule(data::Dict{String,Any})
         validate(data)
         @debug "Schedule loaded correctly."
-        shift_map = Dict{String, UInt8}()
-        reverse_map = Dict{UInt8, String}()
-        reverse_map[W_ID] = W
-        shift_map[W] = W_ID
-        next_val = W_ID + 1
-        if in("shift_types", keys(data))
-            for key in keys(data["shift_types"])
-                if key == W
-                    continue
-                end
-                shift_map[key] = next_val
-                reverse_map[next_val] = key
-                next_val += 1
-            end
+        (shift_map, reverse_map) = if "shift_types" in keys(data)
+            construct_maps(keys(data["shift_types"]))
         else
-            for key in keys(SHIFTS)
-                shift_map[key] = next_val
-                reverse_map[next_val] = key
-                next_val += 1
-            end
+            construct_maps(keys(SHIFTS))
         end
-
         new(data, shift_map, reverse_map)
+    end
+end
+
+function construct_maps(keys)
+    shift_map = Dict{String, UInt8}()
+    reverse_map = Dict{UInt8, String}()
+    reverse_map[W_ID] = W
+    shift_map[W] = W_ID
+    next_val = W_ID + 1
+    for key in keys
+        if key != W
+            shift_map[key] = next_val
+            reverse_map[next_val] = key
+            next_val += 1
+        end
+    end
+    shift_map, reverse_map
+end
+
+function get_raw_options(schedule::Schedule)
+    if !("shift_types" in schedule.data)
+        SHIFTS
+    else
+        schedule.data["shift_types"]
     end
 end
 
@@ -75,11 +82,7 @@ function get_penalties(schedule)::Dict{String,Any}
 end
 
 function get_shift_options(schedule::Schedule)
-    base = if !("shift_types" in keys(schedule.data))
-        SHIFTS 
-    else
-        schedule.data["shift_types"]
-    end
+    base = get_raw_options(schedule)
     return Dict(schedule.shift_map[k] => v for (k,v) in base)
 end
 
