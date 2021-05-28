@@ -50,7 +50,7 @@ function construct_maps(keys)
 end
 
 function get_raw_options(schedule::Schedule)
-    if !("shift_types" in schedule.data)
+    if !("shift_types" in keys(schedule.data))
         SHIFTS
     else
         schedule.data["shift_types"]
