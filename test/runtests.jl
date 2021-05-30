@@ -9,12 +9,17 @@ include("../src/repair_schedule.jl")
 using Test
 using .NurseSchedules:
     Schedule,
+    get_shifts,
     get_disallowed_sequences,
+    update_shifts!,
     get_next_day_distance,
     get_earliest_shift_begin,
     get_latest_shift_end,
     sum_segments,
-    within
+    within,
+    W_ID,
+    W
 
 include("engine_tests.jl")
 include("shifts.jl")
+include("schedule.jl")

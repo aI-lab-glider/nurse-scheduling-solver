@@ -12,7 +12,7 @@ using ..NurseSchedules:
     get_shifts,
     Mutation, 
     MutationRecipe,
-    W
+    W_ID
     
 
 using StatsBase: sample
@@ -114,7 +114,7 @@ function perform_mutation!(shifts::Shifts, recipe::MutationRecipe)::Shifts
     if recipe.type == Mutation.ADD
         shifts[recipe.wrk_no, recipe.day] = recipe.optional_info
     elseif recipe.type == Mutation.DEL
-        shifts[recipe.wrk_no, recipe.day] = W
+        shifts[recipe.wrk_no, recipe.day] = W_ID
     elseif recipe.type == Mutation.SWP
         shifts[recipe.wrk_no[1], recipe.day], shifts[recipe.wrk_no[2], recipe.day] =
             shifts[recipe.wrk_no[2], recipe.day], shifts[recipe.wrk_no[1], recipe.day]
@@ -128,7 +128,7 @@ function get_nbhd(shifts::Shifts, schedule::Schedule)::Vector{MutationRecipe}
     nbhd_recipes = Vector()
 
     for person_shift in CartesianIndices(shifts)
-        mutated_schedules = if shifts[person_shift] == W
+        mutated_schedules = if shifts[person_shift] == W_ID
             with_shift_addtion(shifts, person_shift, schedule)
         elseif shifts[person_shift] in keys(get_changeable_shifts(schedule))
             vcat(

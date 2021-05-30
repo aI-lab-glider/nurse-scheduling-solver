@@ -66,7 +66,10 @@ function compare_dss(old::ShiftSequence, new::ShiftSequence)
 end
 
 function get_new_dss()
-    get_disallowed_sequences(Schedule("schedules/schedule_2016_august_medium.json"))
+    schedule = Schedule("schedules/schedule_2016_august_medium.json")
+    Dict(
+        schedule.reverse_map[key] => map(x -> schedule.reverse_map[x], val)
+        for (key, val) in get_disallowed_sequences(schedule))
 end
 
 @testset "Compare errors" begin
