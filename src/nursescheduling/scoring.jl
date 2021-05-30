@@ -1,24 +1,30 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-module ScheduleScoring
+module scoring
 
 export score
 
 import Base.+
 
-using ..NurseSchedules:
+include("constants.jl")
+include("types.jl")
+include("schedule.jl")
+
+using .schedule:
     Schedule,
-    get_penalties,
-    get_workers_info,
-    get_month_info,
-    get_shift_options,
-    get_disallowed_sequences,
-    get_changeable_shifts,
-    get_exempted_shifts,
-    get_earliest_shift_begin,
-    get_latest_shift_end,
-    get_day,
+    penalties,
+    workers_info,
+    month_info,
+    shift_options,
+    disallowed_sequences,
+    changeable_shifts,
+    exempted_shifts,
+    earliest_shift_begin,
+    latest_shift_end,
+    day
+
+using ..NurseSchedules:
     get_period_range,
     get_interval_length,
     sum_segments,
@@ -28,19 +34,6 @@ using ..NurseSchedules:
     Shifts,
     DayShifts,
     Workers,
-    REQ_CHLDN_PER_NRS_DAY,
-    PERIOD_BEGIN,
-    REQ_CHLDN_PER_NRS_NIGHT,
-    LONG_BREAK_HOURS,
-    MAX_OVERTIME,
-    MAX_UNDERTIME,
-    WORKTIME_BASE,
-    WEEK_DAYS_NO,
-    NUM_WORKING_DAYS,
-    DAY_HOURS_NO,
-    SUNDAY_NO,
-    WORKTIME_DAILY,
-    PERIOD_BEGIN,
     Constraints,
     WorkerType,
     ErrorCode,
@@ -518,4 +511,4 @@ function ck_workers_worktime(
     end
     return ScoringResult((penalty, errors))
 end
-end # ScheduleScoring
+end # scoring

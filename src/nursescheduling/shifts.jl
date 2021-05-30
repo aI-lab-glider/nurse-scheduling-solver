@@ -57,7 +57,7 @@ function get_rest_length(shift::ShiftType)::Int
     end
 end
 
-# Assumption
+# ASSUMPTION
 # Always:
 # DAY_BEGIN < DAY_END
 # Thus night periods always crosses midnight, and day shift never

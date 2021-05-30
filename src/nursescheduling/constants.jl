@@ -1,42 +1,15 @@
-# This Source Code Form is subject to the terms of the Mozilla Public 
-# License, v. 2.0. If a copy of the MPL was not distributed with this 
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-# CUSTOM TYPES
-#
-# Scoring
-ScoringResult = @NamedTuple{penalty::Int, errors::Vector{Dict{String,Any}}}
-ScoringResultOrPenalty = Union{ScoringResult,Int}
-# Schedule related
-Workers = Vector{String}
-Shifts = Matrix{UInt8}
-DayShifts = Vector{UInt8}
-ScheduleShifts = Tuple{Workers,Shifts}
-# Neighborhood
-@se Mutation begin
-    ADD => "ADDITION"
-    DEL => "DELETION"
-    SWP => "SWAP"
-end
-IntOrTuple = Union{Int,Tuple{Int,Int}}
-IntOrNothing = Union{UInt8,Nothing}
-MutationRecipe = @NamedTuple{
-    type::Mutation.MutationEnum,
-    day::Int,
-    wrk_no::IntOrTuple,
-    optional_info::IntOrNothing,
-}
 
-# day free dict
+# free day dict
 const W = "W"
-const W_ID = 0
-const W_DICT = Dict("from" => 7,
-                    "to" => 15,
-                    "is_working_shift" => false)
+const W_ID = 0 # used in the string/uint8 mapping
+const W_DICT = Dict("from" => 7, "to" => 15, "is_working_shift" => false)
 
 const REQ_CHLDN_PER_NRS_DAY = 3
 const REQ_CHLDN_PER_NRS_NIGHT = 5
 
-# there has to be such a seq each week
 const LONG_BREAK_HOURS = 35
 
 # under and overtime pen is equal to hours from <0, MAX_OVERTIME>
@@ -47,7 +20,7 @@ const CONFIG = JSON.parsefile("config/default/priorities.json")
 const SHIFTS = JSON.parsefile("config/default/shifts.json")
 const DAY_BEGIN = 6
 const NIGHT_BEGIN = 22
- 
+
 const PERIOD_BEGIN = 7
 
 # weekly worktime
@@ -59,6 +32,15 @@ const NUM_WORKING_DAYS = 5
 const SUNDAY_NO = 0
 
 const WORKTIME_DAILY = WORKTIME_BASE / NUM_WORKING_DAYS
+
+# super enums
+
+# Neighborhood
+@se Mutation begin
+    ADD => "ADDITION"
+    DEL => "DELETION"
+    SWP => "SWAP"
+end
 
 @se Constraints begin
     PEN_LACKING_NURSE => "AON"

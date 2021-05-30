@@ -1,7 +1,7 @@
-# This Source Code Form is subject to the terms of the Mozilla Public 
-# License, v. 2.0. If a copy of the MPL was not distributed with this 
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-module NurseSchedules
+module NurseScheduling
 
 export Schedule,
        Neighborhood,
@@ -21,15 +21,15 @@ export Schedule,
 using JSON
 using SuperEnum
 
-include("constants.jl")
-include("shifts.jl")
-include("schedule.jl")
-include("validation.jl")
-include("scoring.jl")
-include("neighborhood.jl")
+include("nursescheduling/constants.jl")
+include("nursescheduling/shifts.jl")
+include("nursescheduling/schedule.jl")
+include("nursescheduling/validation.jl")
+include("nursescheduling/scoring.jl")
+include("nursescheduling/neighborhood.jl")
 
-using .ScheduleValidation
-using .ScheduleScoring
-using .NeighborhoodGen
+using .schedulevalidation
+using .scoring
+using .neighborhood
 
-end # NurseSchedules
+end # NurseScheduling
