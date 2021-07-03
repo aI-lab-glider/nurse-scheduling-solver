@@ -7,6 +7,12 @@
 ShiftType = Dict{String, Any}
 
 """
+    Access operators
+"""
+@inline is_working(shift::ShiftType)::Bool = shift["is_working_shift"]
+@inline get_hours_reduction(shift::ShiftType)::Int = get(shift, "norm_substraction", DEFAULT_NORM_SUBSTRACTION)
+
+"""
     Computes wheter an hour is inside the shift
     Args:
         hour::Int           - checked hour

@@ -16,7 +16,8 @@ export Schedule,
        n_split_nbhd,
        perform_random_jumps!,
        get_shifts_distance,
-       Shifts
+       Shifts,
+       cmp_workers_worktime
 
 using JSON
 using SuperEnum
@@ -27,9 +28,11 @@ include("schedule.jl")
 include("validation.jl")
 include("scoring.jl")
 include("neighborhood.jl")
+include("comparator.jl")
 
 using .ScheduleValidation
 using .ScheduleScoring
+using .ScheduleComparing
 using .NeighborhoodGen
 
 end # NurseSchedules

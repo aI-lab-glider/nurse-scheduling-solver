@@ -23,3 +23,4 @@ using .NurseSchedules:
 include("engine_tests.jl")
 include("shifts.jl")
 include("schedule.jl")
+include("comparator.jl")

@@ -6,6 +6,7 @@
 # Scoring
 ScoringResult = @NamedTuple{penalty::Int, errors::Vector{Dict{String,Any}}}
 ScoringResultOrPenalty = Union{ScoringResult,Int}
+
 # Schedule related
 Workers = Vector{String}
 Shifts = Matrix{UInt8}
@@ -52,6 +53,7 @@ const PERIOD_BEGIN = 7
 
 # weekly worktime
 const WORKTIME_BASE = 40
+const DEFAULT_NORM_SUBSTRACTION = 8
 
 const DAY_HOURS_NO = 24
 const WEEK_DAYS_NO = 7
