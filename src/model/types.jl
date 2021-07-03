@@ -2,38 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-# free day dict
-const W = "W"
-const W_ID = 0 # used in the string/uint8 mapping
-const W_DICT = Dict("from" => 7, "to" => 15, "is_working_shift" => false)
+# Custom types used across the project
 
-const REQ_CHLDN_PER_NRS_DAY = 3
-const REQ_CHLDN_PER_NRS_NIGHT = 5
+module types
 
-const LONG_BREAK_HOURS = 35
+using SuperEnum
 
-# under and overtime pen is equal to hours from <0, MAX_OVERTIME>
-const MAX_OVERTIME = 10 # scaled by the number of weeks
-const MAX_UNDERTIME = 0 # scaled by the number of weeks
+import Base.+
 
-const CONFIG = JSON.parsefile("config/default/priorities.json")
-const SHIFTS = JSON.parsefile("config/default/shifts.json")
-const DAY_BEGIN = 6
-const NIGHT_BEGIN = 22
-
-const PERIOD_BEGIN = 7
-
-# weekly worktime
-const WORKTIME_BASE = 40
-
-const DAY_HOURS_NO = 24
-const WEEK_DAYS_NO = 7
-const NUM_WORKING_DAYS = 5
-const SUNDAY_NO = 0
-
-const WORKTIME_DAILY = WORKTIME_BASE / NUM_WORKING_DAYS
-
-# super enums
+# Super enums
 
 # Neighborhood
 @se Mutation begin
@@ -65,4 +42,35 @@ end
     LACKING_LONG_BREAK => "LLB"
     WORKER_UNDERTIME_HOURS => "WUH"
     WORKER_OVERTIME_HOURS => "WOH"
+end
+
+@se ContractType begin
+    EMPLOYMENT => "EMPLOYMENT"
+    CIVIL => "CIVIL"
+end
+
+@se ShiftType begin
+    WORKING => "WORKING"
+    NONWORKING => "NONWORKING"
+    UTIL => "UTIL"
+    NONWORKING_DIFF => "NONWORKING_DIFF"
+end
+
+
+# Scoring
+ScoringResult = @NamedTuple{penalty::Int, errors::Vector{Dict{String,Any}}}
+ScoringResultOrPenalty = Union{ScoringResult,Int}
+
+(+)(l::ScoringResult, r::ScoringResult) =
+    ScoringResult((l.penalty + r.penalty, vcat(l.errors, r.errors)))
+
+IntOrTuple = Union{Int,Tuple{Int,Int}}
+IntOrNothing = Union{UInt8,Nothing}
+MutationRecipe = @NamedTuple{
+    type::Mutation.MutationEnum,
+    day::Int,
+    wrk_no::IntOrTuple,
+    optional_info::IntOrNothing,
+}
+
 end

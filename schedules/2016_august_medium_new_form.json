@@ -1,0 +1,171 @@
+{
+    "schedule_info":{
+        "UUID": "",
+        "month_number": 8,
+        "year": 2016
+    },
+    "month_info": {
+        "day_begin" : 7,
+        "night_begin" : 19,
+        "frozen_shifts": [],
+        "extra_workers": [
+            4, 4, 4, 4, 4, 4, 4
+        ],
+        "children_number": [
+            24, 21, 21, 21, 21, 21, 21
+        ],
+        "holidays": [
+            7
+        ]
+    },
+    "shift_types" : {
+        "R" : {
+            "from" : 7,
+            "to" : 15,
+            "is_working_shift" : true
+        },
+        "P" : {
+            "from" : 15,
+            "to" : 19,
+            "is_working_shift" : true
+        },
+        "D" : {
+            "from" : 7,
+            "to" : 19,
+            "is_working_shift" : true
+        },
+        "N" : {
+            "from" : 19,
+            "to" : 7,
+            "is_working_shift" : true
+        },
+        "DN" : {
+            "from" : 7,
+            "to" : 7,
+            "is_working_shift" : true
+        },
+        "PN" : {
+            "from" : 15,
+            "to" : 7,
+            "is_working_shift" : true
+        },
+        "W" : {
+            "from" : 7,
+            "to" : 15,
+            "is_working_shift" : false
+        },
+        "U" : {
+            "from" : 7,
+            "to" : 15,
+            "is_working_shift" : false
+        },
+        "L4" : {
+            "from" : 7,
+            "to" : 15,
+            "is_working_shift" : false
+        }
+    },
+    "employee_info": {
+        "time": {
+            "nurse_1":  1.0,
+            "nurse_2":  1.0,
+            "nurse_3":  1.0,
+            "nurse_4":  1.0,
+            "nurse_5":  0.5,
+            "nurse_6":  0.5,
+            "nurse_7":  0.5,
+            "nurse_8":  1.0,
+            "nurse_9":  1.0,
+            "babysitter_1": 1.0,
+            "babysitter_2": 0.5,
+            "babysitter_3": 0.5,
+            "babysitter_4": 1.0,
+            "babysitter_5": 1.0,
+            "babysitter_6": 1.0,
+            "babysitter_7": 0.5,
+            "babysitter_8": 1.0,
+            "babysitter_9": 1.0,
+            "babysitter_10": 0.5
+        },
+        "type": {
+            "nurse_1":  "NURSE",
+            "nurse_2":  "NURSE",
+            "nurse_3":  "NURSE",
+            "nurse_4":  "NURSE",
+            "nurse_5":  "NURSE",
+            "nurse_6":  "NURSE",
+            "nurse_7":  "NURSE",
+            "nurse_8":  "NURSE",
+            "nurse_9":  "NURSE",
+            "babysitter_1": "OTHER",
+            "babysitter_2": "OTHER",
+            "babysitter_3": "OTHER",
+            "babysitter_4": "OTHER",
+            "babysitter_5": "OTHER",
+            "babysitter_6": "OTHER",
+            "babysitter_7": "OTHER",
+            "babysitter_8": "OTHER",
+            "babysitter_9": "OTHER",
+            "babysitter_10": "OTHER"
+        }
+    },
+    "shifts": {
+        "nurse_1": [
+            "R", "R", "W", "W", "D", "DN", "W"
+        ],
+        "nurse_2": [
+            "N", "W", "N", "W", "W", "W", "DN"
+        ],
+        "nurse_3": [
+            "DN", "W", "DN", "N", "W", "DN", "N"
+        ],
+        "nurse_4": [
+            "N", "W", "D", "D", "N", "W", "D"
+        ],
+        "nurse_5": [
+            "W", "W", "W", "W", "W", "W", "W"
+        ],
+        "nurse_6": [
+            "U", "U", "U", "U", "U", "U", "U"
+        ],
+        "nurse_7": [
+            "U", "U", "U", "U", "U", "U", "U"
+        ],
+        "nurse_8": [
+            "D", "N", "W", "D", "R", "W", "D"
+        ],
+        "nurse_9": [
+            "W", "DN", "W", "W", "DN", "W", "W"
+        ],
+        "babysitter_1": [
+            "U", "U", "U", "U", "U", "U", "U"
+        ],
+        "babysitter_2": [
+            "L4", "L4", "L4", "L4", "L4", "L4", "L4"
+        ],
+        "babysitter_3": [
+            "U", "U", "U", "U", "U", "U", "U"
+        ],
+        "babysitter_4": [
+            "D", "N", "W", "D", "N", "W", "DN"
+        ],
+        "babysitter_5": [
+            "D", "P", "N", "N", "W", "W", "W"
+        ],
+        "babysitter_6": [
+            "W", "N", "N", "N", "N", "N", "W"
+        ],
+        "babysitter_7": [
+            "W", "D", "D", "W", "D", "DN", "W"
+        ],
+        "babysitter_8": [
+            "L4", "L4", "L4", "L4", "L4", "L4", "L4"
+        ],
+        "babysitter_9": [
+            "N", "W", "D", "N", "P", "W", "W"
+        ],
+        "babysitter_10": [
+            "W", "D", "W", "D", "W", "D", "W"
+        ]
+    }
+}

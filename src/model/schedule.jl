@@ -3,7 +3,9 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 module schedule
 
-export Schedule,
+using JSON
+
+export ScheduleMeta,
     penalties,
     workers_info,
     month_info,
@@ -15,23 +17,36 @@ export Schedule,
     latest_shift_end,
     day
 
-struct Schedule
-    employees::Vector{String}
-    shifts::Array{UInt8}
+include("types.jl")
+
+using .types: Shifts
+
+Employees = Vector{String}
+Shifts = Matrix{UInt8}
+
+struct ScheduleShifts
+    employees::Employees
+    shifts::Shifts
+end
+
+struct ScheduleMeta
     metadata::Dict
     shift_map::Dict{String,UInt8}
     reverse_map::Dict{UInt8,String}
 end
 
-# constructors
-function Schedule(filename::String)
-    data = JSON.parsefile(filename)
-    Schedule(data)
+struct Schedule
+    shifts::ScheduleShifts
+    meta::ScheduleMeta
 end
 
-function Schedule(data::Dict{String,Any})
-    # validate(data)
+# CONSTRUCTORS
+function ScheduleMeta(filename::String)
+    data = JSON.parsefile(filename)
+    ScheduleMeta(data)
+end
 
+function ScheduleMeta(data::Dict{String,Any})
     shift_types = "shift_types" in keys(data) ? data["shift_types"] : SHIFTS
     shift_map, reverse_map = _map_shift_codes(keys(shift_types))
 
@@ -58,24 +73,24 @@ end
 
 # schedule getters
 
-function month_info(schedule::Schedule)::Dict{String,Any}
+function month_info(schedule::ScheduleMeta)::Dict{String,Any}
     return schedule.data["month_info"]
 end
 
-function employee_info(schedule::Schedule)::Dict{String,Any}
+function employee_info(schedule::ScheduleMeta)::Dict{String,Any}
     return schedule.data["employee_info"]
 end
 
-function raw_options(schedule::Schedule)
+function raw_options(schedule::ScheduleMeta)
     return "shift_types" in keys(schedule.data) ? schedule.data["shift_types"] : SHIFTS
 end
 
-function shift_options(schedule::Schedule)
+function shift_options(schedule::ScheduleMeta)
     base = raw_options(schedule)
     return Dict(schedule.shift_map[k] => v for (k, v) in base)
 end
 
-function penalties(schedule::Schedule)::Dict{String,Any}
+function penalties(schedule::ScheduleMeta)::Dict{String,Any}
     weights = CONFIG["weight_map"]
     default_priority = CONFIG["penalties"]
     custom_priority = get(schedule.data, "penalty_priorities", nothing)
@@ -96,24 +111,24 @@ function penalties(schedule::Schedule)::Dict{String,Any}
     return penalties
 end
 
-function day(schedule::Schedule)
+function day(schedule::ScheduleMeta)
     day_begin = get(schedule.data["month_info"], "day_begin", DAY_BEGIN)
     day_end = get(schedule.data["month_info"], "night_begin", NIGHT_BEGIN)
     return (day_begin, day_end)
 end
 
-function changeable_shifts(schedule::Schedule)
+function changeable_shifts(schedule::ScheduleMeta)
     filter(kv -> kv.second["is_working_shift"], shift_options(schedule))
 end
 
-function exempted_shifts(schedule::Schedule)
+function exempted_shifts(schedule::ScheduleMeta)
     filter(
         kv -> !kv.second["is_working_shift"] && kv.first != W_ID,
         get_shift_options(schedule),
     )
 end
 
-function disallowed_sequences(schedule::Schedule)
+function disallowed_sequences(schedule::ScheduleMeta)
     Dict(
         first_shift_key => [
             second_shift_key
@@ -125,17 +140,17 @@ function disallowed_sequences(schedule::Schedule)
     )
 end
 
-function earliest_shift_begin(schedule::Schedule)
+function earliest_shift_begin(schedule::ScheduleMeta)
     changeable_shifts = collect(values(changeable_shifts(schedule)))
     minimum(x -> x["from"], changeable_shifts)
 end
 
-function latest_shift_end(schedule::Schedule)
+function latest_shift_end(schedule::ScheduleMeta)
     changeable_shifts = collect(values(changeable_shifts(schedule)))
     maximum(x -> x["to"] > x["from"] ? x["to"] : 24 + x["to"], changeable_shifts)
 end
 
-function shifts(schedule::Schedule)::ScheduleShifts
+function shifts(schedule::ScheduleMeta)::ScheduleShifts
     workers = collect(keys(schedule.data["shifts"]))
     shifts = collect(map(
         x -> map(y -> schedule.shift_map[y], x),
@@ -143,10 +158,10 @@ function shifts(schedule::Schedule)::ScheduleShifts
     ))
 
     return workers,
-        [shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])],
+        [shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])]
 end
 
-function update_shifts!(schedule::Schedule, shifts::Shifts)
+function update_shifts!(schedule::ScheduleMeta, shifts::Shifts)
     workers, _ = shifts(schedule)
     for worker_no in axes(shifts, 1)
         schedule.data["shifts"][workers[worker_no]] =
