@@ -3,72 +3,76 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 module schedule
 
+export Schedule, ScheduleMeta, ScheduleShifts, Shifts, Employees
+
 using JSON
 
-export ScheduleMeta,
-    penalties,
-    workers_info,
-    month_info,
-    shift_options,
-    disallowed_sequences,
-    changeable_shifts,
-    exempted_shifts,
-    earliest_shift_begin,
-    latest_shift_end,
-    day
-
+include("constants.jl")
 include("types.jl")
 
-using .types: Shifts
+using .constants: DEFAULT_SHIFTS
+using .types: BasicShift
 
+# schedule related types
 Employees = Vector{String}
 Shifts = Matrix{UInt8}
 
 struct ScheduleShifts
     employees::Employees
     shifts::Shifts
+
+    function ScheduleShifts(
+        employee_info::Vector,
+        shift_codes::Dict;
+        shifts_key = "actual_shifts",
+    )
+        employees = Vector()
+        shifts = Vector()
+
+        for ei in employee_info
+            push!(employees, ei["uuid"])
+
+            employee_shifts = map(code -> shift_codes[code], ei[shifts_key])
+            push!(shifts, employee_shifts)
+        end
+
+        shifts = transpose(hcat(shifts...))
+
+        new(employees, shifts)
+    end
 end
 
 struct ScheduleMeta
-    metadata::Dict
-    shift_map::Dict{String,UInt8}
-    reverse_map::Dict{UInt8,String}
+    meta::Dict
+    shift_codes::Dict{String,UInt8}
 end
 
 struct Schedule
     shifts::ScheduleShifts
     meta::ScheduleMeta
-end
 
-# CONSTRUCTORS
-function ScheduleMeta(filename::String)
-    data = JSON.parsefile(filename)
-    ScheduleMeta(data)
-end
+    function Schedule(data::Dict)
+        available_shifts = get(data, "available_shifts", DEFAULT_SHIFTS)
+        shift_codes = _map_shift_codes(available_shifts)
 
-function ScheduleMeta(data::Dict{String,Any})
-    shift_types = "shift_types" in keys(data) ? data["shift_types"] : SHIFTS
-    shift_map, reverse_map = _map_shift_codes(keys(shift_types))
-
-    new(data, shift_map, reverse_map)
-end
-
-function _map_shift_codes(shift_codes)
-    shift_map = Dict{String,UInt8}()
-    reverse_map = Dict{UInt8,String}()
-    reverse_map[W_ID] = W
-    shift_map[W] = W_ID
-    next_val = W_ID + 1
-
-    for key in shift_codes
-        if key != W
-            shift_map[key] = next_val
-            reverse_map[next_val] = key
-            next_val += 1
-        end
+        new(ScheduleShifts(data["employees"], shift_codes), ScheduleMeta(data, shift_codes))
     end
 
-    shift_map, reverse_map
+    Schedule(filepath::String) = JSON.parsefile(filepath) |> Schedule
+end
+
+
+function _map_shift_codes(available_shifts::Vector)
+    shift_codes = Dict{String,UInt8}(
+        string(instance) => Int(instance) for
+        instance in instances(BasicShift.BasicShiftEnum)
+    )
+
+    for shift_info in available_shifts
+        shift_codes[shift_info["code"]] = length(shift_codes)
+    end
+
+    return shift_codes
 end
 
 # schedule getters
@@ -131,8 +135,7 @@ end
 function disallowed_sequences(schedule::ScheduleMeta)
     Dict(
         first_shift_key => [
-            second_shift_key
-            for
+            second_shift_key for
             (second_shift_key, second_shift_val) in get_changeable_shifts(schedule) if
             get_next_day_distance(first_shift_val, second_shift_val) <=
             get_rest_length(first_shift_val)
@@ -152,13 +155,12 @@ end
 
 function shifts(schedule::ScheduleMeta)::ScheduleShifts
     workers = collect(keys(schedule.data["shifts"]))
-    shifts = collect(map(
-        x -> map(y -> schedule.shift_map[y], x),
-        values(schedule.data["shifts"]),
-    ))
+    shifts = collect(
+        map(x -> map(y -> schedule.shift_map[y], x), values(schedule.data["shifts"])),
+    )
 
     return workers,
-        [shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])]
+    [shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])]
 end
 
 function update_shifts!(schedule::ScheduleMeta, shifts::Shifts)

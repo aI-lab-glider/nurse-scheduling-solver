@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 # Custom types used across the project
-
 module types
 
 using SuperEnum
@@ -33,17 +32,6 @@ end
     OTHER => "OTHER"
 end
 
-@se ErrorCode begin
-    ALWAYS_AT_LEAST_ONE_NURSE => "AON"
-    WORKERS_NO_DURING_DAY => "WND"
-    WORKERS_NO_DURING_NIGHT => "WNN"
-    MULTIPLE_TEAMS => "WTC"
-    DISALLOWED_SHIFT_SEQ => "DSS"
-    LACKING_LONG_BREAK => "LLB"
-    WORKER_UNDERTIME_HOURS => "WUH"
-    WORKER_OVERTIME_HOURS => "WOH"
-end
-
 @se ContractType begin
     EMPLOYMENT => "EMPLOYMENT"
     CIVIL => "CIVIL"
@@ -56,6 +44,22 @@ end
     NONWORKING_DIFF => "NONWORKING_DIFF"
 end
 
+@se BasicShift begin
+    NONWORKING => "W"
+    SICK_LEAVE => "L4"
+    VACATION => "U"
+end
+
+@se ErrorCode begin
+    ALWAYS_AT_LEAST_ONE_NURSE => "AON"
+    WORKERS_NO_DURING_DAY => "WND"
+    WORKERS_NO_DURING_NIGHT => "WNN"
+    MULTIPLE_TEAMS => "WTC"
+    DISALLOWED_SHIFT_SEQ => "DSS"
+    LACKING_LONG_BREAK => "LLB"
+    WORKER_UNDERTIME_HOURS => "WUH"
+    WORKER_OVERTIME_HOURS => "WOH"
+end
 
 # Scoring
 ScoringResult = @NamedTuple{penalty::Int, errors::Vector{Dict{String,Any}}}

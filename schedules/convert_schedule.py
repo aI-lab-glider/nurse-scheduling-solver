@@ -32,23 +32,23 @@ for uuid, employee_type in schedule["employee_info"]["type"].items():
     if employee_obj is not None:
         employee_obj["type"] = employee_type
 
-new_schedule["shifts"] = list()
 for uuid, shifts in schedule["shifts"].items():
     employee_obj = next(filter(lambda x: x["uuid"] == uuid, employees), None)
     if employee_obj is not None:
         employee_obj["base_shifts"] = shifts
         employee_obj["actual_shifts"] = shifts
 
-new_schedule["shift_types"] = list()
+new_schedule["available_shifts"] = list()
 for shift_code, meta in schedule["shift_types"].items():
-    new_schedule["shift_types"].append(
-        {
-            "code": shift_code,
-            "from": meta["from"],
-            "to": meta["to"],
-            "type": "WORKING" if meta["is_working_shift"] else "NON-WORKING",
-        }
-    )
+    new_shift = {
+        "code": shift_code,
+        "type": "WORKING" if meta["is_working_shift"] else "NON-WORKING",
+    }
+    if new_shift["type"] == "WORKING":
+        new_shift["from"] = meta["from"]
+        new_shift["to"] = meta["to"]
+
+    new_schedule["available_shifts"].append(new_shift)
 
 new_schedule["month_meta"] = list()
 for i, children_number in enumerate(schedule["month_info"]["children_number"]):

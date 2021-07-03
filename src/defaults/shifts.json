@@ -1,47 +1,38 @@
-{
-    "R" : {
-        "from" : 7,
-        "to" : 15,
-        "is_working_shift" : true
+[
+    {
+        "code": "R",
+        "from": 7,
+        "to": 15,
+        "type": "WORKING"
     },
-    "P" : {
-        "from" : 15,
-        "to" : 19,
-        "is_working_shift" : true
+    {
+        "code": "P",
+        "from": 15,
+        "to": 19,
+        "type": "WORKING"
     },
-    "D" : {
-        "from" : 7,
-        "to" : 19,
-        "is_working_shift" : true
+    {
+        "code": "D",
+        "from": 7,
+        "to": 19,
+        "type": "WORKING"
     },
-    "N" : {
-        "from" : 19,
-        "to" : 7,
-        "is_working_shift" : true
+    {
+        "code": "N",
+        "from": 19,
+        "to": 7,
+        "type": "WORKING"
     },
-    "DN" : {
-        "from" : 7,
-        "to" : 7,
-        "is_working_shift" : true
+    {
+        "code": "DN",
+        "from": 7,
+        "to": 7,
+        "type": "WORKING"
     },
-    "PN" : {
-        "from" : 15,
-        "to" : 7,
-        "is_working_shift" : true
-    },
-    "W" : {
-        "from" : 7,
-        "to" : 15,
-        "is_working_shift" : false
-    },
-    "U" : {
-        "from" : 7,
-        "to" : 15,
-        "is_working_shift" : false
-    },
-    "L4" : {
-        "from" : 7,
-        "to" : 15,
-        "is_working_shift" : false
+    {
+        "code": "PN",
+        "from": 15,
+        "to": 7,
+        "type": "WORKING"
     }
-}
+]

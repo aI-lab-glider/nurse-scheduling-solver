@@ -3,29 +3,31 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 module Model
 
-export Schedule,
-       Neighborhood,
-       get_shift_options,
-       get_penalties,
-       get_shifts,
-       get_max_nbhd_size,
-       get_month_info,
-       get_workers_info,
-       update_shifts!,
-       n_split_nbhd,
-       perform_random_jumps!,
-       get_shifts_distance,
-       Shifts
+export Schedule
+       # Neighborhood,
+       # get_shift_options,
+       # get_penalties,
+       # get_shifts,
+       # get_max_nbhd_size,
+       # get_month_info,
+       # get_workers_info,
+       # update_shifts!,
+       # n_split_nbhd,
+       # perform_random_jumps!,
+       # get_shifts_distance,
+       # Shifts
 
 include("schedule.jl")
-include("scoring.jl")
-include("neighborhood.jl")
+# include("scoring.jl")
+# include("neighborhood.jl")
 
-using .scoring
-export score
+using .schedule
 
-using .neighborhood
+# using .scoring
+# export score
 
-using .schedulevalidation
+# using .neighborhood
+
+# using .schedulevalidation
 
 end
