@@ -3,7 +3,16 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 module schedule
 
-export Schedule, ScheduleMeta, ScheduleShifts, Shifts, Employees
+export Schedule,
+    Shifts,
+    shifts,
+    base_shifts,
+    actual_shifts,
+    decode_shifts,
+    employee_uuid,
+    employee_shifts,
+    employee_base_shifts,
+    employee_actual_shifts
 
 using JSON
 
@@ -13,88 +22,81 @@ include("types.jl")
 using .constants: DEFAULT_SHIFTS
 using .types: BasicShift
 
-# schedule related types
-Employees = Vector{String}
 Shifts = Matrix{UInt8}
 
-struct ScheduleShifts
-    employees::Employees
-    shifts::Shifts
-
-    function ScheduleShifts(
-        employee_info::Vector,
-        shift_codes::Dict;
-        shifts_key = "actual_shifts",
-    )
-        employees = Vector()
-        shifts = Vector()
-
-        for ei in employee_info
-            push!(employees, ei["uuid"])
-
-            employee_shifts = map(code -> shift_codes[code], ei[shifts_key])
-            push!(shifts, employee_shifts)
-        end
-
-        shifts = transpose(hcat(shifts...))
-
-        new(employees, shifts)
-    end
-end
-
-struct ScheduleMeta
-    meta::Dict
-    shift_codes::Dict{String,UInt8}
-end
-
 struct Schedule
-    shifts::ScheduleShifts
-    meta::ScheduleMeta
+    meta::Dict{String,Any}
+    shift_coding::Dict{String,UInt8}
 
-    function Schedule(data::Dict)
-        available_shifts = get(data, "available_shifts", DEFAULT_SHIFTS)
-        shift_codes = _map_shift_codes(available_shifts)
+    function Schedule(schedule_json::Dict)
+        available_shifts = get(schedule_json, "available_shifts", DEFAULT_SHIFTS)
+        shift_coding = _make_shift_coding(available_shifts)
 
-        new(ScheduleShifts(data["employees"], shift_codes), ScheduleMeta(data, shift_codes))
+        new(schedule_json, shift_coding)
     end
 
-    Schedule(filepath::String) = JSON.parsefile(filepath) |> Schedule
+    Schedule(filepath::String) = Schedule(JSON.parsefile(filepath))
 end
 
-
-function _map_shift_codes(available_shifts::Vector)
-    shift_codes = Dict{String,UInt8}(
-        string(instance) => Int(instance) for
+function _make_shift_coding(available_shifts::Vector)::Dict{String,UInt8}
+    shift_coding = Dict(
+        string(instance) => UInt8(instance) for
         instance in instances(BasicShift.BasicShiftEnum)
     )
 
     for shift_info in available_shifts
-        shift_codes[shift_info["code"]] = length(shift_codes)
+        if !haskey(shift_coding, shift_info["code"])
+            shift_coding[shift_info["code"]] = length(shift_coding)
+        end
     end
-
-    return shift_codes
+    return shift_coding
 end
 
 # schedule getters
-
-function month_info(schedule::ScheduleMeta)::Dict{String,Any}
-    return schedule.data["month_info"]
+function shifts(schedule::Schedule, shifts_key::String)::Shifts
+    shifts = [
+        map(code -> schedule.shift_coding[code], e[shifts_key]) for
+        e in schedule.meta["employees"]
+    ]
+    shifts = transpose(hcat(shifts...))
+    return shifts
 end
 
-function employee_info(schedule::ScheduleMeta)::Dict{String,Any}
-    return schedule.data["employee_info"]
+base_shifts(schedule::Schedule)::Shifts = shifts(schedule, "base_shifts")
+actual_shifts(schedule::Schedule)::Shifts = shifts(schedule, "actual_shifts")
+
+function decode_shifts(schedule::Schedule, shifts::Shifts)::Matrix{String}
+    decoding = Dict(v => k for (k, v) in pairs(schedule.shift_coding))
+    return map(coded_shift -> decoding[coded_shift], shifts)
 end
 
-function raw_options(schedule::ScheduleMeta)
+employee_uuid(schedule::Schedule, idx::Int)::String =
+    schedule.meta["employees"][idx]["uuid"]
+
+employee_shifts(schedule::Schedule, idx::Int, shifts_key::String)::Vector{String} =
+    schedule.meta["employees"][idx][shifts_key]
+
+employee_actual_shifts(schedule::Schedule, idx::Int)::Vector{String} =
+    employee_shifts(schedule, idx, "actual_shifts")
+
+employee_base_shifts(schedule::Schedule, idx::Int)::Vector{String} =
+    employee_shifts(schedule, idx, "base_shifts")
+
+###########################################
+#            ☠☠☠ WATCH OUT! ☠☠☠           #
+# everything below is possibly deprecated #
+###########################################
+
+function raw_options(schedule::Schedule)
     return "shift_types" in keys(schedule.data) ? schedule.data["shift_types"] : SHIFTS
 end
 
-function shift_options(schedule::ScheduleMeta)
+function shift_options(schedule::Schedule)
     base = raw_options(schedule)
     return Dict(schedule.shift_map[k] => v for (k, v) in base)
 end
 
-function penalties(schedule::ScheduleMeta)::Dict{String,Any}
+function penalties(schedule::Schedule)::Dict{String,Any}
     weights = CONFIG["weight_map"]
     default_priority = CONFIG["penalties"]
     custom_priority = get(schedule.data, "penalty_priorities", nothing)
@@ -115,24 +117,24 @@ function penalties(schedule::ScheduleMeta)::Dict{String,Any}
     return penalties
 end
 
-function day(schedule::ScheduleMeta)
-    day_begin = get(schedule.data["month_info"], "day_begin", DAY_BEGIN)
-    day_end = get(schedule.data["month_info"], "night_begin", NIGHT_BEGIN)
-    return (day_begin, day_end)
+function daytime_range(schedule::Schedule)
+    daytime_begin = get(schedule.meta["settings"], "daytime_begin", DAY_BEGIN)
+    daytime_end = get(schedule.meta["settings"], "night_begin", NIGHT_BEGIN)
+    return (daytime_begin, daytime_end)
 end
 
-function changeable_shifts(schedule::ScheduleMeta)
+function changeable_shifts(schedule::Schedule)
     filter(kv -> kv.second["is_working_shift"], shift_options(schedule))
 end
 
-function exempted_shifts(schedule::ScheduleMeta)
+function exempted_shifts(schedule::Schedule)
     filter(
         kv -> !kv.second["is_working_shift"] && kv.first != W_ID,
         get_shift_options(schedule),
     )
 end
 
-function disallowed_sequences(schedule::ScheduleMeta)
+function disallowed_sequences(schedule::Schedule)
     Dict(
         first_shift_key => [
             second_shift_key for
@@ -143,32 +145,14 @@ function disallowed_sequences(schedule::ScheduleMeta)
     )
 end
 
-function earliest_shift_begin(schedule::ScheduleMeta)
+function earliest_shift_begin(schedule::Schedule)
     changeable_shifts = collect(values(changeable_shifts(schedule)))
     minimum(x -> x["from"], changeable_shifts)
 end
 
-function latest_shift_end(schedule::ScheduleMeta)
+function latest_shift_end(schedule::Schedule)
     changeable_shifts = collect(values(changeable_shifts(schedule)))
     maximum(x -> x["to"] > x["from"] ? x["to"] : 24 + x["to"], changeable_shifts)
-end
-
-function shifts(schedule::ScheduleMeta)::ScheduleShifts
-    workers = collect(keys(schedule.data["shifts"]))
-    shifts = collect(
-        map(x -> map(y -> schedule.shift_map[y], x), values(schedule.data["shifts"])),
-    )
-
-    return workers,
-    [shifts[person][shift] for person = 1:length(shifts), shift = 1:length(shifts[1])]
-end
-
-function update_shifts!(schedule::ScheduleMeta, shifts::Shifts)
-    workers, _ = shifts(schedule)
-    for worker_no in axes(shifts, 1)
-        schedule.data["shifts"][workers[worker_no]] =
-            map(x -> schedule.reverse_map[x], shifts[worker_no, :])
-    end
 end
 
 function get_period_range()::Vector{Int}

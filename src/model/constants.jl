@@ -6,6 +6,7 @@ module constants
 using JSON
 
 const PROJECT_SRC = dirname(@__FILE__) |> dirname
+
 const DEFAULT_SHIFTS = JSON.parsefile(joinpath(PROJECT_SRC, "defaults/shifts.json"))
 const DEFAULT_CONFIG = JSON.parsefile(joinpath(PROJECT_SRC, "defaults/priorities.json"))
 

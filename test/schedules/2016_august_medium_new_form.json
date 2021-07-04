@@ -5,144 +5,48 @@
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "NURSE",
-            "base_shifts": [
-                "R",
-                "R",
-                "W",
-                "W",
-                "D",
-                "DN",
-                "W"
-            ],
-            "actual_shifts": [
-                "R",
-                "R",
-                "W",
-                "W",
-                "D",
-                "DN",
-                "W"
-            ]
+            "base_shifts": [ "R", "R", "W", "W", "D", "DN", "W" ],
+            "actual_shifts": [ "R", "R", "W", "W", "D", "DN", "W"]
         },
         {
             "uuid": "nurse_2",
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "NURSE",
-            "base_shifts": [
-                "N",
-                "W",
-                "N",
-                "W",
-                "W",
-                "W",
-                "DN"
-            ],
-            "actual_shifts": [
-                "N",
-                "W",
-                "N",
-                "W",
-                "W",
-                "W",
-                "DN"
-            ]
+            "base_shifts": [ "N", "W", "N", "W", "W", "W", "DN" ],
+            "actual_shifts": [ "N", "W", "N", "W", "W", "W", "DN" ]
         },
         {
             "uuid": "nurse_3",
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "NURSE",
-            "base_shifts": [
-                "DN",
-                "W",
-                "DN",
-                "N",
-                "W",
-                "DN",
-                "N"
-            ],
-            "actual_shifts": [
-                "DN",
-                "W",
-                "DN",
-                "N",
-                "W",
-                "DN",
-                "N"
-            ]
+            "base_shifts": [ "DN", "W", "DN", "N", "W", "DN", "N" ],
+            "actual_shifts": [ "DN", "W", "DN", "N", "W", "DN", "N" ]
         },
         {
             "uuid": "nurse_4",
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "NURSE",
-            "base_shifts": [
-                "N",
-                "W",
-                "D",
-                "D",
-                "N",
-                "W",
-                "D"
-            ],
-            "actual_shifts": [
-                "N",
-                "W",
-                "D",
-                "D",
-                "N",
-                "W",
-                "D"
-            ]
+            "base_shifts": [ "N", "W", "D", "D", "N", "W", "D" ],
+            "actual_shifts": [ "N", "W", "D", "D", "N", "W", "D" ]
         },
         {
             "uuid": "nurse_5",
             "working_time": 0.5,
             "contract_type": "EMPLOYMENT",
             "type": "NURSE",
-            "base_shifts": [
-                "W",
-                "W",
-                "W",
-                "W",
-                "W",
-                "W",
-                "W"
-            ],
-            "actual_shifts": [
-                "W",
-                "W",
-                "W",
-                "W",
-                "W",
-                "W",
-                "W"
-            ]
+            "base_shifts": [ "W", "W", "W", "W", "W", "W", "W" ],
+            "actual_shifts": [ "W", "W", "W", "W", "W", "W", "W" ]
         },
         {
             "uuid": "nurse_6",
             "working_time": 0.5,
             "contract_type": "EMPLOYMENT",
             "type": "NURSE",
-            "base_shifts": [
-                "U",
-                "U",
-                "U",
-                "U",
-                "U",
-                "U",
-                "U"
-            ],
-            "actual_shifts": [
-                "U",
-                "U",
-                "U",
-                "U",
-                "U",
-                "U",
-                "U"
-            ]
+            "base_shifts": [ "U", "U", "U", "U", "U", "U", "U" ],
+            "actual_shifts": [ "U", "U", "U", "U", "U", "U", "U" ]
         },
         {
             "uuid": "nurse_7",
@@ -269,183 +173,63 @@
             "working_time": 0.5,
             "contract_type": "EMPLOYMENT",
             "type": "OTHER",
-            "base_shifts": [
-                "U",
-                "U",
-                "U",
-                "U",
-                "U",
-                "U",
-                "U"
-            ],
-            "actual_shifts": [
-                "U",
-                "U",
-                "U",
-                "U",
-                "U",
-                "U",
-                "U"
-            ]
+            "base_shifts": [ "U", "U", "U", "U", "U", "U", "U" ],
+            "actual_shifts": [ "U", "U", "U", "U", "U", "U", "U" ]
         },
         {
             "uuid": "babysitter_4",
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "OTHER",
-            "base_shifts": [
-                "D",
-                "N",
-                "W",
-                "D",
-                "N",
-                "W",
-                "DN"
-            ],
-            "actual_shifts": [
-                "D",
-                "N",
-                "W",
-                "D",
-                "N",
-                "W",
-                "DN"
-            ]
+            "base_shifts": [ "D", "N", "W", "D", "N", "W", "DN" ],
+            "actual_shifts": [ "D", "N", "W", "D", "N", "W", "DN" ]
         },
         {
             "uuid": "babysitter_5",
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "OTHER",
-            "base_shifts": [
-                "D",
-                "P",
-                "N",
-                "N",
-                "W",
-                "W",
-                "W"
-            ],
-            "actual_shifts": [
-                "D",
-                "P",
-                "N",
-                "N",
-                "W",
-                "W",
-                "W"
-            ]
+            "base_shifts": [ "D", "P", "N", "N", "W", "W", "W" ],
+            "actual_shifts": [ "D", "P", "N", "N", "W", "W", "W" ]
         },
         {
             "uuid": "babysitter_6",
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "OTHER",
-            "base_shifts": [
-                "W",
-                "N",
-                "N",
-                "N",
-                "N",
-                "N",
-                "W"
-            ],
-            "actual_shifts": [
-                "W",
-                "N",
-                "N",
-                "N",
-                "N",
-                "N",
-                "W"
-            ]
+            "base_shifts": [ "W", "N", "N", "N", "N", "N", "W" ],
+            "actual_shifts": [ "W", "N", "N", "N", "N", "N", "W" ]
         },
         {
             "uuid": "babysitter_7",
             "working_time": 0.5,
             "contract_type": "EMPLOYMENT",
             "type": "OTHER",
-            "base_shifts": [
-                "W",
-                "D",
-                "D",
-                "W",
-                "D",
-                "DN",
-                "W"
-            ],
-            "actual_shifts": [
-                "W",
-                "D",
-                "D",
-                "W",
-                "D",
-                "DN",
-                "W"
-            ]
+            "base_shifts": [ "W", "D", "D", "W", "D", "DN", "W" ],
+            "actual_shifts": [ "W", "D", "D", "W", "D", "DN", "W" ]
         },
         {
             "uuid": "babysitter_8",
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "OTHER",
-            "base_shifts": [
-                "L4",
-                "L4",
-                "L4",
-                "L4",
-                "L4",
-                "L4",
-                "L4"
-            ],
-            "actual_shifts": [
-                "L4",
-                "L4",
-                "L4",
-                "L4",
-                "L4",
-                "L4",
-                "L4"
-            ]
+            "base_shifts": [ "L4", "L4", "L4", "L4", "L4", "L4", "L4" ],
+            "actual_shifts": [ "L4", "L4", "L4", "L4", "L4", "L4", "L4" ]
         },
         {
             "uuid": "babysitter_9",
             "working_time": 1.0,
             "contract_type": "EMPLOYMENT",
             "type": "OTHER",
-            "base_shifts": [
-                "N",
-                "W",
-                "D",
-                "N",
-                "P",
-                "W",
-                "W"
-            ],
-            "actual_shifts": [
-                "N",
-                "W",
-                "D",
-                "N",
-                "P",
-                "W",
-                "W"
-            ]
+            "base_shifts": [ "N", "W", "D", "N", "P", "W", "W" ],
+            "actual_shifts": [ "N", "W", "D", "N", "P", "W", "W" ]
         },
         {
             "uuid": "babysitter_10",
             "working_time": 0.5,
             "contract_type": "EMPLOYMENT",
             "type": "OTHER",
-            "base_shifts": [
-                "W",
-                "D",
-                "W",
-                "D",
-                "W",
-                "D",
-                "W"
-            ],
+            "base_shifts": [ "W", "D", "W", "D", "W", "D", "W" ],
             "actual_shifts": [
                 "W",
                 "D",
