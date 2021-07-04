@@ -46,8 +46,16 @@ end
         schedule = Schedule(SCHEDULE_PATH)
 
         @testset "Convert shifts to the UInt8 representation" begin
-            @test typeof(base_shifts(schedule)) == Matrix{UInt8}
+            num_employees = length(schedule.meta["employees"])
+            num_days = length(schedule.meta["employees"][1]["base_shifts"])
+
+            shifts = base_shifts(schedule)
+            @test typeof(shifts) == Matrix{UInt8}
+            @test size(shifts) == (num_employees, num_days)
+
+            shifts = actual_shifts(schedule)
             @test typeof(actual_shifts(schedule)) == Matrix{UInt8}
+            @test size(shifts) == (num_employees, num_days)
         end
 
         @testset "Convert shifts back to the string representation" begin
