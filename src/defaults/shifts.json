@@ -1,0 +1,38 @@
+[
+    {
+        "code": "R",
+        "from": 7,
+        "to": 15,
+        "type": "WORKING"
+    },
+    {
+        "code": "P",
+        "from": 15,
+        "to": 19,
+        "type": "WORKING"
+    },
+    {
+        "code": "D",
+        "from": 7,
+        "to": 19,
+        "type": "WORKING"
+    },
+    {
+        "code": "N",
+        "from": 19,
+        "to": 7,
+        "type": "WORKING"
+    },
+    {
+        "code": "DN",
+        "from": 7,
+        "to": 7,
+        "type": "WORKING"
+    },
+    {
+        "code": "PN",
+        "from": 15,
+        "to": 7,
+        "type": "WORKING"
+    }
+]

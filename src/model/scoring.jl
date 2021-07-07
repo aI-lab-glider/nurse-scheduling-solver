@@ -1,67 +1,40 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-module ScheduleScoring
+module scoring
 
 export score
 
-import Base.+
+include("constants.jl")
+include("types.jl")
+include("schedule.jl")
 
-using ..NurseSchedules:
-    Schedule,
-    get_penalties,
-    get_workers_info,
-    get_month_info,
-    get_shift_options,
-    get_disallowed_sequences,
-    get_changeable_shifts,
-    get_exempted_shifts,
-    get_earliest_shift_begin,
-    get_latest_shift_end,
-    get_day,
-    get_period_range,
-    get_interval_length,
-    sum_segments,
-    ScoringResult,
-    ScoringResultOrPenalty,
-    ScheduleShifts,
-    Shifts,
-    DayShifts,
-    Workers,
-    REQ_CHLDN_PER_NRS_DAY,
-    PERIOD_BEGIN,
-    REQ_CHLDN_PER_NRS_NIGHT,
-    LONG_BREAK_HOURS,
-    MAX_OVERTIME,
-    MAX_UNDERTIME,
-    WORKTIME_BASE,
-    WEEK_DAYS_NO,
-    NUM_WORKING_DAYS,
-    DAY_HOURS_NO,
-    SUNDAY_NO,
-    WORKTIME_DAILY,
-    PERIOD_BEGIN,
-    Constraints,
-    WorkerType,
-    ErrorCode,
-    within,
-    get_shift_length
+using .schedule:
+    ScheduleMeta,
+    penalties,
+    workers_info,
+    month_info,
+    shift_options,
+    disallowed_sequences,
+    changeable_shifts,
+    exempted_shifts,
+    earliest_shift_begin,
+    latest_shift_end,
+    day
 
-(+)(l::ScoringResult, r::ScoringResult) =
-    ScoringResult((l.penalty + r.penalty, vcat(l.errors, r.errors)))
 
 function score(
     schedule_shifts::ScheduleShifts,
-    schedule::Schedule;
+    schedule_meta::ScheduleMeta;
     return_errors::Bool = false,
 )::ScoringResultOrPenalty
     score_res = ScoringResult((0, []))
 
-    score_res += ck_workers_presence(schedule_shifts, schedule)
+    score_res += _eval_workers_presence(schedule_shifts, schedule_meta)
 
-    score_res += ck_workers_rights(schedule_shifts, schedule)
+    score_res += _eval_workers_rights(schedule_shifts, schedule_meta)
 
-    score_res += ck_workers_worktime(schedule_shifts, schedule)
+    score_res += _eval_workers_worktime(schedule_shifts, schedule_meta)
 
     if return_errors
         score_res
@@ -70,17 +43,18 @@ function score(
     end
 end
 
-function ck_workers_presence(
+function _eval_workers_presence(
     schedule_shifts::ScheduleShifts,
-    schedule::Schedule,
+    schedule_meta::ScheduleMeta,
 )::ScoringResult
     workers, shifts = schedule_shifts
     score_res = ScoringResult((0, []))
+
     for day_no in axes(shifts, 2)
         day_shifts = shifts[:, day_no]
-        score_res += ck_workers_to_children(day_no, day_shifts, schedule)
-        score_res += ck_nurse_presence(day_no, workers, day_shifts, schedule)
-        score_res += ck_daily_workers_teams(day_shifts, day_no, workers, schedule)
+        score_res += _eval_workers_to_children(day_no, day_shifts, schedule_meta)
+        score_res += _eval_nurse_presence(day_no, workers, day_shifts, schedule_meta)
+        score_res += _eval_daily_workers_teams(day_shifts, day_no, workers, schedule_meta)
     end
     if score_res.penalty > 0
         @debug "Lacking workers total penalty: $(score_res.penalty)"
@@ -89,10 +63,10 @@ function ck_workers_presence(
 end
 
 # WNN/WND
-function ck_workers_to_children(
+function _eval_workers_to_children(
     day::Int,
     day_shifts::DayShifts,
-    schedule::Schedule,
+    schedule::ScheduleMeta,
 )::ScoringResult
     shift_info = get_shift_options(schedule)
     month_info = get_month_info(schedule)
@@ -114,14 +88,14 @@ function ck_workers_to_children(
     day_segments_begin = nothing
     night_segments = []
     night_segments_begin = nothing
-    
+
     act_wrk_day = req_wrk_day
     act_wrk_night = req_wrk_night
 
     for hour in get_period_range()
         current_workers = count([
             within(hour, shift_info[shift])
-            for shift in day_shifts    
+            for shift in day_shifts
         ])
         if hour >= day_begin && hour < day_end
         # day
@@ -130,7 +104,7 @@ function ck_workers_to_children(
                push!(night_segments, (night_segments_begin, hour))
                night_segments_begin = nothing
             end
-            if current_workers < req_wrk_day 
+            if current_workers < req_wrk_day
                 if isnothing(day_segments_begin)
                     day_segments_begin = hour
                 end
@@ -213,7 +187,7 @@ function ck_workers_to_children(
 end
 
 # AON
-function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::ScoringResult
+function _eval_nurse_presence(day::Int, wrks, day_shifts, schedule::ScheduleMeta)::ScoringResult
     shift_info = get_shift_options(schedule)
     workers_info = get_workers_info(schedule)
     penalties = get_penalties(schedule)
@@ -271,11 +245,11 @@ function ck_nurse_presence(day::Int, wrks, day_shifts, schedule::Schedule)::Scor
 end
 
 #WMT
-function ck_daily_workers_teams(
+function _eval_daily_workers_teams(
     day_shifts::DayShifts,
     day::Int,
     workers::Workers,
-    schedule::Schedule
+    schedule::ScheduleMeta
 )::ScoringResult
     penalty = 0
     errors = []
@@ -300,9 +274,9 @@ function ck_daily_workers_teams(
     ]
     workers_hourly = [
         [
-            worker 
+            worker
             for (num, worker) in enumerate(workers)
-            if within(hour, shifts[day_shifts[num]]) 
+            if within(hour, shifts[day_shifts[num]])
         ]
         for hour = 1:24
     ]
@@ -324,15 +298,15 @@ function ck_daily_workers_teams(
 end
 
 ### LLB + DSS
-function ck_workers_rights(
+function _eval_workers_rights(
     schedule_shitfs::ScheduleShifts,
-    schedule::Schedule,
+    schedule::ScheduleMeta,
 )::ScoringResult
     workers, shifts = schedule_shitfs
     penalties = get_penalties(schedule)
 
     if penalties[string(Constraints.PEN_DISALLOWED_SHIFT_SEQ)] == 0
-        return ck_workers_long_breaks(schedule_shitfs, schedule)
+        return _eval_workers_long_breaks(schedule_shitfs, schedule)
     end
 
     disallowed_shift_seq = get_disallowed_sequences(schedule)
@@ -367,19 +341,19 @@ function ck_workers_rights(
             end
         end
     end
-    return ScoringResult((penalty, errors)) + ck_workers_long_breaks(schedule_shitfs, schedule)
+    return ScoringResult((penalty, errors)) + _eval_workers_long_breaks(schedule_shitfs, schedule)
 end
 
 # LLB
-function ck_workers_long_breaks(
+function _eval_workers_long_breaks(
     schedule_shitfs::ScheduleShifts,
-    schedule::Schedule
+    schedule::ScheduleMeta
 )::ScoringResult
     penalty = 0
     errors = Vector{Dict{String,Any}}()
     workers, shifts = schedule_shitfs
     penalties = get_penalties(schedule)
-    
+
     if penalties[string(Constraints.PEN_NO_LONG_BREAK)] == 0
         return ScoringResult((0, []))
     end
@@ -435,9 +409,9 @@ function ck_workers_long_breaks(
     return ScoringResult((penalty, errors))
 end
 
-function ck_workers_worktime(
+function _eval_workers_worktime(
     schedule_shifts::ScheduleShifts,
-    schedule::Schedule,
+    schedule::ScheduleMeta,
 )::ScoringResult
     shift_info = get_shift_options(schedule)
     month_info = get_month_info(schedule)
@@ -518,4 +492,5 @@ function ck_workers_worktime(
     end
     return ScoringResult((penalty, errors))
 end
-end # ScheduleScoring
+
+end # scoring

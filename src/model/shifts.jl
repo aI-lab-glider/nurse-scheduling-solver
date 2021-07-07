@@ -1,6 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public 
 # License, v. 2.0. If a copy of the MPL was not distributed with this 
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 # Shift hours are half open interval
 # [from, to)
 
@@ -57,7 +58,7 @@ function get_rest_length(shift::ShiftType)::Int
     end
 end
 
-# Assumption
+# ASSUMPTION
 # Always:
 # DAY_BEGIN < DAY_END
 # Thus night periods always crosses midnight, and day shift never
